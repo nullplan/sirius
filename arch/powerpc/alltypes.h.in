@@ -1,0 +1,5 @@
+#ifdef _LITTLE_ENDIAN
+#define __LITTLE_ENDIAN
+#else
+#define __BIG_ENDIAN
+#endif
