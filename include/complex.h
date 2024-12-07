@@ -84,4 +84,9 @@ complex long double  cprojl(complex long double);
 #define cimagf(x) __cimag(x, float)
 #define cimagl(x) __cimag(x, long double)
 
+#define __CMPLX(x, y, t) ((union { t __xy[2]; complex t __z; }){{(x), (y)}}.__z)
+#define CMPLX(x, y) __CMPLX(x, y, double)
+#define CMPLXF(x, y) __CMPLX(x, y, float)
+#define CMPLXL(x, y) __CMPLX(x, y, long double)
+
 #endif

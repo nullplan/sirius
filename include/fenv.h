@@ -16,7 +16,7 @@ int fetestexcept(int);
 int fegetround(void);
 int fesetround(int);
 int fegetenv(fenv_t *);
-int feholdenv(fenv_t *);
+int feholdexcept(fenv_t *);
 int fesetenv(const fenv_t *);
 int feupdateenv(const fenv_t *);
 

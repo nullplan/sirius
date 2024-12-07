@@ -16,4 +16,11 @@
 #  define _Noreturn
 #  endif
 #endif
+
+#ifdef __GNUC__
+#define __ret_twice __attribute__((returns_twice))
+#else
+#define __ret_twice
+#endif
+
 #endif

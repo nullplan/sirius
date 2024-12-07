@@ -6,6 +6,9 @@
 extern "C" {
 #endif
 _Noreturn void __assert_fail(const char *, const char *, const char *, int);
+#if __STDC_VERSION > 201100L
+#define static_assert _Static_assert
+#endif
 #ifdef __cplusplus
 }
 #endif

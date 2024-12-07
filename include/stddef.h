@@ -13,4 +13,5 @@
 #define offsetof(t, m) ((char *)&(((t *)0)->m) - (char *)0)
 #endif
 
+typedef struct { _Alignas(16) char __x[16]; } max_align_t;
 #endif

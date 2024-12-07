@@ -8,11 +8,7 @@ extern "C" {
 
 #include <bits/setjmp.h>
 
-int setjmp(jmp_buf)
-#ifdef __GNUC__
-    __attribute__((returns_twice))
-#endif
-    ;
+int setjmp(jmp_buf) __ret_twice;
 _Noreturn void longjmp(jmp_buf, int);
 
 #ifdef __cplusplus

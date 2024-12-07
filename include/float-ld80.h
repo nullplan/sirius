@@ -1,5 +1,6 @@
 #define LDBL_MANT_DIG       64
 #define LDBL_DIG            18
+#define LDBL_DECIMAL_DIG    21
 #define LDBL_MIN_EXP        (-16381)
 #define LDBL_MIN_10_EXP     (-4931)
 #define LDBL_MAX_EXP        16384
@@ -7,3 +8,4 @@
 #define LDBL_MAX            0x1.fffffffffffffffep16383L
 #define LDBL_EPSILON        0x1.0p-63L
 #define LDBL_MIN            0x1.0p-16382L
+#define LDBL_TRUE_MIN       0x1.0p-16445L
