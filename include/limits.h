@@ -1,9 +1,29 @@
 #ifndef __LIMITS_H
 #define __LIMITS_H
 
+#define __STDC_VERSION_LIMITS_H__ 202311L
+
 #include <alltypes.h>
 
+#define BOOL_WIDTH      8
 #define CHAR_BIT        8
+#define USHRT_WIDTH     16
+#define UINT_WIDTH      16
+#ifndef __SIXTY_FOUR
+#define ULONG_WIDTH     32
+#else
+#define ULONG_WIDTH     64
+#endif
+#define ULLONG_WIDTH    64
+#define BITINT_MAXWIDTH ULLONG_WIDTH
+
+#define BOOL_MAX        0xff
+#define UCHAR_WIDTH     CHAR_BIT
+#define SCHAR_WIDTH     CHAR_BIT
+#define SHRT_WIDTH      USHRT_WIDTH
+#define INT_WIDTH       UINT_WIDTH
+#define LONG_WIDTH      ULONG_WIDTH
+#define LLONG_WIDTH     ULLONG_WIDTH
 
 #define SCHAR_MAX       0x7f
 #define SHRT_MAX        0x7fff

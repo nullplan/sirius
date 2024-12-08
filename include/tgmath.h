@@ -1,6 +1,8 @@
 #ifndef __TGMATH_H
 #define __TGMATH_H
 
+#define __STDC_VERSION_TGMATH_H__ 202311L
+
 /* no C++ this time; C++ does this with overloads in <cmath> */
 #include <math.h>
 #include <complex.h>
@@ -65,6 +67,50 @@
 #undef cimag
 #undef conj
 #undef cproj
+#undef asinpi
+#undef acospi
+#undef atanpi
+#undef atan2pi
+#undef sinpi
+#undef cospi
+#undef tanpi
+#undef exp10
+#undef exp10m1
+#undef log10p1
+#undef log2p1
+#undef compoundn
+#undef pown
+#undef powr
+#undef rootn
+#undef rsqrt
+#undef roundeven
+#undef fromfp
+#undef ufromfp
+#undef fromfpx
+#undef ufromfpx
+#undef nextup
+#undef nextdown
+#undef fmaximum
+#undef fminimum
+#undef llogb
+#undef fmaximum_mag
+#undef fmaximum_num
+#undef fmaximum_mag_num
+#undef fminimum_mag
+#undef fminimum_num
+#undef fminimum_mag_num
+#undef fadd
+#undef fsub
+#undef fmul
+#undef fdiv
+#undef ffma
+#undef fsqrt
+#undef dadd
+#undef dsub
+#undef dmul
+#undef ddiv
+#undef dfma
+#undef dsqrt
 
 #define __tg_sel_cr_1(stem, x) _Generic((x), complex long double: c##stem##l, complex double: c##stem, complex float: c##stem##f, long double: stem##l, float: stem##f, default: stem)
 #define acos(x)     __tg_sel_cr_1(acos, x)(x)
@@ -139,6 +185,54 @@
 #define scalbln(x,y)    __tg_sel_r_1(scalbln, x)((x), (y))
 #define tgamma(x)       __tg_sel_r_1(tgamma, x)(x)
 #define trunc(x)        __tg_sel_r_1(trunc, x)(x)
+
+#define asinpi(x)               __tg_sel_r_1(asinpi, x)(x)
+#define acospi(x)               __tg_sel_r_1(acospi, x)(x)
+#define atanpi(x)               __tg_sel_r_1(atanpi, x)(x)
+#define atan2pi(x,y)            __tg_sel_r_2(atan2pi, x, y)((x), (y))
+#define sinpi(x)                __tg_sel_r_1(sinpi, x)(x)
+#define cospi(x)                __tg_sel_r_1(cospi, x)(x)
+#define tanpi(x)                __tg_sel_r_1(tanpi, x)(x)
+#define exp10(x)                __tg_sel_r_1(exp10, x)(x)
+#define exp10m1(x)              __tg_sel_r_1(exp10m1, x)(x)
+#define log10p1(x)              __tg_sel_r_1(log10p1, x)(x)
+#define log2p1(x)               __tg_sel_r_1(log2p1, x)(x)
+#define compoundn(x, y)         __tg_sel_r_1(compoundn, x)((x), (y))
+#define pown(x, y)              __tg_sel_r_1(pown, x)((x), (y))
+#define powr(x, y)              __tg_sel_r_2(powr, x, y)((x), (y))
+#define rootn(x, y)             __tg_sel_r_1(rootn, x)((x), (y))
+#define rsqrt(x)                __tg_sel_r_1(rsqrt, x)(x)
+#define roundeven(x)            __tg_sel_r_1(roundeven, x)(x)
+#define fromfp(x, y, z)         __tg_sel_r_1(fromfp, x)((x), (y), (z))
+#define ufromfp(x, y, z)        __tg_sel_r_1(ufromfp, x)((x), (y), (z))
+#define fromfpx(x, y, z)        __tg_sel_r_1(fromfpx, x)((x), (y), (z))
+#define ufromfpx(x, y, z)       __tg_sel_r_1(ufromfpx, x)((x), (y), (z))
+#define nextup(x)               __tg_sel_r_1(nextup, x)(x)
+#define nextdown(x)             __tg_sel_r_1(nextdown, x)(x)
+#define fmaximum(x, y)          __tg_sel_r_2(fmaximum, x, y)((x), (y))
+#define fminimum(x, y)          __tg_sel_r_2(fminimum, x, y)((x), (y))
+#define llogb(x)                __tg_sel_r_1(llogb, x)(x)
+#define fmaximum_mag(x,y)       __tg_sel_r_2(fmaximum_mag, x, y)((x), (y))
+#define fmaximum_num(x,y)       __tg_sel_r_2(fmaximum_num, x, y)((x), (y))
+#define fmaximum_mag_num(x,y)   __tg_sel_r_2(fmaximum_mag_num, x, y)((x), (y))
+#define fminimum_mag(x,y)       __tg_sel_r_2(fminimum_mag, x, y)((x), (y))
+#define fminimum_num(x,y)       __tg_sel_r_2(fminimum_num, x, y)((x), (y))
+#define fminimum_mag_num(x,y)   __tg_sel_r_2(fminimum_mag_num, x, y)((x), (y))
+
+#define fadd(x, y)      _Generic((x)+(y), long double: faddl, default: fadd)((x), (y))
+#define fsub(x, y)      _Generic((x)+(y), long double: fsubl, default: fsub)((x), (y))    
+#define fmul(x, y)      _Generic((x)+(y), long double: fmull, default: fmul)((x), (y))
+#define fdiv(x, y)      _Generic((x)+(y), long double: fdivl, default: fdiv)((x), (y))
+#define ffma(x, y, z)   _Generic((x)+(y)+(z), long double: ffmal, default: ffma)((x), (y))
+#define fsqrt(x)        _Generic((x), long double: fsqrtl, default: fsqrt)(x)
+#define dadd(x, y)      daddl(x, y)
+#define dsub(x, y)      dsubl(x, y)
+#define dmul(x, y)      dmull(x, y)
+#define ddiv(x, y)      ddivl(x, y)
+#define dfma(x, y)      dfmal(x, y)
+#define dsqrt(x)        dsqrtl(x)
+
+
 
 #define __tg_sel_c_1(stem, x) _Generic((x), complex long double: stem##l, complex double: stem, complex float: stem##f, long double: stem##l, float: stem##f, default: stem)
 

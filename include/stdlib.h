@@ -1,8 +1,10 @@
 #ifndef __STDLIB_H
 #define __STDLIB_H
 
+#define __STDC_VERSION_STDLIB_H__ 202311L
 #define __NEED_size_t
 #define __NEED_wchar_t
+#define __NEED_once_flag
 #define __NEED_NULL
 #include <alltypes.h>
 #include <features.h>
@@ -20,10 +22,14 @@ typedef struct { long long quot, rem; } lldiv_t;
 int __mb_cur_max(void);
 #define MB_CUR_MAX      (__mb_cur_max())
 
+void call_once(once_flag *, void (*)(void));
 double atof(const char *);
 int atoi(const char *);
 long atol(const char *);
 long long atoll(const char *);
+int strfromd(char *__restrict, size_t, const char *__restrict, double);
+int strfromf(char *__restrict, size_t, const char *__restrict, float);
+int strfroml(char *__restrict, size_t, const char *__restrict, long double);
 double strtod(const char *__restrict, char **__restrict);
 float strtof(const char *__restrict, char **__restrict);
 long double strtold(const char *__restrict, char **__restrict);
@@ -36,6 +42,8 @@ void srand(unsigned);
 void *aligned_alloc(size_t, size_t);
 void *calloc(size_t, size_t);
 void free(void *);
+void free_sized(void *, size_t);
+void free_aligned_sized(void *, size_t, size_t);
 void *malloc(size_t);
 void *realloc(void *, size_t);
 _Noreturn void abort(void);
@@ -59,7 +67,11 @@ int mbtowc(wchar_t *__restrict, const char *__restrict, size_t);
 int wctomb(char *, wchar_t);
 size_t mbstowcs(wchar_t *__restrict, const char *__restrict, size_t);
 size_t wcstombs(char *__restrict, const wchar_t *__restrict, size_t);
+size_t memalignment(const void *);
 
+#if __STDC_VERSION__ >= 202311L
+#define bsearch(k, b, n, sz, c) _Generic((1? (b) : (void *)0), const void *: (const void *)bsearch((k), (b), (n), (sz), (c)), void *: bsearch((k), (b), (n), (sz), (c)))
+#endif
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,12 @@
 #  endif
 #endif
 
+#if __STDC_VERSION__ >= 202311L
+#define __deprecated [[deprecated]]
+#else
+#define __deprecated
+#endif
+
 #ifdef __GNUC__
 #define __ret_twice __attribute__((returns_twice))
 #else

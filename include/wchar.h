@@ -75,8 +75,14 @@ int mbsinit(const mbstate_t *);
 size_t mbrlen(const char *__restrict, size_t, mbstate_t *__restrict);
 size_t mbrtowc(wchar_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
 size_t mbsrtowcs(wchar_t *__restrict, const char **__restrict, size_t, mbstate_t *__restrict);
-size_T wcsrtombs(char *__restrict, const wchar_t **__restrict, size_t, mbstate_t *__restrict);
+size_t wcsrtombs(char *__restrict, const wchar_t **__restrict, size_t, mbstate_t *__restrict);
 
+#if __STDC_VERSION__ >= 202311L
+#define wcschr(s, c) _Generic((1? (s) : (void *)0), const void *: (const wchar_t *)wcschr((s), (c)), void *: wcschr((s), (c)))
+#define wcspbrk(s, c) _Generic((1? (s) : (void *)0), const void *: (const wchar_t *)wcspbrk((s), (c)), void *: wcspbrk((s), (c)))
+#define wcsrchr(s, c) _Generic((1? (s) : (void *)0), const void *: (const wchar_t *)wcsrchr((s), (c)), void *: wcsrchr((s), (c)))
+#define wcsstr(s, c) _Generic((1? (s) : (void *)0), const void *: (const wchar_t *)wcsstr((s), (c)), void *: wcsstr((s), (c)))
+#endif
 
 
 #ifdef __cplusplus

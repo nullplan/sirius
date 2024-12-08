@@ -52,17 +52,34 @@ static inline uint32_t __float_bits(float __d)
 #define FP_INFINITE     3
 #define FP_NAN          4
 
+#define FP_INT_TONEAREST    0
+#define FP_INT_TONEARESTFROMZERO    1
+#define FP_INT_TOWARDZERO   2
+#define FP_INT_UPWARD       3
+#define FP_INT_DOWNWARD     4
+
 #define FP_ILOGB0       (-0x7fffffff)
 #define FP_ILOGBNAN     0x7fffffff
+#ifndef __SIXTY_FOUR
+#define FP_LLOGB0       FP_ILOGB0
+#define FP_LLOGBNAN     FP_ILOGNAN
+#else
+#define FP_LLOGB0       (-0x7fffffffffffffffL)
+#define FP_LLOGBNAN     0x7fffffffffffffffL
+#endif
 
 #define MATH_ERRNO      1
 #define MATH_ERREXCEPT  2
 #define math_errhandling    2
 
 #define __fpclassifyf(x)    ((x) == 0? FP_ZERO : (x) < (1 << 23)? FP_SUBNORMAL : (x) < (0xff << 23)? FP_NORMAL : (x) == (0xff << 23)? FP_INFINITE : FP_NAN)
-#define __fpclassifyd(x)    ((x) == 0? FP_ZERO : (x) < (1ull << 52)? FP_SUBNORMAL : (x) < (0x7ff << 52)? FP_NORMAL : (x) == (0x7ff << 52)? FP_INFINITE : FP_NAN)
+#define __fpclassifyd(x)    ((x) == 0? FP_ZERO : (x) < (1ull << 52)? FP_SUBNORMAL : (x) < (0x7ffull << 52)? FP_NORMAL : (x) == (0x7ffull << 52)? FP_INFINITE : FP_NAN)
 int __fpclassifyl(long double);
 int __signbitl(long double);
+int __iscanonicall(long double);
+
+#define __iscanonical(x) ((x) <= (0x7ffULL << 52) || (x) == (0x7ff8ULL << 48))
+#define __iscanonicalf(x) ((x) <= (0xff << 23) || (x) == (0xff8 << 19))
 
 #define fpclassify(x) (sizeof (x) == sizeof (float)? __fpclassifyf(__float_bits(x) & 0x7fffffff) : sizeof (x) == sizeof (double)? __fpclassifyd(__double_bits(x) & 0x7fffffffffffffffULL) : __fpclassifyl(x))
 #define isfinite(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) < (0xff << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) < (0x7ffULL << 53) : __fpclassifyl(x) < FP_INFINITE)
@@ -71,6 +88,11 @@ int __signbitl(long double);
 #define isnormal(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) - (1u << 24) < (0xffu << 24) - (1u << 24) : \
         sizeof (x) == sizeof (double)? (__double_bits(x) << 1) - (1ull << 53) < (0x7ffULL << 53) - (1ull << 53) : __fpclassifyl(x) == FP_NORMAL)
 #define signbit(x) (sizeof (x) == sizeof (float)? (int)(__float_bits(x) >> 31) : sizeof (x) == sizeof (double)? (int)(__double_bits(x) >> 63) : __signbitl(x))
+#define iscanonical(x) (sizeof (x) == sizeof (float)? __iscanonicalf(__float_bits(x) << 1 >> 1) : sizeof (x) == sizeof (double)? __iscanonical(__double_bits(x) << 1 >> 1) : __iscanonicall(x))
+#define issignaling(x) (0)
+#define issubnormal(x) (sizeof (x) == sizeof (float)? (__float_bits(x) & 0x7fffffff) - 1u < (1 << 23) - 1u : \
+        sizeof (x) == sizeof (double)? (__double_bits(x) << 1 >> 1) - 1ull < (1ull << 52) - 1ull : __fpclassifyl(x) == FP_SUBNORMAL)
+#define iszero(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1 >> 1) == 0 : sizeof (x) == sizeof (double)? (__double_bits(x) << 1 >> 1) == 0 : __fpclassifyl(x) == FP_ZERO)
 
 #define isunordered(x, y) (isnan(x) || isnan(y))
 #define __iscmp(x, y, c) (!isunordered(x) && (x) c (y))
@@ -137,6 +159,40 @@ double       fmin(double, double);
 double        fma(double, double, double);
 double        nan(const char *);
 
+double     asinpi(double);
+double     acospi(double);
+double     atanpi(double);
+double    atan2pi(double, double);
+double      sinpi(double);
+double      cospi(double);
+double      tanpi(double);
+double      exp10(double);
+double    exp10m1(double);
+double    log10p1(double);
+double     log2p1(double);
+double  compoundn(double, long long);
+double       pown(double, long long);
+double       powr(double, double);
+double      rootn(double, long long);
+double      rsqrt(double);
+double  roundeven(double);
+double     fromfp(double, int, unsigned);
+double    ufromfp(double, int, unsigned);
+double    fromfpx(double, int, unsigned);
+double   ufromfpx(double, int, unsigned);
+double     nextup(double);
+double   nextdown(double);
+double   fmaximum(double, double);
+double   fminimum(double, double);
+long        llogb(double);
+int  canonicalize(double *, const double *);
+double fmaximum_mag(double, double);
+double fmaximum_num(double, double);
+double fmaximum_mag_num(double, double);
+double fminimum_mag(double, double);
+double fminimum_num(double, double);
+double fminimum_mag_num(double, double);
+
 int         ilogbf(float);
 long        lrintf(float);
 long long  llrintf(float);
@@ -195,6 +251,40 @@ float       fminf(float, float);
 float        fmaf(float, float, float);
 float        nanf(const char *);
 
+float     asinpif(float);
+float     acospif(float);
+float     atanpif(float);
+float    atan2pif(float, float);
+float      sinpif(float);
+float      cospif(float);
+float      tanpif(float);
+float      exp10f(float);
+float    exp10m1f(float);
+float    log10p1f(float);
+float     log2p1f(float);
+float  compoundnf(float, long long);
+float       pownf(float, long long);
+float       powrf(float, double);
+float      rootnf(float, long long);
+float      rsqrtf(float);
+float  roundevenf(float);
+float     fromfpf(float, int, unsigned);
+float    ufromfpf(float, int, unsigned);
+float    fromfpxf(float, int, unsigned);
+float   ufromfpxf(float, int, unsigned);
+float     nextupf(float);
+float   nextdownf(float);
+float   fmaximumf(float, float);
+float   fminimumf(float, float);
+float fmaximum_magf(float, float);
+float fmaximum_numf(float, float);
+float fmaximum_mag_numf(float, float);
+float fminimum_magf(float, float);
+float fminimum_numf(float, float);
+float fminimum_mag_numf(float, float);
+long        llogbf(float);
+int  canonicalizef(float *, const float *);
+
 int         ilogbl(long double);
 long        lrintl(long double);
 long long  llrintl(long double);
@@ -252,6 +342,79 @@ long double       fmaxl(long double, long double);
 long double       fminl(long double, long double);
 long double        fmal(long double, long double, long double);
 long double        nanl(const char *);
+
+long double     asinpil(long double);
+long double     acospil(long double);
+long double     atanpil(long double);
+long double    atan2pil(long double, long double);
+long double      sinpil(long double);
+long double      cospil(long double);
+long double      tanpil(long double);
+long double      exp10l(long double);
+long double    exp10m1l(long double);
+long double    log10p1l(long double);
+long double     log2p1l(long double);
+long double  compoundnl(long double, long long);
+long double       pownl(long double, long long);
+long double       powrl(long double, double);
+long double      rootnl(long double, long long);
+long double      rsqrtl(long double);
+long double  roundevenl(long double);
+long double     fromfpl(long double, int, unsigned);
+long double    ufromfpl(long double, int, unsigned);
+long double    fromfpxl(long double, int, unsigned);
+long double   ufromfpxl(long double, int, unsigned);
+long double     nextupl(long double);
+long double   nextdownl(long double);
+long double   fmaximuml(long double, long double);
+long double   fminimuml(long double, long double);
+long double fmaximum_magl(long double, long double);
+long double fmaximum_numl(long double, long double);
+long double fmaximum_mag_numl(long double, long double);
+long double fminimum_magl(long double, long double);
+long double fminimum_numl(long double, long double);
+long double fminimum_mag_numl(long double, long double);
+long        llogbl(long double);
+int  canonicalizel(long double *, const long double *);
+
+float fadd(double, double);
+float faddl(long double, long double);
+double daddl(long double, long double);
+float fsub(double, double);
+float fsubl(long double, long double);
+double dsubl(long double, long double);
+float fmul(double, double);
+float fmull(long double, long double);
+double dmull(long double, long double);
+float fdiv(double, double);
+float fdivl(long double, long double);
+double ddivl(long double, long double);
+float ffma(double, double, double);
+float ffmal(long double, long double, long double);
+double dfmal(long double, long double, long double);
+float fsqrt(double);
+float fsqrt(long double);
+double dsqrtl(long double);
+
+#ifdef __STDC_WANT_IEC_60559_EXT__
+int    totalorder(const double *, const double *);
+int totalordermag(const double *, const double *);
+double getpayload(const double *);
+int    setpayload(      double *, double);
+int setpayloadsig(      double *, double);
+
+int    totalorderf(const float *, const float *);
+int totalordermagf(const float *, const float *);
+float  getpayloadf(const float *);
+int    setpayloadf(      float *, float);
+int setpayloadsigf(      float *, float);
+
+int    totalorderl(const long double *, const long double *);
+int totalordermagl(const long double *, const long double *);
+long double getpayloadl(const long double *);
+int    setpayloadl(      long double *, long double);
+int setpayloadsigl(      long double *, long double);
+#endif
 
 #ifdef __cplusplus
 }

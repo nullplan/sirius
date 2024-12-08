@@ -15,6 +15,10 @@ int __flt_rounds(void);
 #define DBL_HAS_SUBNORM 1
 #define LDBL_HAS_SUBNORM    1
 
+#define FLT_IS_IEC_60559    1
+#define DBL_IS_IEC_60559    1
+#define LDBL_IS_IEC_60559   1
+
 #define DECIMAL_DIG     LDBL_DECIMAL_DIG
 
 #define FLT_MANT_DIG    24

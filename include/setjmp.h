@@ -1,6 +1,8 @@
 #ifndef __SETJMP_H
 #define __SETJMP_H
 
+#define __STDC_VERSION_SETJMP_H__ 202311L
+
 #include <features.h>
 #ifdef __cplusplus
 extern "C" {

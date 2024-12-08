@@ -1,6 +1,7 @@
 #ifndef __STDIO_H
 #define __STDIO_H
 
+#define __STDC_VERSION_STDIO_H__ 202311L
 #define __NEED_NULL
 #define __NEED_FILE
 #define __NEED_size_t
@@ -24,8 +25,9 @@ typedef struct { long long __pos; } fpos_t;
 #define SEEK_CUR    1
 #define SEEK_END    2
 
-#define TMP_MAX     0x40000000
+#define TMP_MAX     10000
 #define L_tmpnam    20
+#define _PRINTF_NAN_LEN_MAX 4
 
 extern FILE *const stdin;
 extern FILE *const stdout;

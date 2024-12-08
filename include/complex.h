@@ -1,6 +1,8 @@
 #ifndef __COMPLEX_H
 #define __COMPLEX_H
 
+#define __STDC_VERSION_COMPLEX_H__  202311L
+
 #define complex _Complex
 #define _Complex_I  (__extension__(0.f+1.fi))
 #define I _Complex_I
