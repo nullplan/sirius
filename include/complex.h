@@ -1,6 +1,8 @@
 #ifndef __COMPLEX_H
 #define __COMPLEX_H
 
+#define __STDC_VERSION_COMPLEX_H__  202311L
+
 #define complex _Complex
 #define _Complex_I  (__extension__(0.f+1.fi))
 #define I _Complex_I
@@ -83,5 +85,10 @@ complex long double  cprojl(complex long double);
 #define cimag(x) __cimag(x, double)
 #define cimagf(x) __cimag(x, float)
 #define cimagl(x) __cimag(x, long double)
+
+#define __CMPLX(x, y, t) ((union { t __xy[2]; complex t __z; }){{(x), (y)}}.__z)
+#define CMPLX(x, y) __CMPLX(x, y, double)
+#define CMPLXF(x, y) __CMPLX(x, y, float)
+#define CMPLXL(x, y) __CMPLX(x, y, long double)
 
 #endif

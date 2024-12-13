@@ -12,6 +12,3 @@ typedef struct { unsigned __data; } fexcept_t;
 #define FE_TONEAREST    1
 #define FE_TOWARDZERO   2
 #define FE_UPWARD       3
-
-#define FE_DFL_ENV  (&(const fenv_t){0})
-

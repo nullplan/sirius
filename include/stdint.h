@@ -1,6 +1,8 @@
 #ifndef __STDINT_H
 #define __STDINT_H
 
+#define __STDC_VERSION_STDINT_H__ 202311L
+
 #define __NEED_uint8_t
 #define __NEED_uint16_t
 #define __NEED_uint32_t
@@ -33,6 +35,31 @@ typedef unsigned long uintptr_t;
 
 typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
+
+#define INT8_WIDTH  8
+#define INT16_WIDTH 16
+#define INT32_WIDTH 32
+#define INT64_WIDTH 64
+#define UINT8_WIDTH  8
+#define UINT16_WIDTH 16
+#define UINT32_WIDTH 32
+#define UINT64_WIDTH 64
+#define  INT_LEAST8_WIDTH  8
+#define  INT_LEAST16_WIDTH 16
+#define  INT_LEAST32_WIDTH 32
+#define  INT_LEAST64_WIDTH 64
+#define UINT_LEAST8_WIDTH  8
+#define UINT_LEAST16_WIDTH 16
+#define UINT_LEAST32_WIDTH 32
+#define UINT_LEAST64_WIDTH 64
+#define  INT_FAST8_WIDTH  8
+#define  INT_FAST16_WIDTH __WIDTH_INT_FAST16
+#define  INT_FAST32_WIDTH __WIDTH_INT_FAST32
+#define  INT_FAST64_WIDTH 64
+#define UINT_FAST8_WIDTH  8
+#define UINT_FAST16_WIDTH __WIDTH_INT_FAST16
+#define UINT_FAST32_WIDTH __WIDTH_INT_FAST32
+#define UINT_FAST64_WIDTH 64
 
 #define INT8_MAX    0x7f
 #define INT16_MAX   0x7fff
@@ -95,24 +122,34 @@ typedef uint64_t uintmax_t;
 #endif
 
 #ifndef __SIXTY_FOUR
+#define INTPTR_WIDTH 32
+#define UINTPTR_WIDTH 32
 #define INTPTR_MIN  INT32_MIN
 #define INTPTR_MAX  INT32_MAX
 #define UINTPTR_MAX UINT32_MAX
 #else
+#define INTPTR_WIDTH 64
+#define UINTPTR_WIDTH 64
 #define INTPTR_MIN  INT64_MIN
 #define INTPTR_MAX  INT64_MAX
 #define UINTPTR_MAX UINT64_MAX
 #endif
 
+#define INTMAX_WIDTH 64
+#define UINTMAX_WIDTH 64
 #define INTMAX_MAX  INT64_MAX
 #define INTMAX_MIN  INT64_MIN
 #define UINTMAX_MAX UINT64_MAX
 
+#define PTRDIFF_WIDTH INTPTR_WIDTH
 #define PTRDIFF_MIN INTPTR_MIN
 #define PTRDIFF_MAX INTPTR_MAX
+#define SIG_ATOMIC_WIDTH 32
 #define SIG_ATOMIC_MIN  INT32_MIN
 #define SIG_ATOMIC_MAX  INT32_MAX
+#define SIZE_WIDTH INTPTR_WIDTH
 #define SIZE_MAX    UINTPTR_MAX
+#define WCHAR_WIDTH 32
 #if L'\x00' - 1 < 0
 #define WCHAR_MIN   INT32_MIN
 #define WCHAR_MAX   INT32_MAX
@@ -120,6 +157,9 @@ typedef uint64_t uintmax_t;
 #define WCHAR_MIN   0
 #define WCHAR_MAX   UINT32_MAX
 #endif
+#define WINT_WIDTH 32
+#define WINT_MIN INT32_MIN
+#define WINT_MAX INT32_MAX
 
 #define INT8_C(x)   x
 #define INT16_C(x)  x

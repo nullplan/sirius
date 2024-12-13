@@ -1,6 +1,8 @@
 #ifndef __SETJMP_H
 #define __SETJMP_H
 
+#define __STDC_VERSION_SETJMP_H__ 202311L
+
 #include <features.h>
 #ifdef __cplusplus
 extern "C" {
@@ -8,11 +10,7 @@ extern "C" {
 
 #include <bits/setjmp.h>
 
-int setjmp(jmp_buf)
-#ifdef __GNUC__
-    __attribute__((returns_twice))
-#endif
-    ;
+int setjmp(jmp_buf) __ret_twice;
 _Noreturn void longjmp(jmp_buf, int);
 
 #ifdef __cplusplus
