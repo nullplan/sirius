@@ -1,1 +1,2 @@
 #define __LITTLE_ENDIAN
+#define _Reg long long

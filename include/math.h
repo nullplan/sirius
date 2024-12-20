@@ -12,6 +12,54 @@
 extern "C" {
 #endif
 
+#ifdef _XOPEN_SOURCE
+#define M_E             0x1.5bf0a8b145769p1
+#define M_EGAMMA        0x1.2788cfc6fb619p-1
+#define M_LOG2E         0x1.71547652b82fep0
+#define M_LOG10E        0x1.bcb7b1526e50ep-2
+#define M_LN2           0x1.62e42fefa39efp-1
+#define M_LN10          0x1.26bb1bbb55516p1
+#define M_PHI           0x1.9e3779b97f4a8p0
+#define M_PI            0x1.921fb54442d18p1
+#define M_PI_2          0x1.921fb54442d18p0
+#define M_PI_4          0x1.921fb54442d18p-1
+#define M_1_PI          0x1.45f306dc9c883p-2
+#define M_1_SQRTPI      0x1.20dd750429b6dp-1
+#define M_2_PI          0x1.45f306dc9c883p-1
+#define M_2_SQRTPI      0x1.20dd750429b6dp0
+#define M_SQRT2         0x1.6a09e667f3bcdp0
+#define M_SQRT3         0x1.bb67ae8584caa7p0
+#define M_SQRT1_2       0x1.6a09e667f3bcdp-1
+#define M_SQRT1_3       0x1.279a74590331cp-1
+#define M_El            0x1.5bf0a8b1457695355fb8ac404e7ap1L
+#define M_EGAMMAl       0x1.2788cfc6fb618f49a37c7f0202a6p-1L
+#define M_LOG2El        0x1.71547652b82fe1777d0ffda0d23ap0L
+#define M_LOG10El       0x1.bcb7b1526e50e32a6ab7555f5a68p-2L
+#define M_LN2l          0x1.62e42fefa39ef35793c7673007e6p-1L
+#define M_LN10l         0x1.26bb1bbb5551582dd4adac5705a6p1L
+#define M_PHIl          0x1.9e3779b97f4a7c15f39cc0605ceep0L
+#define M_PIl           0x1.921fb54442d18469898cc51701b8p1L
+#define M_PI_2l         0x1.921fb54442d18469898cc51701b8p0L
+#define M_PI_4l         0x1.921fb54442d18469898cc51701b8p-1L
+#define M_1_PIl         0x1.45f306dc9c882a53f84eafa3ea6ap-2L
+#define M_1_SQRTPIl     0x1.20dd750429b6d11ae3a914fed7fep-1L
+#define M_2_PIl         0x1.45f306dc9c882a53f84eafa3ea6ap-1L
+#define M_2_SQRTPIl     0x1.20dd750429b6d11ae3a914fed7fep0L
+#define M_SQRT2l        0x1.6a09e667f3bcc908b2fb1366ea95p0L
+#define M_SQRT3l        0x1.bb67ae8584caa73b25742d7078b8p0L
+#define M_SQRT1_2l      0x1.6a09e667f3bcc908b2fb1366ea95p-1L
+#define M_SQRT1_3l      0x1.279a74590331c4d218f81e4afb25p-1L
+
+double j0(double);
+double j1(double);
+double jn(int, double);
+double y0(double);
+double y1(double);
+double yn(int, double);
+extern int signgam;
+#endif
+
+
 #ifdef __cplusplus
 static inline uint64_t __double_bits(double __d)
 {

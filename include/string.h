@@ -3,11 +3,14 @@
 
 #define __STDC_VERSION_STRING_H__ 202311L
 
+#include <features.h>
 #define __NEED_size_t
 #define __NEED_NULL
+#ifdef _POSIX_C_SOURCE
+#define __NEED_locale_t
+#endif
 #include <alltypes.h>
 
-#include <features.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,6 +47,20 @@ size_t strlen(const char *);
 #define strpbrk(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strpbrk((s), (c)), void *: strpbrk((s), (c)))
 #define strrchr(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strrchr((s), (c)), void *: strrchr((s), (c)))
 #define strstr(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strstr((s), (c)), void *: strstr((s), (c)))
+#endif
+
+#ifdef _POSIX_C_SOURCE
+void *memmem(const void *, size_t, const void *, size_t);
+char *stpcpy(char *__restrict, const char *__restrict);
+char *stpncpy(char *__restrict, const char *__restrict, size_t);
+int strcoll_l(const char *, const char *, locale_t);
+char *strerror_l(int, locale_t);
+int strerror_r(int, char *, size_t);
+size_t strlcat(char *__restrict, const char *__restrict, size_t);
+size_t strnlen(const char *, size_t);
+char *strsignal(int);
+char *strtok_r(char *__restrict, const char *__restrict, char **__restrict);
+size_t strxfrm_l(char *__restrict, const char *__restrict, size_t, locale_t);
 #endif
 #ifdef __cplusplus
 }

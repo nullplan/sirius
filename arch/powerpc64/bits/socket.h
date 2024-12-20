@@ -1,0 +1,11 @@
+#define SO_RCVLOWAT     16
+#define SO_SNDLOWAT     17
+#define SO_RCVTIMEO_OLD 18
+#define SO_SNDTIMEO_OLD 19
+#define SO_PASSCRED     20
+#define SO_PEERCRED     21
+#define SO_TIMESTAMP            SO_TIMESTAMP_OLD
+#define SO_TIMESTAMPNS          SO_TIMESTAMPNS_OLD
+#define SO_TIMESTAMPING         SO_TIMESTAMPING_OLD
+#define SO_RCVTIMEO             SO_RCVTIMEO_OLD
+#define SO_SNDTIMEO             SO_SNDTIMEO_OLD

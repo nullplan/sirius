@@ -8,6 +8,10 @@
 #define __NEED_NULL
 #include <alltypes.h>
 #include <features.h>
+#ifdef _POSIX_C_SOURCE
+#include <fcntl.h>
+#include <sys/wait.h>
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,6 +75,46 @@ size_t memalignment(const void *);
 
 #if __STDC_VERSION__ >= 202311L
 #define bsearch(k, b, n, sz, c) _Generic((1? (b) : (void *)0), const void *: (const void *)bsearch((k), (b), (n), (sz), (c)), void *: bsearch((k), (b), (n), (sz), (c)))
+#endif
+
+#ifdef _POSIX_C_SOURCE
+int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
+char *mkdtemp(char *);
+int mkostemp(char *, int);
+int mkstemp(char *);
+int posix_memalign(void **, size_t, size_t);
+void qsort_r(void *, size_t, size_t, int (*)(const void *, const void *, void *), void *);
+void *reallocarray(void *, size_t, size_t);
+char *realpath(const char *__restrict, char *__restrict);
+char *secure_getenv(const char *);
+int setenv(const char *, const char *, int);
+int unsetenv(const char *);
+#endif
+
+#ifdef _XOPEN_SOURCE
+long a64l(const char *);
+char *l64a(long);
+
+double drand48(void);
+double erand48(unsigned short [3]);
+char *initstate(unsigned, char *, size_t);
+long jrand48(unsigned short [3]);
+void lcong48(unsigned short [7]);
+long lrand48(void);
+long mrand48(void);
+long nrand48(unsigned short [3]);
+unsigned short *seed48(unsigned short [3]);
+void srand48(long);
+long random(void);
+void srandom(unsigned);
+
+int grantpt(int);
+int unlockpt(int);
+int posix_openpt(int);
+char *ptsname(int);
+int ptsname_r(int, char *, size_t);
+
+int putenv(char *);
 #endif
 
 #ifdef __cplusplus

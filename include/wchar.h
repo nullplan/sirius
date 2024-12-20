@@ -1,14 +1,18 @@
 #ifndef __WCHAR_H
 #define __WCHAR_H
 
+#include <features.h>
 #define __NEED_NULL
 #define __NEED_wchar_t
 #define __NEED_wint_t
 #define __NEED_size_t
 #define __NEED_va_list
+#define __NEED_FILE
 #define __NEED_WCHAR_MIN
+#ifdef _POSIX_C_SOURCE
+#define __NEED_locale_t
+#endif
 #include <alltypes.h>
-#include <features.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -84,6 +88,28 @@ size_t wcsrtombs(char *__restrict, const wchar_t **__restrict, size_t, mbstate_t
 #define wcsstr(s, c) _Generic((1? (s) : (void *)0), const void *: (const wchar_t *)wcsstr((s), (c)), void *: wcsstr((s), (c)))
 #endif
 
+#ifdef _POSIX_C_SOURCE
+size_t mbsnrtowcs(wchar_t *__restrict, const char **__restrict, size_t, size_t, mbstate_t *__restrict);
+FILE *open_wmemstream(wchar_t **, size_t *);
+wchar_t *wcpcpy(wchar_t *__restrict, const wchar_t *__restrict);
+wchar_t *wcpncpy(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+int wcscasecmp(const wchar_t *, const wchar_t *);
+int wcscasecmp_l(const wchar_t *, const wchar_t *, locale_t);
+int wcscoll_l(const wchar_t *, const wchar_t *, locale_t);
+wchar_t *wcsdup(const wchar_t *);
+size_t wcslcat(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+size_t wcslcpy(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+int wcsncasecmp(const wchar_t *, const wchar_t *, size_t);
+int wcsncasecmp_l(const wchar_t *, const wchar_t *, size_t, locale_t);
+size_t wcsnlen(const wchar_t *, size_t);
+size_t wcsnrtombs(char *__restrict, const wchar_t **__restrict, size_t, size_t, mbstate_t *__restrict);
+size_t wcsxfrm_l(wchar_t *__restrict, const wchar_t *__restrict, size_t, locale_t);
+#endif
+
+#ifdef _XOPEN_SOURCE
+int wcswidth(const wchar_t *, size_t);
+int wcwidth(wchar_t);
+#endif
 
 #ifdef __cplusplus
 }

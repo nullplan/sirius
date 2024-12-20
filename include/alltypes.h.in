@@ -1,0 +1,28 @@
+#ifndef _Reg
+#define _Reg long
+#endif
+#ifndef __SIXTY_FOUR
+#ifdef __LITTLE_ENDIAN
+#define __IF_32_LE(x)   x
+#define __IF_32_BE(x)
+#define __IF_64_LE(x)
+#define __IF_64_BE(x)
+#else
+#define __IF_32_LE(x)
+#define __IF_32_BE(x)   x
+#define __IF_64_LE(x)
+#define __IF_64_BE(x)
+#endif
+#else
+#ifdef __LITTLE_ENDIAN
+#define __IF_32_LE(x)
+#define __IF_32_BE(x)
+#define __IF_64_LE(x)   x
+#define __IF_64_BE(x)
+#else
+#define __IF_32_LE(x)
+#define __IF_32_BE(x)
+#define __IF_64_LE(x)
+#define __IF_64_BE(x)   x
+#endif
+#endif

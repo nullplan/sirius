@@ -14,7 +14,7 @@ extern "C" {
 #define TSS_DTOR_ITERATIONS     8
 struct __pthread;
 struct timespec;
-typedef struct { struct __pthread *__self; } thrd_t;
+typedef struct __pthread *thrd_t;
 typedef struct __cnd cnd_t;
 typedef struct __mtx mtx_t;
 typedef struct { int __k; } tss_t;

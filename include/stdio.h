@@ -1,13 +1,17 @@
 #ifndef __STDIO_H
 #define __STDIO_H
 
+#include <features.h>
 #define __STDC_VERSION_STDIO_H__ 202311L
 #define __NEED_NULL
 #define __NEED_FILE
 #define __NEED_size_t
 #define __NEED_va_list
+#ifdef _POSIX_C_SOURCE
+#define __NEED_ssize_t
+#define __NEED_off_t
+#endif
 #include <alltypes.h>
-#include <features.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,6 +86,29 @@ int feof(FILE *);
 int ferror(FILE *);
 void perror(const char *);
 
+#ifdef _POSIX_C_SOURCE
+#define L_ctermid 9
+char *ctermid(char *);
+int dprintf(int, const char *__restrict, ...);
+int vdprintf(int, const char *__restrict, va_list);
+FILE *fdopen(int, const char *);
+int fileno(FILE *);
+int fseeko(FILE *, off_t, int);
+off_t ftello(FILE *);
+int ftrylockfile(FILE *);
+void funlockfile(FILE *);
+int getc_unlocked(FILE *);
+int getchar_unlocked(void);
+int putc_unlocked(FILE *);
+int putchar_unlocked(FILE *);
+
+ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
+ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);
+FILE *open_memstream(char **, size_t *);
+FILE *popen(const char *, const char *);
+int pclose(FILE *);
+int renameat(int, const char *, int, const char *);
+#endif
 #ifdef __cplusplus
 }
 #endif
