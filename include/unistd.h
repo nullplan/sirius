@@ -2,6 +2,7 @@
 #define __UNISTD_H
 
 #define __NEED_NULL
+#define __NEED_SEEK_SET
 #define __NEED_size_t
 #define __NEED_ssize_t
 #define __NEED_uid_t
@@ -119,9 +120,6 @@ enum {
     _CS_V7_ENV,
 };
 
-#define SEEK_SET        0
-#define SEEK_CUR        1
-#define SEEK_END        2
 #define SEEK_DATA       3
 #define SEEK_HOLE       4
 

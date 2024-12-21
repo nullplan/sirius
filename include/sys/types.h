@@ -1,6 +1,8 @@
 #ifndef __SYS_TYPES_H
 #define __SYS_TYPES_H
 
+#define __NEED_struct___cnd
+#define __NEED_struct___mtx
 #define __NEED_blkcnt_t
 #define __NEED_blksize_t
 #define __NEED_clock_t

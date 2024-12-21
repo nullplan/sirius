@@ -3,6 +3,7 @@
 
 #define __STDC_VERSION_STDINT_H__ 202311L
 
+#define __NEED_WCHAR_MIN
 #define __NEED_uint8_t
 #define __NEED_uint16_t
 #define __NEED_uint32_t
@@ -150,13 +151,6 @@ typedef uint64_t uintmax_t;
 #define SIZE_WIDTH INTPTR_WIDTH
 #define SIZE_MAX    UINTPTR_MAX
 #define WCHAR_WIDTH 32
-#if L'\x00' - 1 < 0
-#define WCHAR_MIN   INT32_MIN
-#define WCHAR_MAX   INT32_MAX
-#else
-#define WCHAR_MIN   0
-#define WCHAR_MAX   UINT32_MAX
-#endif
 #define WINT_WIDTH 32
 #define WINT_MIN INT32_MIN
 #define WINT_MAX INT32_MAX

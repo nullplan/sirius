@@ -26,3 +26,92 @@
 #define __IF_64_BE(x)   x
 #endif
 #endif
+#if defined __NEED_NULL && !defined NULL
+#if __cplusplus > 201100L || __STDC_VERSION__ > 202300L
+#define NULL nullptr
+#elif defined __cplusplus
+#define NULL 0l
+#else
+#define NULL ((void *)0)
+#endif
+#endif
+#if defined __NEED_SEEK_SET && !defined SEEK_SET
+#define SEEK_SET        0
+#define SEEK_CUR        1
+#define SEEK_END        2
+#endif
+#if defined __NEED_WCHAR_MIN && !defined WCHAR_MIN
+#if L'\x00' - 1 < 0
+#define WCHAR_MIN   (-0x7fffffff-1)
+#define WCHAR_MAX   0x7fffffff
+#else
+#define WCHAR_MIN   0
+#define WCHAR_MAX   0xffffffffU
+#endif
+#endif
+#if defined __NEED_WEOF && !defined WEOF
+#define WEOF (-1)
+#endif
+
+TYPEDEF signed char int8_t;
+TYPEDEF short       int16_t;
+TYPEDEF int         int32_t;
+TYPEDEF long long   int64_t;
+TYPEDEF unsigned char       uint8_t;
+TYPEDEF unsigned short      uint16_t;
+TYPEDEF unsigned            uint32_t;
+TYPEDEF unsigned long long  uint64_t;
+TYPEDEF long intptr_t;
+TYPEDEF long ssize_t;
+TYPEDEF long ptrdiff_t;
+TYPEDEF unsigned long uintptr_t;
+TYPEDEF unsigned long size_t;
+
+TYPEDEF struct __file FILE;
+TYPEDEF unsigned long long blkcnt_t;
+TYPEDEF unsigned blksize_t;
+TYPEDEF long clock_t;
+TYPEDEF int clockid_t;
+TYPEDEF unsigned long long dev_t;
+TYPEDEF unsigned long long fsblkcnt_t;
+TYPEDEF unsigned long long fsfilcnt_t;
+TYPEDEF int id_t;
+TYPEDEF int uid_t;
+TYPEDEF int gid_t;
+TYPEDEF int pid_t;
+TYPEDEF long long ino_t;
+TYPEDEF int key_t;
+TYPEDEF struct __localedef * locale_t;
+TYPEDEF struct { unsigned __st; } mbstate_t;
+TYPEDEF int mode_t;
+TYPEDEF int nl_item;
+TYPEDEF int nlink_t;
+TYPEDEF long long off_t;
+TYPEDEF struct { volatile int __ctrl; } once_flag;
+TYPEDEF struct { volatile int __ctrl; } pthread_once_t;
+STRUCT __cnd { int __foo; };
+STRUCT __mtx { int __foo; };
+TYPEDEF struct __cnd pthread_cond_t;
+TYPEDEF struct __mtx pthread_mutex_t;
+TYPEDEF struct { int __v; } pthread_key_t;
+TYPEDEF struct { int __foo; } pthread_attr_t;
+TYPEDEF struct { int __foo; } pthread_barrier_t;
+TYPEDEF struct { int __foo; } pthread_barrierattr_t;
+TYPEDEF struct { int __foo; } pthread_condattr_t;
+TYPEDEF struct { int __foo; } pthread_mutexattr_t;
+TYPEDEF struct { int __foo; } pthread_rwlock_t;
+TYPEDEF struct { int __foo; } pthread_rwlockattr_t;
+TYPEDEF struct { int __foo; } pthread_spinlock_t;
+TYPEDEF struct __pthread *pthread_t;
+TYPEDEF unsigned short reclen_t;
+TYPEDEF unsigned short sa_family_t;
+TYPEDEF unsigned socklen_t;
+STRUCT iovec { void *iov_base; size_t iov_len; };
+TYPEDEF __builtin_va_list va_list;
+TYPEDEF long long time_t;
+TYPEDEF long long suseconds_t;
+STRUCT timeval { time_t tv_sec; suseconds_t tv_usec; };
+STRUCT timespec { time_t tv_sec; __IF_32_BE(long __pad;) long tv_nsec; __IF_32_LE(long __pad;) };
+
+TYPEDEF int wint_t;
+TYPEDEF struct __timer * timer_t;

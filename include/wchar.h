@@ -9,6 +9,7 @@
 #define __NEED_va_list
 #define __NEED_FILE
 #define __NEED_WCHAR_MIN
+#define __NEED_mbstate_t
 #ifdef _POSIX_C_SOURCE
 #define __NEED_locale_t
 #endif
@@ -17,9 +18,6 @@
 extern "C" {
 #endif
 
-#define WEOF    (-1)
-
-typedef struct { unsigned __st; } mbstate_t;
 struct tm;
 
 int fwprintf(FILE *__restrict, const wchar_t *__restrict, ...);

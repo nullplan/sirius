@@ -2,15 +2,11 @@
 #define __AIO_H
 
 #define __NEED_off_t
-#define __NEED_size_t
-#define __NEED_union_sigval
-#define __NEED_struct_sigevent
-#define __NEED_pthread_attr_t
 #define __NEED_ssize_t
-#define __NEED_time_t
-#define __NEED_struct_timespec
 #include <alltypes.h>
 #include <features.h>
+#include <signal.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

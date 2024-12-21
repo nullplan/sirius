@@ -1,2 +1,11 @@
 #define __SIXTY_FOUR
 #define __LITTLE_ENDIAN
+TYPEDEF float float_t;
+TYPEDEF double double_t;
+#define __WIDTH_INT_FAST16 32
+#define __WIDTH_INT_FAST32 32
+TYPEDEF int int_fast16_t;
+TYPEDEF int int_fast32_t;
+TYPEDEF unsigned uint_fast16_t;
+TYPEDEF unsigned uint_fast32_t;
+TYPEDEF int wchar_t;

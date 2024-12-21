@@ -20,7 +20,6 @@ typedef struct __mtx mtx_t;
 typedef struct { int __k; } tss_t;
 typedef void (*tss_dtor_t)(void *);
 typedef int (*thrd_start_t)(void *);
-typedef struct { volatile int __ctrl; } once_flag;
 
 enum {
     mtx_plain = 0,
