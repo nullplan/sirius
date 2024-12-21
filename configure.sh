@@ -119,11 +119,11 @@ rule cc
     depfile = \$out.d
 
 rule ccas
-    command = \$cc \$cflags -Wa,-noexecstack -D__ASSEMBLER__ -MD -MF \$out.d -c \$in -o \$out
+    command = \$cc \$cflags -Wa,--noexecstack -D__ASSEMBLER__ -MD -MF \$out.d -c \$in -o \$out
     depfile = \$out.d
 
 rule as
-    command = \$cc -Wa,-noexecstack -c \$in -o \$out
+    command = \$cc -Wa,--noexecstack -c \$in -o \$out
 
 rule ldr
     command = \$cc -r -o \$out \$in
