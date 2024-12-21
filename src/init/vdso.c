@@ -46,7 +46,7 @@ hidden void __init_vdso(const void *p)
     size_t phnum = eh->e_phnum, phent = eh->e_phentsize;
     for (; phnum; phnum--, ph = (void *)((const char *)ph + phent)) {
         if (ph->p_type == PT_DYNAMIC) {
-            dyn = (const char *)p + ph->p_offset;
+            dyn = (void *)((const char *)p + ph->p_offset);
             base = (uintptr_t)dyn - ph->p_vaddr;
             break;
         }
@@ -68,7 +68,7 @@ hidden void __init_vdso(const void *p)
 static int match_version(uint16_t versym, const char *ver, uint32_t hash)
 {
     versym &= 0x7fff;
-    Verdef *def = verdef;
+    const Verdef *def = verdef;
     for (;;) {
         if (!(def->vd_flags & VER_FLG_BASE)
                 && (def->vd_ndx & 0x7fff) == versym)
@@ -78,7 +78,7 @@ static int match_version(uint16_t versym, const char *ver, uint32_t hash)
         def = (void *)((char *)def + def->vd_next);
     }
     Verdaux *va = (void *)((char *)def + def->vd_aux);
-    return def->vd_hash == hash && !strcmp(ver, strings + va->vda_name);
+    return def->vd_hash == hash && !strcmp(ver, strtab + va->vda_name);
 }
 #define OK_BINDS (1 << STB_GLOBAL | 1 << STB_WEAK)
 #define OK_TYPES (1 << STT_FUNC)

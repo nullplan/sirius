@@ -1,5 +1,6 @@
 #include "libc.h"
 #include <stdint.h>
+#include <stddef.h>
 
 typedef void (*finifunc_t)(void);
 

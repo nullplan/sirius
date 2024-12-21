@@ -24,6 +24,7 @@ _Noreturn void __start_libc(int (*main)(int, char **, char **), long *sp)
     __init_libc(argv[0], envp);
     void (*stage2_func)(int, char **, char **, int (*)(int, char **, char **)) = start_main_stage2;
     __asm__ ("" : "+r"(stage2_func) :: "memory");
-    return stage2_func(argc, argv, envp, main);
+    stage2_func(argc, argv, envp, main);
+    __builtin_unreachable();
 }
 

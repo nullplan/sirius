@@ -1,4 +1,5 @@
 #include "libc.h"
+#include <stddef.h>
 #include <stdint.h>
 
 typedef void (*initfunc_t)(void);
