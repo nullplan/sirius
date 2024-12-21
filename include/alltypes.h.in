@@ -102,7 +102,7 @@ TYPEDEF struct { int __foo; } pthread_mutexattr_t;
 TYPEDEF struct { int __foo; } pthread_rwlock_t;
 TYPEDEF struct { int __foo; } pthread_rwlockattr_t;
 TYPEDEF struct { int __foo; } pthread_spinlock_t;
-TYPEDEF struct __pthread *pthread_t;
+TYPEDEF struct __pthread * pthread_t;
 TYPEDEF unsigned short reclen_t;
 TYPEDEF unsigned short sa_family_t;
 TYPEDEF unsigned socklen_t;

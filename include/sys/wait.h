@@ -1,6 +1,8 @@
 #ifndef __SYS_WAIT_H
 #define __SYS_WAIT_H
 
+#define __NEED_id_t
+#include <alltypes.h>
 #include <signal.h>
 #include <features.h>
 #ifdef __cplusplus

@@ -441,7 +441,7 @@ float ffma(double, double, double);
 float ffmal(long double, long double, long double);
 double dfmal(long double, long double, long double);
 float fsqrt(double);
-float fsqrt(long double);
+float fsqrtl(long double);
 double dsqrtl(long double);
 
 #ifdef __STDC_WANT_IEC_60559_EXT__

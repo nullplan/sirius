@@ -29,4 +29,15 @@
 #define __ret_twice
 #endif
 
+#if defined _GNU_SOURCE && !defined _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+
+#if defined _BSD_SOURCE && !defined _XOPEN_SOURCE
+#define _XOPEN_SOURCE
+#endif
+
+#if defined _XOPEN_SOURCE && !defined _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE
+#endif
 #endif

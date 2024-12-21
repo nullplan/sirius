@@ -3,6 +3,7 @@
 
 #define __NEED_struct___cnd
 #define __NEED_struct___mtx
+#define __NEED_once_flag
 #include <alltypes.h>
 #include <features.h>
 #ifdef __cplusplus

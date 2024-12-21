@@ -16,6 +16,9 @@
 #define __NEED_pthread_rwlockattr_t
 #define __NEED_pthread_spinlock_t
 #define __NEED_pthread_t
+#define __NEED_size_t
+#define __NEED_clockid_t
+#include <alltypes.h>
 #include <features.h>
 #ifdef __cplusplus
 extern "C" {
