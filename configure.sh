@@ -65,7 +65,7 @@ trycpp() {
         return 0
     else
         printf "no\n"
-        return 0
+        return 1
     fi
 }
 
