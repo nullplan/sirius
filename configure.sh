@@ -134,13 +134,18 @@ rule ar
 rule md
     command = mkdir -p \$out
 
+rule mkalltypes
+    command = sed -f $srcdir/tools/mkalltypes.sed \$in > \$out
+
 build lib: md
 build obj: md
+build obj/include: md
 build lib/libc.a: ar $OBJ || lib
 build lib/crt1.o: ldr obj/crt1c.o obj/crt1s.o || lib
 build lib/crti.o: as $srcdir/crt/crti.s
 build lib/crtn.o: as $srcdir/crt/crtn.s
 build obj/crt1c.o: cc $srcdir/crt/crt1c.c || obj
+build obj/include/alltypes.h: mkalltypes $srcdir/arch/$ARCH/alltypes.h.in $srcdir/include/alltypes.h.in || obj/include
 EOF
 
 if [ -e $srcdir/crt/$ARCH/crt1s.S ]
@@ -155,12 +160,13 @@ for i in $DIRS; do
 done
 
 for i in $SRC; do
+    extra=""
     case "$i" in
-        *.c) builder=cc ;;
+        *.c) builder=cc; extra="| obj/include/alltypes.h" ;;
         *.S) builder=ccas ;;
         *.s) builder=as ;;
     esac
     o=$(map_obj_file "$i")
     dir=${o%/*.o}
-    echo "build $o: $builder $i || $dir" >> build.ninja
+    echo "build $o: $builder $i $extra || $dir" >> build.ninja
 done
