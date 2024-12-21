@@ -3,7 +3,7 @@
 
 #include <errno.h>
 #include "syscall_arch.h"
-#include "syscalls.h"
+#include <bits/syscalls.h>
 static inline long __syscall_ret(long rv)
 {
     if (rv > -4096UL) {

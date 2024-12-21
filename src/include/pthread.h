@@ -2,6 +2,7 @@
 #define PTHREAD_H
 
 #include "../../include/pthread.h"
+#include <stdint.h>
 #include "pthread_arch.h"
 
 struct __pthread
@@ -60,7 +61,7 @@ static inline struct __pthread *__pthread_self(void) { return (struct __pthread 
  * Then afterwards the __clone() functions with CLONE_SETTLS and tls set to the adjusted new thread pointer
  * will spawn a new thread with the thread pointer set correctly.
  *
- * Funnily enough, this connection only exists on the PC.
+ * Funnily enough, this connection only exists on i386.
  */
 extern hidden int __set_thread_area(uintptr_t);
 
