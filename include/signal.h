@@ -91,7 +91,7 @@ struct sigevent {
         int _pad[14 - sizeof (union sigval) / sizeof (int)];
         int _tid;
         struct {
-            void (*_fn)(sigval_t);
+            void (*_fn)(union sigval);
             pthread_attr_t *_attr;
         } _s;
     } _u;
