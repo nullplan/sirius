@@ -94,3 +94,9 @@ for i in $XSI_HEADERS; do
     $CC -nostdinc -isystem include -isystem arch/$ARCH -isystem obj/include -std=c99 -c tmp.c -o /dev/null
 done
 
+for i in $XSI_HEADERS; do
+    for j in $XSI_HEADERS; do
+        printf "#define _XOPEN_SOURCE\n#include <%s>\n#include <%s>" "$i" "$j" >tmp.c
+        $CC -nostdinc -isystem include -isystem arch/$ARCH -isystem obj/include -std=c99 -c tmp.c -o /dev/null
+    done
+done
