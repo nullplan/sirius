@@ -30,10 +30,10 @@ struct rlimit {
 #endif
 
 struct rusage {
-    long __ru_utime_secs;
-    long __ru_utime_usecs;
-    long __ru_stime_secs;
-    long __ru_stime_usecs;
+    _Reg __ru_utime_secs;
+    _Reg __ru_utime_usecs;
+    _Reg __ru_stime_secs;
+    _Reg __ru_stime_usecs;
     _Reg ru_maxrss;
     _Reg ru_ixrss;
     _Reg ru_idrss;
