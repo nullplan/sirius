@@ -1,0 +1,1439 @@
+/* aio.h */
+int aio_cancel(int, struct aiocb *);
+int aio_error(int, struct aiocb *);
+int aio_fsync(int, struct aiocb *);
+int aio_read(struct aiocb *);
+ssize_t aio_return(struct aiocb *);
+int aio_suspend(const struct aiocb *const [], int, const struct timespec *);
+int aio_write(struct aiocb *);
+int lio_listio(int, struct aiocb *__restrict const [__restrict], int, struct sigevent *__restrict);
+
+/* arpa/inet.h */
+const char *inet_ntop(int, const void *__restrict, char *__restrict, socklen_t);
+int inet_pton(int, const char *__restrict, void *__restrict);
+
+/* assert.h */
+_Noreturn void __assert_fail(const char *, const char *, const char *, int);
+
+/* complex.h */
+complex double   csin(complex double);
+complex double   ccos(complex double);
+complex double   ctan(complex double);
+complex double  casin(complex double);
+complex double  cacos(complex double);
+complex double  catan(complex double);
+complex double  csinh(complex double);
+complex double  ccosh(complex double);
+complex double  ctanh(complex double);
+complex double casinh(complex double);
+complex double cacosh(complex double);
+complex double catanh(complex double);
+complex double   cexp(complex double);
+complex double   clog(complex double);
+complex double   cpow(complex double, complex double);
+complex double  csqrt(complex double);
+complex double   conj(complex double);
+complex double  cproj(complex double);
+        double   carg(        double);
+        double   cabs(        double);
+        double  creal(        double);
+        double  cimag(        double);
+
+complex float   csinf(complex float);
+complex float   ccosf(complex float);
+complex float   ctanf(complex float);
+complex float  casinf(complex float);
+complex float  cacosf(complex float);
+complex float  catanf(complex float);
+complex float  csinhf(complex float);
+complex float  ccoshf(complex float);
+complex float  ctanhf(complex float);
+complex float casinhf(complex float);
+complex float cacoshf(complex float);
+complex float catanhf(complex float);
+complex float   cexpf(complex float);
+complex float   clogf(complex float);
+complex float   cpowf(complex float, complex float);
+complex float  csqrtf(complex float);
+complex float   conjf(complex float);
+complex float  cprojf(complex float);
+        float   cargf(        float);
+        float   cabsf(        float);
+        float  crealf(        float);
+        float  cimagf(        float);
+
+complex long double   csinl(complex long double);
+complex long double   ccosl(complex long double);
+complex long double   ctanl(complex long double);
+complex long double  casinl(complex long double);
+complex long double  cacosl(complex long double);
+complex long double  catanl(complex long double);
+complex long double  csinhl(complex long double);
+complex long double  ccoshl(complex long double);
+complex long double  ctanhl(complex long double);
+complex long double casinhl(complex long double);
+complex long double cacoshl(complex long double);
+complex long double catanhl(complex long double);
+complex long double   cexpl(complex long double);
+complex long double   clogl(complex long double);
+complex long double   cpowl(complex long double, complex long double);
+complex long double  csqrtl(complex long double);
+complex long double   conjl(complex long double);
+complex long double  cprojl(complex long double);
+        long double   cargl(        long double);
+        long double   cabsl(        long double);
+        long double  creall(        long double);
+        long double  cimagl(        long double);
+
+/* ctype.h */
+int isalnum(int);
+int isalpha(int);
+int isblank(int);
+int iscntrl(int);
+int isdigit(int);
+int isgraph(int);
+int islower(int);
+int isprint(int);
+int ispunct(int);
+int isspace(int);
+int isupper(int);
+int isxdigit(int);
+int toupper(int);
+int tolower(int);
+
+int isalnum_l(int, locale_t);
+int isalpha_l(int, locale_t);
+int isblank_l(int, locale_t);
+int iscntrl_l(int, locale_t);
+int isdigit_l(int, locale_t);
+int isgraph_l(int, locale_t);
+int islower_l(int, locale_t);
+int isprint_l(int, locale_t);
+int ispunct_l(int, locale_t);
+int isspace_l(int, locale_t);
+int isupper_l(int, locale_t);
+int isxdigit_l(int, locale_t);
+int toupper_l(int, locale_t);
+int tolower_l(int, locale_t);
+
+/* devctl.h */
+int posix_devctl(int, int, void *__restrict, size_t, int *__restrict);
+
+/* dirent.h */
+int alphasort(const struct dirent **, const struct dirent **);
+int closedir(DIR *);
+int dirfd(DIR *);
+DIR *fdopendir(int);
+DIR *opendir(const char *);
+ssize_t posix_getdents(int, void *, size_t, int);
+struct dirent *readdir(DIR *);
+int readdir_r(DIR *__restrict, struct dirent *__restrict, struct dirent **__restrict);
+void rewinddir(DIR *);
+int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int (*)(const struct dirent **, const struct dirent **));
+void seekdir(DIR *, long);
+long telldir(DIR *);
+
+/* dlfcn.h */
+int dladdr(const void *__restrict, Dl_info_t *__restrict);
+int dlclose(void *);
+char *dlerror(void);
+void *dlopen(const char *, int);
+void *dlsym(void *__restrict, const char *__restrict);
+
+/* errno.h */
+int *__errno_location(void)
+
+/* fcntl.h
+int creat(const char *, mode_t);
+int fcntl(int, int, ...);
+int open(const char *, int, ...);
+int openat(int, const char *, int, ...);
+int posix_fadvise(int, off_t, off_t, int);
+int posix_fallocate(int, off_t, off_t);
+
+/* fenv.h */
+int feclearexcept(int);
+int fegetexceptflag(fexcept_t *, int);
+int feraiseexcept(int);
+int fesetexcept(int);
+int fesetexceptflag(const fexcept_t *, int);
+int fetestexceptflag(const fexcept_t *, int);
+int fetestexcept(int);
+int fegetround(void);
+int fesetround(int);
+int fegetmode(femode_t *);
+int fesetmode(const femode_t *);
+int fegetenv(fenv_t *);
+int feholdexcept(fenv_t *);
+int fesetenv(const fenv_t *);
+int feupdateenv(const fenv_t *);
+
+/* float.h */
+int __flt_rounds(void);
+
+/* fmtmsg.h */
+int fmtmsg(long, const char *, int, const char *, const char *, const char *);
+
+/* fnmatch.h */
+int fnmatch(const char *, const char *, int);
+
+/* ftw.h */
+int nftw(const char *, int (*)(const char *, const struct stat *, int, struct FTW *), int, int);
+
+/* glob.h */
+int glob(const char *__restrict, int, int (*)(const char *, int), glob_t *__restrict);
+void globfree(glob_t *);
+
+/* grp.h */
+struct group *getgrgid(gid_t);
+struct group *getgrnam(const char *);
+int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
+int getgrnam_r(const char *, struct group *, char *, size_t, struct group **);
+void setgrent(void);
+struct group *getgrent(void);
+void endgrent(void);
+
+/* iconv.h */
+size_t iconv(iconv_t, char **__restrict, size_t *__restrict, char *__restrict, size_t *__restrict);
+int iconv_close(iconv_t);
+iconv_t iconv_open(const char *, const char *);
+
+/* inttypes.h */
+intmax_t imaxabs(intmax_t);
+imaxdiv_t imaxdiv(intmax_t, intmax_t);
+intmax_t strtoimax(const char *__restrict, char **__restrict, int);
+uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
+intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
+uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
+
+/* langinfo.h */
+char *nl_langinfo(nl_item);
+char *nl_langinfo_l(nl_item, locale_t);
+
+/* libgen.h */
+char *basename(char *);
+char *dirname(char *);
+
+/* libintl.h */
+char *bindtextdomain(const char *, const char *);
+char *bind_textdomain_codeset(const char *, const char *);
+char *dcgettext(const char *, const char *, int);
+char *dcgettext_l(const char *, const char *, int, locale_t);
+char *dcngettext(const char *, const char *, const char *, unsigned long int, int);
+char *dcngettext_l(const char *, const char *, const char *, unsigned long int, int, locale_t);
+char *dgettext(const char *, const char *);
+char *dgettext_l(const char *, const char *, locale_t);
+char *dngettext(const char *, const char *, const char *, unsigned long int);
+char *dngettext_l(const char *, const char *, const char *, unsigned long int, locale_t);
+char *gettext(const char *);
+char *gettext_l(const char *, locale_t);
+char *ngettext(const char *, const char *, unsigned long int);
+char *ngettext_l(const char *, const char *, unsigned long int, locale_t);
+char *textdomain(const char *);
+
+/* locale.h */
+char *setlocale(int, const char *);
+struct lconv *localeconv(void);
+locale_t duplocale(locale_t);
+void freelocale(locale_t);
+const char *getlocalename_l(int, locale_t);
+locale_t newlocale(int, const char *, locale_t);
+locale_t uselocale(locale_t);
+
+
+/* math.h */
+double j0(double);
+double j1(double);
+double jn(int, double);
+double y0(double);
+double y1(double);
+double yn(int, double);
+extern int signgam;
+int __fpclassifyl(long double);
+int __signbitl(long double);
+int __iscanonicall(long double);
+int         ilogb(double);
+long        lrint(double);
+long long  llrint(double);
+long       lround(double);
+long long llround(double);
+double        sin(double);
+double        cos(double);
+double        tan(double);
+double       asin(double);
+double       acos(double);
+double       atan(double);
+double       sinh(double);
+double       cosh(double);
+double       tanh(double);
+double      asinh(double);
+double      acosh(double);
+double      atanh(double);
+double        exp(double);
+double       exp2(double);
+double      expm1(double);
+double      frexp(double, int *);
+double      ldexp(double, int);
+double        log(double);
+double      log10(double);
+double      log1p(double);
+double       log2(double);
+double       logb(double);
+double     scalbn(double, int);
+double    scalbln(double, long);
+double       cbrt(double);
+double       fabs(double);
+double       sqrt(double);
+double        erf(double);
+double       erfc(double);
+double     lgamma(double);
+double     tgamma(double);
+double       ceil(double);
+double      floor(double);
+double  nearbyint(double);
+double       rint(double);
+double      round(double);
+double      trunc(double);
+double nexttoward(double, long double);
+double      atan2(double, double);
+double       modf(double, double *);
+double      hypot(double, double);
+double        pow(double, double);
+double       fmod(double, double);
+double  remainder(double, double);
+double     remquo(double, double, int *);
+double   copysign(double, double);
+double  nextafter(double, double);
+double       fdim(double, double);
+double       fmax(double, double);
+double       fmin(double, double);
+double        fma(double, double, double);
+double        nan(const char *);
+double     asinpi(double);
+double     acospi(double);
+double     atanpi(double);
+double    atan2pi(double, double);
+double      sinpi(double);
+double      cospi(double);
+double      tanpi(double);
+double      exp10(double);
+double    exp10m1(double);
+double    log10p1(double);
+double     log2p1(double);
+double  compoundn(double, long long);
+double       pown(double, long long);
+double       powr(double, double);
+double      rootn(double, long long);
+double      rsqrt(double);
+double  roundeven(double);
+double     fromfp(double, int, unsigned);
+double    ufromfp(double, int, unsigned);
+double    fromfpx(double, int, unsigned);
+double   ufromfpx(double, int, unsigned);
+double     nextup(double);
+double   nextdown(double);
+double   fmaximum(double, double);
+double   fminimum(double, double);
+long        llogb(double);
+int  canonicalize(double *, const double *);
+double fmaximum_mag(double, double);
+double fmaximum_num(double, double);
+double fmaximum_mag_num(double, double);
+double fminimum_mag(double, double);
+double fminimum_num(double, double);
+double fminimum_mag_num(double, double);
+int         ilogbf(float);
+long        lrintf(float);
+long long  llrintf(float);
+long       lroundf(float);
+long long llroundf(float);
+float        sinf(float);
+float        cosf(float);
+float        tanf(float);
+float       asinf(float);
+float       acosf(float);
+float       atanf(float);
+float       sinhf(float);
+float       coshf(float);
+float       tanhf(float);
+float      asinhf(float);
+float      acoshf(float);
+float      atanhf(float);
+float        expf(float);
+float       exp2f(float);
+float      expm1f(float);
+float      frexpf(float, int *);
+float      ldexpf(float, int);
+float        logf(float);
+float      log10f(float);
+float      log1pf(float);
+float       log2f(float);
+float       logbf(float);
+float     scalbnf(float, int);
+float    scalblnf(float, long);
+float       cbrtf(float);
+float       fabsf(float);
+float       sqrtf(float);
+float        erff(float);
+float       erfcf(float);
+float     lgammaf(float);
+float     tgammaf(float);
+float       ceilf(float);
+float      floorf(float);
+float  nearbyintf(float);
+float       rintf(float);
+float      roundf(float);
+float      truncf(float);
+float nexttowardf(float, long double);
+float      atan2f(float, float);
+float       modff(float, float *);
+float      hypotf(float, float);
+float        powf(float, float);
+float       fmodf(float, float);
+float  remainderf(float, float);
+float     remquof(float, float, int *);
+float   copysignf(float, float);
+float  nextafterf(float, float);
+float       fdimf(float, float);
+float       fmaxf(float, float);
+float       fminf(float, float);
+float        fmaf(float, float, float);
+float        nanf(const char *);
+float     asinpif(float);
+float     acospif(float);
+float     atanpif(float);
+float    atan2pif(float, float);
+float      sinpif(float);
+float      cospif(float);
+float      tanpif(float);
+float      exp10f(float);
+float    exp10m1f(float);
+float    log10p1f(float);
+float     log2p1f(float);
+float  compoundnf(float, long long);
+float       pownf(float, long long);
+float       powrf(float, double);
+float      rootnf(float, long long);
+float      rsqrtf(float);
+float  roundevenf(float);
+float     fromfpf(float, int, unsigned);
+float    ufromfpf(float, int, unsigned);
+float    fromfpxf(float, int, unsigned);
+float   ufromfpxf(float, int, unsigned);
+float     nextupf(float);
+float   nextdownf(float);
+float   fmaximumf(float, float);
+float   fminimumf(float, float);
+float fmaximum_magf(float, float);
+float fmaximum_numf(float, float);
+float fmaximum_mag_numf(float, float);
+float fminimum_magf(float, float);
+float fminimum_numf(float, float);
+float fminimum_mag_numf(float, float);
+long        llogbf(float);
+int  canonicalizef(float *, const float *);
+int         ilogbl(long double);
+long        lrintl(long double);
+long long  llrintl(long double);
+long       lroundl(long double);
+long long llroundl(long double);
+long double        sinl(long double);
+long double        cosl(long double);
+long double        tanl(long double);
+long double       asinl(long double);
+long double       acosl(long double);
+long double       atanl(long double);
+long double       sinhl(long double);
+long double       coshl(long double);
+long double       tanhl(long double);
+long double      asinhl(long double);
+long double      acoshl(long double);
+long double      atanhl(long double);
+long double        expl(long double);
+long double       exp2l(long double);
+long double      expm1l(long double);
+long double      frexpl(long double, int *);
+long double      ldexpl(long double, int);
+long double        logl(long double);
+long double      log10l(long double);
+long double      log1pl(long double);
+long double       log2l(long double);
+long double       logbl(long double);
+long double     scalbnl(long double, int);
+long double    scalblnl(long double, long);
+long double       cbrtl(long double);
+long double       fabsl(long double);
+long double       sqrtl(long double);
+long double        erfl(long double);
+long double       erfcl(long double);
+long double     lgammal(long double);
+long double     tgammal(long double);
+long double       ceill(long double);
+long double      floorl(long double);
+long double  nearbyintl(long double);
+long double       rintl(long double);
+long double      roundl(long double);
+long double      truncl(long double);
+long double nexttowardl(long double, long double);
+long double      atan2l(long double, long double);
+long double       modfl(long double, long double *);
+long double      hypotl(long double, long double);
+long double        powl(long double, long double);
+long double       fmodl(long double, long double);
+long double  remainderl(long double, long double);
+long double     remquol(long double, long double, int *);
+long double   copysignl(long double, long double);
+long double  nextafterl(long double, long double);
+long double       fdiml(long double, long double);
+long double       fmaxl(long double, long double);
+long double       fminl(long double, long double);
+long double        fmal(long double, long double, long double);
+long double        nanl(const char *);
+long double     asinpil(long double);
+long double     acospil(long double);
+long double     atanpil(long double);
+long double    atan2pil(long double, long double);
+long double      sinpil(long double);
+long double      cospil(long double);
+long double      tanpil(long double);
+long double      exp10l(long double);
+long double    exp10m1l(long double);
+long double    log10p1l(long double);
+long double     log2p1l(long double);
+long double  compoundnl(long double, long long);
+long double       pownl(long double, long long);
+long double       powrl(long double, double);
+long double      rootnl(long double, long long);
+long double      rsqrtl(long double);
+long double  roundevenl(long double);
+long double     fromfpl(long double, int, unsigned);
+long double    ufromfpl(long double, int, unsigned);
+long double    fromfpxl(long double, int, unsigned);
+long double   ufromfpxl(long double, int, unsigned);
+long double     nextupl(long double);
+long double   nextdownl(long double);
+long double   fmaximuml(long double, long double);
+long double   fminimuml(long double, long double);
+long double fmaximum_magl(long double, long double);
+long double fmaximum_numl(long double, long double);
+long double fmaximum_mag_numl(long double, long double);
+long double fminimum_magl(long double, long double);
+long double fminimum_numl(long double, long double);
+long double fminimum_mag_numl(long double, long double);
+long        llogbl(long double);
+int  canonicalizel(long double *, const long double *);
+float fadd(double, double);
+float faddl(long double, long double);
+double daddl(long double, long double);
+float fsub(double, double);
+float fsubl(long double, long double);
+double dsubl(long double, long double);
+float fmul(double, double);
+float fmull(long double, long double);
+double dmull(long double, long double);
+float fdiv(double, double);
+float fdivl(long double, long double);
+double ddivl(long double, long double);
+float ffma(double, double, double);
+float ffmal(long double, long double, long double);
+double dfmal(long double, long double, long double);
+float fsqrt(double);
+float fsqrtl(long double);
+double dsqrtl(long double);
+int    totalorder(const double *, const double *);
+int totalordermag(const double *, const double *);
+double getpayload(const double *);
+int    setpayload(      double *, double);
+int setpayloadsig(      double *, double);
+int    totalorderf(const float *, const float *);
+int totalordermagf(const float *, const float *);
+float  getpayloadf(const float *);
+int    setpayloadf(      float *, float);
+int setpayloadsigf(      float *, float);
+int    totalorderl(const long double *, const long double *);
+int totalordermagl(const long double *, const long double *);
+long double getpayloadl(const long double *);
+int    setpayloadl(      long double *, long double);
+int setpayloadsigl(      long double *, long double);
+
+/* monetary.h */
+ssize_t strfmon(char *__restrict, size_t, const char *__restrict, ...);
+ssize_t strfmon_l(char *__restrict, size_t, locale_t, const char *__restrict, ...);
+
+/* mqueue.h */
+int mq_close(mqd_t);
+int mq_getattr(mqd_t, struct mq_attr *);
+int mq_notify(mqd_t, const struct sigevent *);
+mqd_t mq_open(const char *, int, ...);
+ssize_t mq_receive(mqd_t, char *, size_t, unsigned *);
+int mq_send(mqd_t, const char *, size_t, unsigned);
+int mq_setattr(mqd_t, const struct mq_attr *__restrict, struct mq_attr *__restrict);
+ssize_t mq_timedreceive(mqd_t, char *__restrict, size_t, unsigned *__restrict, const struct timespec *__restrict);
+int mq_timedsend(mqd_t, const char *, size_t, unsigned, const struct timespec *);
+int mq_unlink(const char *);
+
+/* net/if.h */
+void if_freenameindex(struct if_nameindex *);
+struct if_nameindex *if_nameindex(void);
+char *if_indextoname(unsigned, char *);
+unsigned if_nametoindex(const char *);
+
+/* netdb.h */
+void sethostent(int);
+struct hostent *gethostent(void);
+void endhostent(void);
+void setnetent(int);
+struct netent *getnetent(void);
+void endnetent(void);
+void setprotoent(int);
+struct protoent *getprotoent(void);
+void endprotoent(void);
+void setservent(int);
+struct servent *getservent(void);
+void endservent(void);
+
+struct netent *getnetbyaddr(uint32_t, int);
+struct netent *getnetbyname(const char *);
+struct protoent *getprotobynumber(int);
+struct protoent *getprotobyname(const char *);
+struct servent *getservbyport(int, const char *);
+struct servent *getservbyname(const char *, const char *);
+
+int getaddrinfo(const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
+int getnameinfo(const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
+void freeaddrinfo(struct addrinfo *);
+const char *gai_strerror(int);
+
+
+/* netinet/in.h */
+extern const struct in6_addr in6addr_any;
+extern const struct in6_addr in6addr_loopback;
+
+/* nl_types.h */
+int catclose(nl_catd);
+char *catgets(nl_catd, int, int, const char *);
+nl_catd catopen(const char *, int);
+
+/* poll.h */
+int poll(struct pollfd [], nfds_t, int);
+int ppoll(struct pollfd [], nfds_t, const struct timespec *__restrict, const sigset_t *__restrict);
+
+/* pthread.h */
+int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
+int pthread_attr_init(pthread_attr_t *);
+int pthread_attr_getdetachstate(const pthread_attr_t *, int *);
+int pthread_attr_getinheritsched(const pthread_attr_t *__restrict, int *__restrict);
+int pthread_attr_getschedparam(const pthread_attr_t *__restrict, struct sched_param *__restrict);
+int pthread_attr_getschedpolicy(const pthread_attr_t *__restrict, int *__restrict);
+int pthread_attr_getscope(const pthread_attr_t *__restrict, int *__restrict);
+int pthread_attr_getstack(const pthread_attr_t *__restrict, void **__restrict, size_t *__restrict);
+int pthread_attr_getstacksize(const pthread_attr_t *__restrict, size_t *__restrict);
+int pthread_attr_getguardsize(const pthread_attr_t *__restrict, size_t *__restrict);
+int pthread_attr_setdetachstate(pthread_attr_t *, int);
+int pthread_attr_setinheritsched(pthread_attr_t *, int);
+int pthread_attr_setschedparam(pthread_attr_t *__restrict, const struct sched_param *__restrict);
+int pthread_attr_setschedpolicy(pthread_attr_t *, int);
+int pthread_attr_setscope(pthread_attr_t *, int);
+int pthread_attr_setstack(pthread_attr_t *, void *, size_t);
+int pthread_attr_setstacksize(pthread_attr_t *, size_t);
+int pthread_attr_setguardsize(pthread_attr_t *, size_t);
+int pthread_attr_destroy(pthread_attr_t *);
+int pthread_barrierattr_init(pthread_barrierattr_t *);
+int pthread_barrierattr_getpshared(const pthread_barrierattr_t *__restrict, int *__restrict);
+int pthread_barrierattr_setpshared(pthread_barrierattr_t *, int);
+int pthread_barrierattr_destroy(pthread_barrierattr_t *);
+int pthread_barrier_init(pthread_barrier_t *__restrict, const pthread_barrierattr_t *__restrict, unsigned);
+int pthread_barrier_wait(pthread_barrier_t *);
+int pthread_barrier_destroy(pthread_barrier_t *);
+int pthread_condattr_init(pthread_condattr_t *);
+int pthread_condattr_getclock(const pthread_condattr_t *__restrict, clockid_t *__restrict);
+int pthread_condattr_getpshared(const pthread_condattr_t *__restrict, int *__restrict);
+int pthread_condattr_setclock(pthread_condattr_t *, clockid_t);
+int pthread_condattr_setpshared(pthread_condattr_t *, int);
+int pthread_condattr_destroy(pthread_condattr_t *);
+int pthread_cond_init(pthread_cond_t *__restrict, const pthread_condattr_t *__restrict);
+int pthread_cond_broadcast(pthread_cond_t *);
+int pthread_cond_clockwait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict, clockid_t, const struct timespec *__restrict);
+int pthread_cond_signal(pthread_cond_t *);
+int pthread_cond_timedwait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict, const struct timespec *__restrict);
+int pthread_cond_wait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict);
+int pthread_cond_destroy(pthread_cond_t *);
+int pthread_cancel(pthread_t);
+int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict, void *(*)(void*), void *__restrict);
+int pthread_detach(pthread_t);
+int pthread_equal(pthread_t, pthread_t);
+_Noreturn void pthread_exit(void *);
+int pthread_join(pthread_t, void **);
+int pthread_getcpuclockid(pthread_t, clockid_t *);
+int pthread_getschedparam(pthread_t, int *__restrict, struct sched_param *__restrict);
+pthread_t pthread_self(void);
+int pthread_setcancelstate(int, int *);
+int pthread_setcanceltype(int, int *);
+int pthread_setschedparam(pthread_t, int, const struct sched_param *);
+int pthread_setschedprio(pthread_t, int);
+void pthread_testcancel(void);
+int pthread_key_create(pthread_key_t *, void (*)(void*));
+int pthread_key_delete(pthread_key_t);
+void *pthread_getspecific(pthread_key_t);
+int pthread_setspecific(pthread_key_t, const void *);
+int pthread_mutexattr_init(pthread_mutexattr_t *);
+int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *__restrict, int *__restrict);
+int pthread_mutexattr_getpshared(const pthread_mutexattr_t *__restrict, int *__restrict);
+int pthread_mutexattr_getrobust(const pthread_mutexattr_t *__restrict, int *__restrict);
+int pthread_mutexattr_gettype(const pthread_mutexattr_t *__restrict, int *__restrict);
+int pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
+int pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
+int pthread_mutexattr_setrobust(pthread_mutexattr_t *, int);
+int pthread_mutexattr_settype(pthread_mutexattr_t *, int);
+int pthread_mutexattr_destroy(pthread_mutexattr_t *);
+int pthread_mutex_init(pthread_mutex_t *__restrict, const pthread_mutexattr_t *__restrict);
+int pthread_mutex_clocklock(pthread_mutex_t *__restrict, clockid_t, const struct timespec *__restrict);
+int pthread_mutex_consistent(pthread_mutex_t *);
+int pthread_mutex_lock(pthread_mutex_t *);
+int pthread_mutex_timedlock(pthread_mutex_t *__restrict, const struct timespec *__restrict);
+int pthread_mutex_trylock(pthread_mutex_t *);
+int pthread_mutex_unlock(pthread_mutex_t *);
+int pthread_mutex_destroy(pthread_mutex_t *);
+int pthread_once(pthread_once_t *, void (*)(void));
+int pthread_rwlock_init(pthread_rwlock_t *__restrict, const pthread_rwlockattr_t *__restrict);
+int pthread_rwlock_clockrdlock(pthread_rwlock_t *__restrict, clockid_t, const struct timespec *__restrict);
+int pthread_rwlock_clockwrlock(pthread_rwlock_t *__restrict, clockid_t, const struct timespec *__restrict);
+int pthread_rwlock_rdlock(pthread_rwlock_t *);
+int pthread_rwlock_timedrdlock(pthread_rwlock_t *__restrict, const struct timespec *__restrict);
+int pthread_rwlock_timedwrlock(pthread_rwlock_t *__restrict, const struct timespec *__restrict);
+int pthread_rwlock_tryrdlock(pthread_rwlock_t *);
+int pthread_rwlock_trywrlock(pthread_rwlock_t *);
+int pthread_rwlock_unlock(pthread_rwlock_t *);
+int pthread_rwlock_wrlock(pthread_rwlock_t *);
+int pthread_rwlock_destroy(pthread_rwlock_t *);
+int pthread_rwlockattr_init(pthread_rwlockattr_t *);
+int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *__restrict, int *__restrict);
+int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
+int pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
+int pthread_spin_init(pthread_spinlock_t *, int);
+int pthread_spin_lock(pthread_spinlock_t *);
+int pthread_spin_trylock(pthread_spinlock_t *);
+int pthread_spin_unlock(pthread_spinlock_t *);
+int pthread_spin_destroy(pthread_spinlock_t *);
+void __ptcb_push(struct __ptcb *);
+void __ptcb_pop(int);
+
+/* pty.h */
+int openpty(int *, int *, char *, const struct termios *, const struct winsize *);
+pid_t forkpty(int *, char *, const struct termios *, const struct winsize *);
+int login_tty(int);
+
+/* pwd.h */
+struct passwd *getpwnam(const char *);
+struct passwd *getpwuid(uid_t);
+int getpwnam_r(const char *, struct passwd *, char *, size_t, struct passwd **);
+int getpwuid_r(uid_t, struct passwd *, char *, size_t, struct passwd **);
+void setpwent(void);
+struct passwd *getpwent(void);
+void endpwent(void);
+
+/* regex.h */
+int regcomp(regex_t *__restrict, const char *__restrict, int);
+size_t regerror(int, const regex_t *__restrict, char *__restrict, size_t);
+int regexec(const regex_t *__restrict, const char *__restrict, size_t, regmatch_t [__restrict], int);
+void regfree(regex_t *);
+
+/* sched.h */
+int sched_get_priority_min(int);
+int sched_get_priority_max(int);
+int sched_get_rr_interval(pid_t, struct timespec *);
+int sched_yield(void);
+
+/* search.h */
+int hcreate(size_t);
+void hdestroy(void);
+ENTRY *hsearch(ENTRY, ACTION);
+void insque(void *, void *);
+void remque(void *);
+void *lfind(const void *, const void *, size_t *, size_t, int (*)(const void *, const void *));
+void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, const void *));
+void *tdelete(const void *__restrict, posix_tnode **__restrict, int (*)(const void *, const void *));
+posix_tnode *tfind(const void *, posix_tnode *const *, int (*)(const void *, const void *));
+posix_tnode *tsearch(const void *, posix_tnode **, int (*)(const void *, const void *));
+void twalk(const posix_tnode *, void (*)(const posix_tnode *, VISIT, int));
+
+/* semaphore.h */
+int sem_init(sem_t *, int, unsigned);
+int sem_clockwait(sem_t *__restrict, clockid_t, const struct timespec *__restrict);
+int sem_getvalue(sem_t *__restrict, int *__restrict);
+int sem_post(sem_t *);
+int sem_timedwait(sem_t *__restrict, const struct timespec *__restrict);
+int sem_trywait(sem_t *);
+int sem_wait(sem_t *);
+int sem_destroy(sem_t *);
+sem_t *sem_open(const char *, int, ...);
+int sem_close(sem_t *);
+int sem_unlink(const char *);
+
+/* setjmp.h */
+int setjmp(jmp_buf) __ret_twice;
+_Noreturn void longjmp(jmp_buf, int);
+int sigsetjmp(sigjmp_buf, int) __ret_twice;
+_Noreturn void siglongjmp(sigjmp_buf, int);
+
+/* signal.h */
+int __current_rtmin(void);
+int __current_rtmax(void);
+void (*signal(int, void (*)(int)))(int);
+int raise(int);
+int kill(pid_t, int);
+void psiginfo(const siginfo_t *, const char *);
+void psignal(int, const char *);
+int pthread_kill(pthread_t, int);
+int pthread_sigmask(int, const sigset_t *__restrict, sigset_t *__restrict);
+int sig2str(int, char *);
+int sigaction(int, const struct sigaction *__restrict, sigset_t *__restrict);
+int sigaddset(sigset_t *, int);
+int sigdelset(sigset_t *, int);
+int sigemptyset(sigset_t *);
+int sigfillset(sigset_t *);
+int sigismember(const sigset_t *, int);
+int sigpending(sigset_t *);
+int sigprocmask(int, const sigset_t *__restrict, sigset_t *__restrict);
+int sigqueue(pid_t, int, union sigval);
+int sigsuspend(const sigset_t *);
+int sigtimedwait(const sigset_t *__restrict, siginfo_t *__restrict, const struct timespec *__restrict);
+int sigwait(const sigset_t *__restrict, int *__restrict);
+int sigwaitinfo(const sigset_t *__restrict, siginfo_t *__restrict);
+int str2sig(const char *__restrict, int *__restrict);
+int killpg(pid_t, int);
+int sigaltstack(const stack_t *__restrict, stack_t *__restrict);
+
+
+/* spawn.h */
+int posix_spawn_file_actions_init(posix_spawn_file_actions_t *);
+int posix_spawn_file_actions_addchdir(posix_spawn_file_actions_t *__restrict, const char *__restrict);
+int posix_spawn_file_actions_addclose(posix_spawn_file_actions_t *, int);
+int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *, int, int);
+int posix_spawn_file_actions_addfchdir(posix_spawn_file_actions_t *, int);
+int posix_spawn_file_actions_addopen(posix_spawn_file_actions_t *__restrict, int, const char *__restrict, int, mode_t);
+int posix_spawn_file_actions_destroy(posix_spawn_file_actions_t *);
+int posix_spawnattr_init(posix_spawnattr_t *);
+int posix_spawnattr_getflags(const posix_spawnattr_t *__restrict, short *__restrict);
+int posix_spawnattr_getpgroup(const posix_spawnattr_t *__restrict, pid_t *__restrict);
+int posix_spawnattr_getsigdefault(const posix_spawnattr_t *__restrict, sigset_t *__restrict);
+int posix_spawnattr_getsigmask(const posix_spawnattr_t *__restrict, sigset_t *__restrict);
+int posix_spawnattr_setflags(posix_spawnattr_t *, short);
+int posix_spawnattr_setpgroup(posix_spawnattr_t *, pid_t);
+int posix_spawnattr_setsigdefault(posix_spawnattr_t *__restrict, const sigset_t *__restrict);
+int posix_spawnattr_setsigmask(posix_spawnattr_t *__restrict, const sigset_t *__restrict);
+int posix_spawnattr_destroy(posix_spawnattr_t *);
+int posix_spawn(pid_t *__restrict, const char *__restrict, const posix_spawn_file_actions_t *__restrict, const posix_spawnattr_t *__restrict, char *const [__restrict], char *const [__restrict]);
+int posix_spawnp(pid_t *__restrict, const char *__restrict, const posix_spawn_file_actions_t *__restrict, const posix_spawnattr_t *__restrict, char *const [__restrict], char *const [__restrict]);
+
+/* stdio.h */
+extern FILE *const stdin;
+extern FILE *const stdout;
+extern FILE *const stderr;
+int remove(const char *);
+int rename(const char *, const char *);
+FILE *tmpfile(void);
+char *tmpnam(char *);
+int fclose(FILE *);
+int fflush(FILE *);
+FILE *fopen(const char *__restrict, const char *__restrict);
+FILE *freopen(const char *__restrict, const char *__restrict, FILE *__restrict);
+void setbuf(FILE *__restrict, char *__restrict);
+int setvbuf(FILE *__restrict, char *__restrict, int, size_t);
+int fprintf(FILE *__restrict, const char *__restrict, ...);
+int fscanf(FILE *__restrict, const char *__restrict, ...);
+int printf(const char *__restrict, ...);
+int scanf(const char *__restrict, ...);
+int snprintf(char *__restrict, size_t, const char *__restrict, ...);
+int sprintf(char *__restrict, const char *__restrict, ...);
+int sscanf(const char *__restrict, const char *__restrict, ...);
+int vfprintf(FILE *__restrict, const char *__restrict, va_list);
+int vfscanf(FILE *__restrict, const char *__restrict, va_list);
+int vprintf(const char *__restrict, va_list);
+int vscanf(const char *__restrict, va_list);
+int vsnprintf(char *__restrict, size_t, const char *__restrict, va_list);
+int vsprintf(char *__restrict, const char *__restrict, va_list);
+int vsscanf(const char *__restrict, const char *__restrict, va_list);
+int fgetc(FILE *);
+char *fgets(char *__restrict, int, FILE *__restrict);
+int fputc(int, FILE *);
+int fputs(const char *__restrict, FILE *__restrict);
+int getc(FILE *);
+int getchar(void);
+int putc(int, FILE *);
+int putchar(int);
+int puts(const char *);
+int ungetc(int, FILE *);
+size_t fread(void *__restrict, size_t, size_t, FILE *__restrict);
+size_t fwrite(const void *__restrict, size_t, size_t, FILE *__restrict);
+int fseek(FILE *, long, int);
+int fsetpos(FILE *, const fpos_t *);
+long ftell(FILE *);
+void rewind(FILE *);
+void clearerr(FILE *);
+int feof(FILE *);
+int ferror(FILE *);
+void perror(const char *);
+char *ctermid(char *);
+int dprintf(int, const char *__restrict, ...);
+int vdprintf(int, const char *__restrict, va_list);
+FILE *fdopen(int, const char *);
+int fileno(FILE *);
+int fseeko(FILE *, off_t, int);
+off_t ftello(FILE *);
+int ftrylockfile(FILE *);
+void funlockfile(FILE *);
+int getc_unlocked(FILE *);
+int getchar_unlocked(void);
+int putc_unlocked(FILE *);
+int putchar_unlocked(FILE *);
+ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
+ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);
+FILE *open_memstream(char **, size_t *);
+FILE *popen(const char *, const char *);
+int pclose(FILE *);
+int renameat(int, const char *, int, const char *);
+
+/* stdlib.h */
+int __mb_cur_max(void);
+void call_once(once_flag *, void (*)(void));
+double atof(const char *);
+int atoi(const char *);
+long atol(const char *);
+long long atoll(const char *);
+int strfromd(char *__restrict, size_t, const char *__restrict, double);
+int strfromf(char *__restrict, size_t, const char *__restrict, float);
+int strfroml(char *__restrict, size_t, const char *__restrict, long double);
+double strtod(const char *__restrict, char **__restrict);
+float strtof(const char *__restrict, char **__restrict);
+long double strtold(const char *__restrict, char **__restrict);
+long strtol(const char *__restrict, char **__restrict, int);
+long long strtoll(const char *__restrict, char **__restrict, int);
+unsigned long strtoul(const char *__restrict, char **__restrict, int);
+unsigned long long strtoull(const char *__restrict, char **__restrict, int);
+int rand(void);
+void srand(unsigned);
+void *aligned_alloc(size_t, size_t);
+void *calloc(size_t, size_t);
+void free(void *);
+void free_sized(void *, size_t);
+void free_aligned_sized(void *, size_t, size_t);
+void *malloc(size_t);
+void *realloc(void *, size_t);
+_Noreturn void abort(void);
+int atexit(void (*)(void));
+_Noreturn void exit(int);
+_Noreturn void _Exit(int);
+int at_quick_exit(void (*)(void));
+_Noreturn void quick_exit(int);
+char *getenv(const char *);
+int system(const char *);
+void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
+void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
+int abs(int);
+long labs(long);
+long long llabs(long long);
+div_t div(int, int);
+ldiv_t ldiv(long, long);
+lldiv_t lldiv(long long, long long);
+int mblen(const char *, size_t);
+int mbtowc(wchar_t *__restrict, const char *__restrict, size_t);
+int wctomb(char *, wchar_t);
+size_t mbstowcs(wchar_t *__restrict, const char *__restrict, size_t);
+size_t wcstombs(char *__restrict, const wchar_t *__restrict, size_t);
+size_t memalignment(const void *);
+int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
+char *mkdtemp(char *);
+int mkostemp(char *, int);
+int mkstemp(char *);
+int posix_memalign(void **, size_t, size_t);
+void qsort_r(void *, size_t, size_t, int (*)(const void *, const void *, void *), void *);
+void *reallocarray(void *, size_t, size_t);
+char *realpath(const char *__restrict, char *__restrict);
+char *secure_getenv(const char *);
+int setenv(const char *, const char *, int);
+int unsetenv(const char *);
+long a64l(const char *);
+char *l64a(long);
+double drand48(void);
+double erand48(unsigned short [3]);
+char *initstate(unsigned, char *, size_t);
+long jrand48(unsigned short [3]);
+void lcong48(unsigned short [7]);
+long lrand48(void);
+long mrand48(void);
+long nrand48(unsigned short [3]);
+unsigned short *seed48(unsigned short [3]);
+void srand48(long);
+long random(void);
+void srandom(unsigned);
+int grantpt(int);
+int unlockpt(int);
+int posix_openpt(int);
+char *ptsname(int);
+int ptsname_r(int, char *, size_t);
+int putenv(char *);
+
+/* string.h */
+void *memcpy(void *__restrict, const void *__restrict, size_t);
+void *memccpy(void *__restrinct, const void *__restrict, int, size_t);
+void *memmove(void *, const void *, size_t);
+char *strcpy(char *__restrict, const char *__restrict);
+char *strncpy(char *__restrict, const char *__restrict, size_t);
+char *strdup(const char *);
+char *strndup(const char *, size_t);
+char *strcat(char *__restrict, const char *__restrict);
+char *strncat(char *__restrict, const char *__restrict, size_t);
+int memcmp(const void *, const void *, size_t);
+int strcmp(const char *, const char *);
+int strcoll(const char *, const char *);
+int strncmp(const char *, const char *, size_t);
+size_t strxfrm(char *__restrict, const char *__restrict, size_t);
+void *memchr(const void *, int, size_t);
+char *strchr(const char *, int);
+size_t strcspn(const char *, const char *);
+char *strpbrk(const char *, const char *);
+char *strrchr(const char *, int);
+size_t strspn(const char *, const char *);
+char *strtok(char *__restrict, const char *__restrict);
+void *memset(void *, int, size_t);
+void *memset_explicit(void *, int, size_t);
+char *strerror(int);
+size_t strlen(const char *);
+void *memmem(const void *, size_t, const void *, size_t);
+char *stpcpy(char *__restrict, const char *__restrict);
+char *stpncpy(char *__restrict, const char *__restrict, size_t);
+int strcoll_l(const char *, const char *, locale_t);
+char *strerror_l(int, locale_t);
+int strerror_r(int, char *, size_t);
+size_t strlcat(char *__restrict, const char *__restrict, size_t);
+size_t strnlen(const char *, size_t);
+char *strsignal(int);
+char *strtok_r(char *__restrict, const char *__restrict, char **__restrict);
+size_t strxfrm_l(char *__restrict, const char *__restrict, size_t, locale_t);
+
+/* strings.h */
+int strcasecmp(const char *, const char *);
+int strcasecmp_l(const char *, const char *, locale_t);
+int strncasecmp(const char *, const char *, size_t);
+int strncasecmp_l(const char *, const char *, size_t, locale_t);
+int ffs(int);
+int ffsl(long);
+int ffsll(long long);
+
+/* sys/ioctl.h */
+int ioctl(int, int, ...);
+
+/* sys/ipc.h */
+key_t ftok(const char *, int);
+
+/* sys/mman.h */
+int mlock(const void *, size_t);
+int mlockall(int);
+void *mmap(void *, size_t, int, int, int, off_t);
+int mprotect(void *, size_t, int);
+int msync(void *, size_t, int);
+int munlock(const void *, size_t);
+int munlockall(void);
+int munmap(void *, size_t);
+int posix_madvise(void *, size_t, int);
+int shm_open(const char *, int, mode_t);
+int shm_unlink(const char *);
+
+/* sys/msg.h */
+int msgctl(int, int, struct msqid_ds *);
+int msgget(key_t, int);
+ssize_t msgrcv(int, void *, size_t, long, int);
+int msgsnd(int, const void *, size_t, int);
+
+/* sys/resource.h */
+int getrlimit(int, struct rlimit *);
+int setrlimit(int, const struct rlimit *);
+int getpriority(int, id_t);
+int getrusage(int, struct rusage *);
+int setpriority(int, id_t, int);
+
+/* sys/select.h */
+int pselect(int, fd_set *__restrict, fd_set *__restrict, fd_set *__restrict, const struct timespec *__restrict, const sigset_t *__restrict);
+int select(int, fd_set *__restrict, fd_set *__restrict, fd_set *__restrict, struct timeval *__restrict);
+
+/* sys/sem.h */
+int semctl(int, int, int, ...);
+int semget(key_t, int, int);
+int semop(int, struct sembuf *, size_t);
+
+/* sys/shm.h */
+void *shmat(int, const void *, int);
+int shmctl(int, int, struct shmid_ds *);
+int shmdt(const void *);
+int shmget(key_t, size_t, int);
+
+/* sys/socket.h */
+int accept(int, struct sockaddr *__restrict, socklen_t *__restrict);
+int accept4(int, struct sockaddr *__restrict, socklen_t *__restrict, int);
+int bind(int, const struct sockaddr *, socklen_t);
+int connect(int, const struct sockaddr *, socklen_t);
+int getpeername(int, struct sockaddr *__restrict, socklen_t *__restrict);
+int getsockname(int, struct sockaddr *__restrict, socklen_t *__restrict);
+int getsockopt(int, int, int, void *__restrict, socklen_t *__restrict);
+int listen(int, int);
+ssize_t recv(int, void *, size_t, int);
+ssize_t recvfrom(int, void *__restrict, size_t, int, struct sockaddr *__restrict, socklen_t *__restrict);
+ssize_t recvmsg(int, struct msghdr *, int);
+ssize_t send(int, const void *, size_t, int);
+ssize_t sendto(int, const void *, size_t, int, const struct sockaddr *, socklen_t);
+ssize_t sendmsg(int, const struct msghdr *, int);
+int setsockopt(int, int, int, const void *, socklen_t);
+int shutdown(int, int);
+int sockatmark(int);
+int socket(int, int, int);
+int socketpair(int, int, int, int [2]);
+
+/* sys/stat.h */
+int chmod(const char *, mode_t);
+int fchmod(int, mode_t);
+int fchmodat(int, const char *, mode_t, int);
+int fstat(int, struct stat *);
+int fstatat(int, const char *__restrict, struct stat *__restrict, int);
+int futimens(int, const struct timespec [2]);
+int lstat(const char *__restrict, struct stat *__restrict);
+int mkdir(const char *, mode_t);
+int mkdirat(int, const char *, mode_t);
+int mkfifo(const char *, mode_t);
+int mkfifoat(int, const char *, mode_t);
+int stat(const char *__restrict, struct stat *__restrict);
+mode_t umask(mode_t);
+int utimensat(int, const char *, const struct timespec [2], int);
+int mknod(const char *, mode_t, dev_t);
+int mknodat(int, const char *, mode_t, dev_t);
+
+/* sys/statfs.h */
+int fstatvfs(int, struct statvfs *);
+int statvfs(const char *__restrict, struct statvfs *__restrict);
+
+
+/* utime.h */
+int utimes(const char *, const struct timeval [2]);
+
+/* sys/times.h */
+clock_t times(struct tms *);
+
+/* sys/uio.h */
+ssize_t readv(int, const struct iovec *, int);
+ssize_t writev(int, const struct iovec *, int);
+
+/* sys/utsname.h */
+int uname(struct utsname *);
+
+/* sys/wait.h */
+pid_t wait(int *);
+int waitid(idtype_t , id_t, siginfo_t *, int);
+pid_t waitpid(pid_t, int *, int);
+
+/* syslog.h */
+void closelog(void);
+void openlog(const char *, int, int);
+int setlogmask(int);
+void syslog(int, const char *, ...);
+
+/* termios.h */
+speed_t cfgetispeed(const struct termios *);
+speed_t cfgetospeed(const struct termios *);
+int cfsetispeed(struct termios *, speed_t);
+int cfsetospeed(struct termios *, speed_t);
+int tcdrain(int);
+int tcflow(int, int);
+int tcflush(int, int);
+pid_t tcgetsid(int);
+int tcsendbreak(int, int);
+int tcgetattr(int, struct termios *);
+int tcsetattr(int, int, struct termios *);
+int tcgetwinsize(int, struct winsize *);
+int tcsetwinsize(int, const struct winsize *);
+
+/* threads.h */
+void call_once(once_flag *, void (*)(void));
+int cnd_broadcast(cnd_t *);
+void cnd_destroy(cnd_t *);
+int cnd_init(cnd_t *);
+int cnd_signal(cnd_t *);
+int cnd_timedwait(cnd_t *__restrict, mtx_t *__restrict, const struct timespec *__restrict);
+int cnd_wait(cnd_t *, mtx_t *);
+void mtx_destroy(mtx_t *);
+int mtx_init(mtx_t *, int);
+int mtx_lock(mtx_t *);
+int mtx_timedlock(mtx_t *__restrict, const struct timespec *__restrict);
+int mtx_trylock(mtx_t *);
+int mtx_unlock(mtx_t *);
+int thrd_create(thrd_t *, thrd_start_t, void *);
+thrd_t thrd_current(void);
+int thrd_detach(thrd_t);
+int thrd_equal(thrd_t, thrd_t);
+_Noreturn void thrd_exit(int);
+int thrd_join(thrd_t, int *);
+int thrd_sleep(const struct timespec *, struct timespec *);
+void thrd_yield(void);
+int tss_create(tss_t *, tss_dtor_t);
+void tss_delete(tss_t);
+void *tss_get(tss_t);
+int tss_set(tss_t, void *);
+
+
+/* time.h */
+clock_t clock(void);
+double difftime(time_t, time_t);
+time_t mktime(struct tm *);
+time_t timegm(struct tm *);
+time_t time(time_t *);
+__deprecated char *asctime(const struct tm *);
+__deprecated char *ctime(const time_t *);
+struct tm *gmtime(const time_t *);
+struct tm *gmtime_r(const time_t *, struct tm *);
+struct tm *localtime(const time_t *);
+struct tm *localtime_r(const time_t *, struct tm *);
+size_t strftime(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
+int timespec_get(struct timespec *, int);
+int timespec_getres(struct timespec *, int);
+int clock_getcpuclockid(pid_t, clockid_t *);
+int clock_getres(clockid_t, struct timespec *);
+int clock_gettime(clockid_t, struct timespec *);
+int clock_nanosleep(clockid_t, int, const struct timespec *, struct timespec *);
+int clock_settime(clockid_t, const struct timespec *);
+int nanosleep(const struct timespec *, struct timespec *);
+size_t strftime_l(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict, locale_t);
+int timer_create(clockid_t, struct sigevent *__restrict, timer_t *__restrict);
+int timer_delete(timer_t);
+int timer_getoverrun(timer_t);
+int timer_gettime(timer_t, struct itimerspec *);
+int timer_settime(timer_t, int, const struct itimerspec *__restrict, struct itimerspec *__restrict);
+void tzset(void);
+extern char *tzname[];
+int __getdate_err(void);
+struct tm *getdate(const char *);
+char *strptime(const char *__restrict, const char *__restrict, struct tm *__restrict);
+extern int daylight;
+extern long timezone;
+
+/* uchar.h */
+size_t mbrtoc8(char8_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
+size_t c8rtomb(char *__restrict, char8_t, mbstate_t *__restrict);
+size_t mbrtoc16(char16_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
+size_t c16rtomb(char *__restrict, char16_t, mbstate_t *__restrict);
+size_t mbrtoc32(char32_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
+size_t c32rtomb(char *__restrict, char32_t, mbstate_t *__restrict);
+
+/* unistd.h */
+extern char *optarg;
+extern int opterr, optind, optopt;
+int access(const char *, int);
+unsigned alarm(unsigned);
+int chdir(const char *);
+int chown(const char *, uid_t, gid_t);
+int close(int);
+size_t confstr(int, char *, size_t);
+int dup(int);
+int dup2(int, int);
+int dup3(int, int, int);
+_Noreturn void _exit(int);
+int execl(const char *, const char *, ...);
+int execle(const char *, const char *, ...);
+int execlp(const char *, const char *, ...);
+int execv(const char *, char *const []);
+int execve(const char *, char *const [], char *const []);
+int execvp(const char *, char *const []);
+int faccessat(int, const char *, int, int);
+int fchdir(int);
+int fchown(int, uid_t, gid_t);
+int fchownat(int, const char *, uid_t, gid_t);
+int fdatasync(int);
+int fexecve(int, char *const [], char *const []);
+pid_t _Fork(void);
+pid_t fork(void);
+long fpathconf(int, int);
+int fsync(int);
+int ftruncate(int, off_t);
+char *getcwd(char *, size_t);
+gid_t getegid(void);
+int getentropy(void *, size_t);
+uid_t geteuid(void);
+gid_t getgid(void);
+uid_t getuid(void);
+int getgroups(int, gid_t []);
+int gethostname(char *, size_t);
+char *getlogin(void);
+int getlogin_r(char *, size_t);
+int getopt(int, char *const [], const char *);
+pid_t getpgid(pid_t);
+pid_t getpgrp(void);
+pid_t getpid(void);
+pid_t getppid(void);
+pid_t getsid(pid_t);
+int isatty(int);
+int lchown(const char *, uid_t, gid_t);
+int link(const char *, const char *);
+int linkat(int, const char *, int, const char *, int);
+off_t lseek(int, off_t, int);
+long pathconf(const char *, int);
+int pause(void);
+int pipe(int [2]);
+int pipe2(int [2], int);
+int posix_close(int, int);
+ssize_t pread(int, void *, size_t, off_t);
+ssize_t pwrite(int, const void *, size_t, off_t);
+ssize_t read(int, void *, size_t);
+ssize_t readlink(const char *__restrict, char *__restrict, size_t);
+ssize_t readlinkat(int, const char *__restrict, char *__restrict, size_t);
+int rmdir(const char *);
+int setegid(gid_t);
+int seteuid(uid_t);
+int setgid(gid_t);
+int setuid(uid_t);
+int setpgid(pid_t, pid_t);
+pid_t setsid(void);
+unsigned sleep(unsigned);
+int symlink(const char *, const char *);
+int symlinkat(const char *, int, const char *);
+long sysconf(int);
+pid_t tcgetpgrp(int);
+int tcsetpgrp(int, pid_t);
+int truncate(const char *, off_t);
+char *ttyname(int);
+int ttyname_r(int, char *, size_t);
+int unlink(const char *);
+int unlinkat(int, const char *);
+ssize_t write(int, const void *, size_t);
+char *crypt(const char *, const char *);
+int gethostid(void);
+int getresgid(gid_t *__restrict, gid_t *__restrict, gid_t *__restrict);
+int getresuid(uid_t *__restrict, uid_t *__restrict, uid_t *__restrict);
+int lockf(int, int, off_t);
+int nice(int);
+int setregid(gid_t, gid_t);
+int setreuid(uid_t, uid_t);
+int setresgid(gid_t, gid_t, gid_t);
+int setresuid(uid_t, uid_t, gid_t);
+void swab(const void *__restrict, void *__restrict, size_t);
+void sync(void);
+
+/* utmpx.h */
+void          endutxent(void);
+struct utmpx *getutxent(void);
+struct utmpx *getutxid(const struct utmpx *);
+struct utmpx *getutxline(const struct utmpx *);
+struct utmpx *pututxline(const struct utmpx *);
+void          setutxent(void);
+
+/* wchar.h */
+int fwprintf(FILE *__restrict, const wchar_t *__restrict, ...);
+int fwscanf(FILE *__restrict, const wchar_t *__restrict, ...);
+int swprintf(wchar_t *__restrict, size_t, const wchar_t *__restrict, ...);
+int swscanf(const wchar_t *__restrict, size_t, const wchar_t *__restrict, ...);
+int wprintf(const wchar_t *__restrict, ...);
+int wscanf(const wchar_t *__restrict, ...);
+int vfwprintf(FILE *__restrict, const wchar_t *__restrict, va_list);
+int vfwscanf(FILE *__restrict, const wchar_t *__restrict, va_list);
+int vswprintf(wchar_t *__restrict, size_t, const wchar_t *__restrict, va_list);
+int vswscanf(const wchar_t *__restrict, size_t, const wchar_t *__restrict, va_list);
+int vwprintf(const wchar_t *__restrict, va_list);
+int vwscanf(const wchar_t *__restrict, va_list);
+wint_t fgetwc(FILE *);
+wchar_t *fgetws(wchar_t *__restrict, int, FILE *__restrict);
+wint_t fputwc(wchar_t, FILE *);
+int fputws(const wchar_t *__restrict, FILE *__restrict);
+int fwide(FILE *, int);
+wint_t getwc(FILE *);
+wint_t getwchar(void);
+wint_t putwc(wchar_t, FILE *);
+wint_t putwchar(wchar_t);
+wint_t ungetwc(wint_t, FILE *);
+double wcstod(const wchar_t *__restrict, wchar_t **__restrict);
+float wcstof(const wchar_t *__restrict, wchar_t **__restrict);
+long double wcstold(const wchar_t *__restrict, wchar_t **__restrict);
+long wcstol(const wchar_t *__restrict, wchar_t **__restrict, int);
+long long wcstoll(const wchar_t *__restrict, wchar_t **__restrict, int);
+unsigned long wcstoul(const wchar_t *__restrict, wchar_t **__restrict, int);
+unsigned long long wcstoull(const wchar_t *__restrict, wchar_t **__restrict, int);
+wchar_t *wcscpy(wchar_t *__restrict, const wchar_t *__restrict);
+wchar_t *wcsncpy(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+wchar_t *wmemcpy(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+wchar_t *wmemmove(wchar_t *, const wchar_t *, size_t);
+wchar_t *wcscat(wchar_t *__restrict, const wchar_t *__restrict);
+wchar_t *wcsncat(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+int wcscmp(const wchar_t *, const wchar_t *);
+int wcscoll(const wchar_t *, const wchar_t *);
+int wcsncmp(const wchar_t *, const wchar_t *, size_t);
+size_t wcsxfrm(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+int wmemcmp(const wchar_t *, const wchar_t, size_t);
+wchar_t *wcschr(const wchar_t *, wchar_t);
+size_t wcscspn(const wchar_t *, const wchar_t *);
+wchar_t *wcspbrk(const wchar_t *, const wchar_t *);
+wchar_t *wcsrchr(const wchar_t *, wchar_t);
+size_t wcsspn(const wchar_t *, const wchar_t *);
+wchar_t *wcsstr(const wchar_t *, const wchar_t *);
+wchar_t *wcstok(wchar_t *__restrict, const wchar_t *, wchar_t **__restrict);
+wchar_t *wmemchr(const wchar_t *, wchar_t, size_t);
+size_t wcslen(const wchar_t *);
+wchar_t *wmemset(wchar_t *, wchar_t, size_t);
+size_t wcsftime(wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict);
+wint_t btowc(int);
+int wctob(wint_t);
+int mbsinit(const mbstate_t *);
+size_t mbrlen(const char *__restrict, size_t, mbstate_t *__restrict);
+size_t mbrtowc(wchar_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
+size_t mbsrtowcs(wchar_t *__restrict, const char **__restrict, size_t, mbstate_t *__restrict);
+size_t wcsrtombs(char *__restrict, const wchar_t **__restrict, size_t, mbstate_t *__restrict);
+size_t mbsnrtowcs(wchar_t *__restrict, const char **__restrict, size_t, size_t, mbstate_t *__restrict);
+FILE *open_wmemstream(wchar_t **, size_t *);
+wchar_t *wcpcpy(wchar_t *__restrict, const wchar_t *__restrict);
+wchar_t *wcpncpy(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+int wcscasecmp(const wchar_t *, const wchar_t *);
+int wcscasecmp_l(const wchar_t *, const wchar_t *, locale_t);
+int wcscoll_l(const wchar_t *, const wchar_t *, locale_t);
+wchar_t *wcsdup(const wchar_t *);
+size_t wcslcat(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+size_t wcslcpy(wchar_t *__restrict, const wchar_t *__restrict, size_t);
+int wcsncasecmp(const wchar_t *, const wchar_t *, size_t);
+int wcsncasecmp_l(const wchar_t *, const wchar_t *, size_t, locale_t);
+size_t wcsnlen(const wchar_t *, size_t);
+size_t wcsnrtombs(char *__restrict, const wchar_t **__restrict, size_t, size_t, mbstate_t *__restrict);
+size_t wcsxfrm_l(wchar_t *__restrict, const wchar_t *__restrict, size_t, locale_t);
+int wcswidth(const wchar_t *, size_t);
+int wcwidth(wchar_t);
+
+/* wctype.h */
+int iswalnum(wint_t);
+int iswalpha(wint_t);
+int iswblank(wint_t);
+int iswcntrl(wint_t);
+int iswgraph(wint_t);
+int iswlower(wint_t);
+int iswprint(wint_t);
+int iswpunct(wint_t);
+int iswspace(wint_t);
+int iswupper(wint_t);
+int iswxdigit(wint_t);
+int iswctype(wint_t, wctype_t);
+wctype_t wctype(const char *);
+wint_t towlower(wint_t);
+wint_t towupper(wint_t);
+wint_t towctrans(wint_t, wctrans_t);
+wctrans_t wctrans(const char *);
+int iswalnum_l(wint_t, locale_t);
+int iswalpha_l(wint_t, locale_t);
+int iswblank_l(wint_t, locale_t);
+int iswcntrl_l(wint_t, locale_t);
+int iswgraph_l(wint_t, locale_t);
+int iswlower_l(wint_t, locale_t);
+int iswprint_l(wint_t, locale_t);
+int iswpunct_l(wint_t, locale_t);
+int iswspace_l(wint_t, locale_t);
+int iswupper_l(wint_t, locale_t);
+int iswxdigit_l(wint_t, locale_t);
+int iswctype_l(wint_t, wctype_t, locale_t);
+wint_t towlower_l(wint_t, locale_t);
+wint_t towupper_l(wint_t, locale_t);
+wint_t towctrans_l(wint_t, wctrans_t, locale_t);
+
+/* wordexp.h */
+int wordexp(const char *__restrict, wordexp_t *__restrict, int);
+void wordfree(wordexp_t *);
