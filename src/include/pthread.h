@@ -72,4 +72,10 @@ extern hidden int __set_thread_area(uintptr_t);
  */
 extern hidden int __clone(int (*)(void *), void *, int, void *, int *, uintptr_t, int *);
 
+/* tunables */
+#define MIN_DEFAULT_STACK_SIZE      (8 << 10)   /* minimum we allow the default stack size to be set to. */
+#define DEFAULT_STACK_SIZE          (128 << 10) /* the default default stack size if nothing else is given. */
+#define MAX_DEFAULT_STACK_SIZE      (8 << 20)   /* maximum we allow the default stack size to be set to. */
+
+#define DEFAULT_GUARD_SIZE          (4 << 10)
 #endif

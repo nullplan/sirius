@@ -24,6 +24,7 @@
 extern "C" {
 #endif
 
+struct timespec;
 #define PTHREAD_NULL                        0
 #define PTHREAD_BARRIER_SERIAL_THREAD       1
 #define PTHREAD_CANCEL_ASYNCHRONOUS         1
