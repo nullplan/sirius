@@ -1,0 +1,6 @@
+.ninja_log
+build.ninja
+lib/
+obj/
+*.sw[po]
+tags
