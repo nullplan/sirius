@@ -20,7 +20,7 @@ typedef struct { long long __pos; } fpos_t;
 #define _IONBF  0
 #define _IOLBF  1
 #define _IOFBF  2
-#define BUFSIZ  4000
+#define BUFSIZ  3600
 #define EOF (-1)
 #define FOPEN_MAX   1024
 #define FILENAME_MAX 4096

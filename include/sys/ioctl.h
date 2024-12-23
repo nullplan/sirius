@@ -8,6 +8,7 @@ extern "C" {
 
 #include <bits/ioctl.h>
 #include <bits/ioctls.h>
+#include <termios.h>
 
 #define SIOCINQ         FIONREAD
 #define SIOCOUTQ        TIOCOUTQ        /* output queue size (not sent + not acked) */

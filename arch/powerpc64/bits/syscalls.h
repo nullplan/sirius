@@ -130,7 +130,6 @@
 #define SYS_afs_syscall 137
 #define SYS_setfsuid 138
 #define SYS_setfsgid 139
-#define SYS__llseek 140
 #define SYS_select 142
 #define SYS_flock 143
 #define SYS_msync 144
