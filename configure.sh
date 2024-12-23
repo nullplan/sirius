@@ -75,9 +75,9 @@ then
     ARCH=x32
 fi
 
-CFLAGS="$CFLAGS -std=c11 -ffreestanding -nostdinc -isystem $srcdir/include -isystem $srcdir/arch/$ARCH -isystem obj/include -I $srcdir/src/include"
+CFLAGS="$CFLAGS -std=c11 -ffreestanding -D_XOPEN_SOURCE -nostdinc -isystem $srcdir/include -isystem $srcdir/arch/$ARCH -isystem obj/include -I $srcdir/src/include"
 SRC=
-for i in $srcdir/src/$ARCH/*.[csS]; do
+for i in $srcdir/src/*/$ARCH/*.[csS]; do
     [ -e "$i" ] && SRC="$SRC $i"
 done
 

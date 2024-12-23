@@ -16,4 +16,4 @@ memmove:
     retq
 1:
 .hidden __memcpy_fwd
-    jmpq __memcpy_fwd
+    jmp __memcpy_fwd

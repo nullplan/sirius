@@ -6,18 +6,18 @@ __clone:
 #                  %rdi              %rsi        %rdx      %rcx         %r8       %r9          8(%rsp)
 # sys_clone(flags, stack, ptid, ctid, tls)
 #            %rdi  %rsi   %rdx   %r10  %r8
-    testl %rsi, %rsi
+    testq %rsi, %rsi
     jz 1f
-    andl $-16, %rsi
-    addl $-16, %rsi
-    movl %rdi, (%rsi)
-    movl %rcx, 8(%rsi)
+    andq $-16, %rsi
+    addq $-16, %rsi
+    movq %rdi, (%rsi)
+    movq %rcx, 8(%rsi)
 1:
     movl $56, %eax
-    movl %rdx, %rdi
-    movl %r8, %rdx
-    movl 8(%rsp), %r10
-    movl %r9, %r8
+    movq %rdx, %rdi
+    movq %r8, %rdx
+    movq 8(%rsp), %r10
+    movq %r9, %r8
     syscall
     testl %eax, %eax
     jnz 1f
