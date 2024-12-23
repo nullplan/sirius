@@ -9,6 +9,7 @@
 #include "syscall.h"
 #include <fcntl.h>
 #include <signal.h>
+#include <stdio.h>
 
 static void dummy(const void *) {}
 weak_alias(__init_vdso, dummy);
@@ -16,6 +17,9 @@ weak_alias(__init_canary, dummy);
 
 static size_t dummy0(void) { return 0; }
 weak_alias(__next_canary, dummy0);
+
+static void dummy1(void) {}
+weak_alias(__stdio_list_init, dummy1);
 
 hidden int __elevated;
 
@@ -62,6 +66,7 @@ void __init_libc(char *pn, char **envp)
 
 static _Noreturn void start_main_stage2(int argc, char **argv, char **envp, int (*main)(int, char **, char **))
 {
+    __stdio_list_init();
     __run_constructors();
     exit(main(argc, argv, envp));
 }
