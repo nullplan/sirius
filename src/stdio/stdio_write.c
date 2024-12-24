@@ -2,7 +2,7 @@
 #include <syscall.h>
 #include <sys/uio.h>
 
-hidden ssize_t __stdio_write(FILE *f, const void *buf, size_t len)
+hidden size_t __stdio_write(FILE *f, const void *buf, size_t len)
 {
     struct iovec iov[2] = {
         {.iov_base = f->buf, .iov_len = f->pos - f->buf},
@@ -10,6 +10,7 @@ hidden ssize_t __stdio_write(FILE *f, const void *buf, size_t len)
     };
     struct iovec *pio = iov;
     int iovlen = 2;
+    size_t rv = 0;
 
     f->pos = f->buf;
     f->end = f->buf + f->buf_size;
@@ -28,7 +29,7 @@ hidden ssize_t __stdio_write(FILE *f, const void *buf, size_t len)
 
         if (wr < 0) {
             f->flags |= F_ERR;
-            return -1;
+            return rv;
         }
 
         /* if we get here, it is a partial success. */
@@ -38,6 +39,7 @@ hidden ssize_t __stdio_write(FILE *f, const void *buf, size_t len)
             iovlen--;
         }
 
+        rv += wr;
         pio->iov_base = (char *)pio->iov_base + wr;
         pio->iov_len -= wr;
     }

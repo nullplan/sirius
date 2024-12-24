@@ -13,7 +13,7 @@ struct __file {
     int dir;                                            /* direction (0 - undirected, 1 - read, -1 - write) */
     int lbf;                                            /* line buffering flag ('\n' - line buffered, -1 - not line buffered) */
     ssize_t (*read)(FILE *, void *, size_t);            /* reads to arg buffer first, then file buffer */
-    ssize_t (*write)(FILE *, const void *, size_t);     /* writes from file buffer first, then arg buffer */
+    size_t (*write)(FILE *, const void *, size_t);     /* writes from file buffer first, then arg buffer */
     off_t (*seek)(FILE *, off_t, int);                  /* seeks and returns new offset */
     int (*close)(FILE *);                               /* closes and does whatever */
     void *cookie;                                       /* miscellaneous stuff for other file types */
@@ -48,10 +48,15 @@ extern hidden int __underflow(FILE *);          /* returns next byte from FILE o
 #define IS_WRITE(f) ((f)->dir < 0)
 
 #define getc_unlocked(f)    (IS_READ(f) && (f)->pos < (f)->end? *(f)->pos++ : __underflow(f))
-#define putc_unlocked(c, f) (IS_WRITE(f) && (f)->pos < (f)->end? *(f)->pos++ = (c) : __overflow((f), (c)))
+#define putc_unlocked(c, f) (IS_WRITE(f) && (f)->pos < (f)->end && (c) != (f)->lbf? *(f)->pos++ = (c) : __overflow((f), (c)))
 
 extern hidden ssize_t __stdio_read(FILE *, void *, size_t);
-extern hidden ssize_t __stdio_write(FILE *, const void *, size_t);
+extern hidden size_t __stdio_write(FILE *, const void *, size_t);
 extern hidden off_t __stdio_seek(FILE *, off_t, int);
 extern hidden int __stdio_close(FILE *);
+
+#define __FLOCK(f) do ; while (0)
+#define __FUNLOCK(f) do ; while (0)
+
+extern hidden size_t __fwritex(const void *restrict, size_t, FILE *restrict);
 #endif

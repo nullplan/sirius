@@ -3,7 +3,7 @@
 #include "syscall.h"
 
 static unsigned char buf[UNGET+BUFSIZ];
-static ssize_t stdout_write(FILE *f, const void *buf, size_t len)
+static size_t stdout_write(FILE *f, const void *buf, size_t len)
 {
     f->write = __stdio_write;
     struct winsize wsz;
@@ -16,7 +16,7 @@ static FILE f = {
     .fd = 1,
     .flags = F_NORD | F_PERM,
     .buf = buf + UNGET,
-    .buf_size = 0,
+    .buf_size = BUFSIZ,
     .lbf = '\n',
     .write = stdout_write,
     .seek = __stdio_seek,
