@@ -34,6 +34,7 @@ struct __file {
 
 extern hidden void __stdio_list_init(void);     /* initializes open-file-list with used standard files. */
 extern hidden void __stdio_exit(void);          /* flushes all open files, leaves stdio unusable */
+extern hidden void __stdio_exit_needed(void);   /* alias to force correct link */
 extern hidden FILE *__ofl_lock(void);           /* locks open-file-list, returns head pointer */
 extern hidden void __ofl_unlock(FILE *);        /* sets head pointer to argument, unlocks OFL */
 

@@ -39,4 +39,4 @@ hidden void __stdio_exit(void)
         if (IS_WRITE(f)) f->write(f, 0, 0);
     }
 }
-
+weak_alias(__stdio_exit_needed, __stdio_exit);
