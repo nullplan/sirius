@@ -12,6 +12,13 @@ static void *a_cas_p(void *volatile *p, void *e, void *n)
     return e;
 }
 
+#define a_swap a_swap
+static int a_swap(volatile int *p, int v)
+{
+    __asm__("lock; xchgl %1, %0" : "+m"(*p), "+r"(v));
+    return v;
+}
+
 static void a_crash(void) {
     __asm__("ud2" ::: "memory");
     __builtin_unreachable();

@@ -21,6 +21,7 @@ struct __pthread
     /* non-ABI free-for-all */
     size_t hwcap;
     int errno_val;
+    int tid;
 
     #ifndef TLS_VARIANT_1
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
@@ -78,4 +79,16 @@ extern hidden int __clone(int (*)(void *), void *, int, void *, int *, uintptr_t
 #define MAX_DEFAULT_STACK_SIZE      (8 << 20)   /* maximum we allow the default stack size to be set to. */
 
 #define DEFAULT_GUARD_SIZE          (4 << 10)
+
+#define FUTEX_TID_MASK              0x3fffffff
+#define FUTEX_OWNER_DIED            0x40000000
+#define FUTEX_WAITERS               0x80000000U
+
+extern hidden void __tl_lock();
+extern hidden void __tl_unlock();
+extern hidden void __tl_sync();
+
+extern hidden int __futex_wait(volatile int *, int, int);
+extern hidden int __futex_wake(volatile int *, int, int);
+
 #endif

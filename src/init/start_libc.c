@@ -22,6 +22,7 @@ static void dummy1(void) {}
 weak_alias(__stdio_list_init, dummy1);
 
 hidden int __elevated;
+hidden int __thread_list_lock;
 
 #define AUX_CNT 34
 hidden
@@ -47,6 +48,7 @@ void __init_libc(char *pn, char **envp)
     __init_canary((void *)aux[AT_RANDOM]);
     tp->canary = __next_canary();
     tp->hwcap = aux[AT_HWCAP];
+    tp->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     if ((aux[0] & 0x7800) == 0x7800 && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
         return;

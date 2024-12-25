@@ -55,8 +55,11 @@ extern hidden size_t __stdio_write(FILE *, const void *, size_t);
 extern hidden off_t __stdio_seek(FILE *, off_t, int);
 extern hidden int __stdio_close(FILE *);
 
-#define __FLOCK(f) do ; while (0)
-#define __FUNLOCK(f) do ; while (0)
+extern hidden int __flockfile(FILE *);
+extern hidden void __funlockfile(FILE *);
+
+#define __FLOCK(f) int __needs_unlock = __flockfile(f)
+#define __FUNLOCK(f) ((__needs_unlock)? __funlockfile(f) : (void)0)
 
 extern hidden size_t __fwritex(const void *restrict, size_t, FILE *restrict);
 #endif

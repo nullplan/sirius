@@ -7,6 +7,7 @@
 struct __pthread;
 extern hidden long __sysinfo;
 extern hidden int __elevated;
+extern hidden int __thread_list_lock;
 extern hidden unsigned long __default_stacksize;
 extern hidden size_t __page_size;
 extern hidden void __run_constructors(void);

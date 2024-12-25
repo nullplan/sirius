@@ -35,8 +35,8 @@ hidden void __stdio_exit(void)
 {
     for (FILE *f = __ofl_lock(); f; f = f->next)
     {
-        if (IS_READ(f)) f->seek(f, f->end - f->pos, SEEK_CUR);
-        if (IS_WRITE(f)) f->write(f, 0, 0);
+        if (IS_READ(f) && f->pos != f->end) f->seek(f, f->end - f->pos, SEEK_CUR);
+        if (IS_WRITE(f) && f->pos != f->buf) f->write(f, 0, 0);
     }
 }
 weak_alias(__stdio_exit_needed, __stdio_exit);

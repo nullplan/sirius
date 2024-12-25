@@ -95,6 +95,7 @@ FILE *fdopen(int, const char *);
 int fileno(FILE *);
 int fseeko(FILE *, off_t, int);
 off_t ftello(FILE *);
+void flockfile(FILE *);
 int ftrylockfile(FILE *);
 void funlockfile(FILE *);
 int getc_unlocked(FILE *);
