@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 void *memcpy(void *__restrict, const void *__restrict, size_t);
-void *memccpy(void *__restrinct, const void *__restrict, int, size_t);
+void *memccpy(void *__restrict, const void *__restrict, int, size_t);
 void *memmove(void *, const void *, size_t);
 char *strcpy(char *__restrict, const char *__restrict);
 char *strncpy(char *__restrict, const char *__restrict, size_t);
@@ -40,6 +40,7 @@ void *memset(void *, int, size_t);
 void *memset_explicit(void *, int, size_t);
 char *strerror(int);
 size_t strlen(const char *);
+char *strstr(const char *, const char *);
 
 #if __STDC_VERSION__ >= 202311L
 #define memchr(s, c, n) _Generic((1? (s) : (void *)0), const void *: (const void *)memchr((s), (c), (n)), void *: memchr((s), (c), (n)))
@@ -57,6 +58,7 @@ int strcoll_l(const char *, const char *, locale_t);
 char *strerror_l(int, locale_t);
 int strerror_r(int, char *, size_t);
 size_t strlcat(char *__restrict, const char *__restrict, size_t);
+size_t strlcpy(char *__restrict, const char *__restrict, size_t);
 size_t strnlen(const char *, size_t);
 char *strsignal(int);
 char *strtok_r(char *__restrict, const char *__restrict, char **__restrict);

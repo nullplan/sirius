@@ -1,5 +1,5 @@
-#ifndef __TEMPLATE_H
-#define __TEMPLATE_H
+#ifndef __ERRNO_H
+#define __ERRNO_H
 #include <features.h>
 #ifdef __cplusplus
 extern "C" {

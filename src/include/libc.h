@@ -23,4 +23,9 @@ extern hidden void __init_canary(const void *);
 #else
 #define PAGE_SIZE __page_size
 #endif
+
+#define BITOP(a, op, b) ((a)[(b) / (8 * sizeof *(a))] op ((__typeof__(*a))(1) << ((b) % (8 * sizeof *(a)))))
+#define MIN(a, b)       ((a) < (b)? (a) : (b))
+#define MAX(a, b)       ((a) < (b)? (b) : (a))
+
 #endif
