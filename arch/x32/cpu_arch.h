@@ -16,3 +16,10 @@ static void a_crash(void) {
     __asm__("ud2" ::: "memory");
     __builtin_unreachable();
 }
+
+#define a_ctz a_ctz
+static int a_ctz(size_t x)
+{
+    __asm__("bsf %1,%0" : "=r"(x) : "rm"(x) : "cc");
+    return x;
+}

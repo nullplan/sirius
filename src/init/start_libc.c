@@ -23,6 +23,7 @@ weak_alias(__stdio_list_init, dummy1);
 
 hidden int __elevated;
 hidden int __thread_list_lock;
+hidden unsigned long __page_size;
 
 #define AUX_CNT 34
 hidden
@@ -43,6 +44,7 @@ void __init_libc(char *pn, char **envp)
 
     if (aux[AT_SYSINFO])
         __sysinfo = aux[AT_SYSINFO];
+    __page_size = aux[AT_PAGESZ];
     struct __pthread *tp = __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]);
     tp->sysinfo = __sysinfo;
     __init_canary((void *)aux[AT_RANDOM]);

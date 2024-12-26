@@ -29,3 +29,17 @@ static void a_crash(void) {
     __asm__(".long 0" ::: "memory");
     __builtin_unreachable();
 }
+
+#define a_clz a_clz
+static int a_clz(size_t x) {
+    __asm__("cntlzw %0, %1" : "=r"(x) : "r"(x));
+    return x;
+}
+
+#ifdef _ARCH_PWR9
+#define a_ctz a_ctz
+static int a_ctz(size_t x) {
+    __asm__("cnttzw %0, %1" : "=r"(x) : "r"(x));
+    return x;
+}
+#endif

@@ -91,4 +91,7 @@ extern hidden void __tl_sync();
 extern hidden int __futex_wait(volatile int *, int, int);
 extern hidden int __futex_wake(volatile int *, int, int);
 
+struct lock { volatile int l; };
+extern hidden void __lock(struct lock *);
+extern hidden void __unlock(struct lock *);
 #endif
