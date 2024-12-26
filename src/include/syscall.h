@@ -38,9 +38,9 @@ _Static_assert(sizeof (syscall_arg_t) == sizeof (long long), "");
 #define __syscall6(nr, a, b, c, d, e, f)        __syscall6((nr), __scc(a), __scc(b), __scc(c), __scc(d), __scc(e), __scc(f))
 
 #ifdef SYS_open
-#define __sys_open(nm, o, ...) __syscall(SYS_open, (nm), (o)|O_LARGEFILE __VA_OPT__(,) __VA_ARGS__)
+#define __sys_open(nm, ...) __syscall(SYS_open, (nm), O_LARGEFILE | __VA_ARGS__)
 #else
-#define __sys_open(nm, o, ...) __syscall(SYS_openat, -100, (nm), (o)|O_LARGEFILE __VA_OPT__(,) __VA_ARGS__)
+#define __sys_open(nm, ...) __syscall(SYS_openat, -100, (nm), O_LARGEFILE | __VA_ARGS__)
 #endif
 
 #endif

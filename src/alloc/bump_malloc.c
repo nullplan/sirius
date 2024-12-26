@@ -33,7 +33,7 @@ static void *bump_malloc(size_t x)
             hwm += x_pa;
         }
     }
-    void *r = heap;
+    void *r = (void *)heap;
     heap += x;
     __unlock(&bump_lock);
     return r;

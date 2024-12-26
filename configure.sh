@@ -69,13 +69,24 @@ trycpp() {
     fi
 }
 
-[ "$CFLAGS" ] || CFLAGS="-O3 -Wall -Wextra"
+[ "$CFLAGS" ] || CFLAGS="-O3"
 if [ "$ARCH" = x86_64 ] && trycpp "if we are actually ILP32" "__ILP32__"
 then
     ARCH=x32
 fi
+flavor=unknown
+printf "Trying to determine compiler flavor... "
+case "$($CC -v 2>&1 )" in
+    *gcc\ version*) flavor=gcc ;;
+    *clang\ version*) flavor=clang ;;
+esac
+printf "%s\n" "$flavor"
+
+CFLAGS="$CFLAGS -Wall -pedantic -Wextra -Wno-sign-compare -Wno-unused-parameter"
 
 CFLAGS="$CFLAGS -std=c11 -ffreestanding -D_XOPEN_SOURCE -nostdinc -isystem $srcdir/include -isystem $srcdir/arch/$ARCH -isystem obj/include -I $srcdir/src/include"
+
+
 SRC=
 for i in $srcdir/src/*/$ARCH/*.[csS]; do
     [ -e "$i" ] && SRC="$SRC $i"

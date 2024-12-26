@@ -11,7 +11,7 @@
 #include <signal.h>
 #include <stdio.h>
 
-static void dummy(const void *) {}
+static void dummy(const void *p) {}
 weak_alias(__init_vdso, dummy);
 weak_alias(__init_canary, dummy);
 

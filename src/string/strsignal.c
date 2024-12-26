@@ -62,5 +62,5 @@ static const char *const sigs[] = {
 char *strsignal(int s)
 {
     if (s >= sizeof sigs / sizeof *sigs || !sigs[s]) return "Unknown signal";
-    return sigs[s];
+    return (char *)sigs[s];
 }
