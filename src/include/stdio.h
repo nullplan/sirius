@@ -62,4 +62,6 @@ extern hidden void __funlockfile(FILE *);
 #define __FUNLOCK(f) ((__needs_unlock)? __funlockfile(f) : (void)0)
 
 extern hidden size_t __fwritex(const void *restrict, size_t, FILE *restrict);
+extern hidden FILE *__fdopen_flg(int, int);
+extern hidden int __fopen_flags(const char *);
 #endif

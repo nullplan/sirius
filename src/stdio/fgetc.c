@@ -1,11 +1,11 @@
 #include <stdio.h>
 
-int fputc(int c, FILE *f)
+int fgetc(FILE *f)
 {
     int rv;
     __FLOCK(f);
-    rv = putc_unlocked(c, f);
+    rv = getc_unlocked(f);
     __FUNLOCK(f);
     return rv;
 }
-weak_alias(putc, fputc);
+weak_alias(getc, fgetc);

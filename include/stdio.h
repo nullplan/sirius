@@ -78,6 +78,7 @@ int ungetc(int, FILE *);
 size_t fread(void *__restrict, size_t, size_t, FILE *__restrict);
 size_t fwrite(const void *__restrict, size_t, size_t, FILE *__restrict);
 int fseek(FILE *, long, int);
+int fgetpos(FILE *__restrict, fpos_t *__restrict);
 int fsetpos(FILE *, const fpos_t *);
 long ftell(FILE *);
 void rewind(FILE *);
@@ -100,8 +101,8 @@ int ftrylockfile(FILE *);
 void funlockfile(FILE *);
 int getc_unlocked(FILE *);
 int getchar_unlocked(void);
-int putc_unlocked(FILE *);
-int putchar_unlocked(FILE *);
+int putc_unlocked(int, FILE *);
+int putchar_unlocked(int);
 
 ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
 ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);

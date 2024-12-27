@@ -24,6 +24,7 @@ weak_alias(__stdio_list_init, dummy1);
 hidden int __elevated;
 hidden int __thread_list_lock;
 hidden unsigned long __page_size;
+hidden int __threaded;
 
 #define AUX_CNT 34
 hidden
