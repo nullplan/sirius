@@ -75,3 +75,6 @@ static inline long __syscall6(long nr, long a, long b, long c, long d, long e, l
     __asm__ volatile("syscall" : "+r"(rax) : "r"(rdi), "r"(rsi), "r"(rdx), "r"(r10), "r"(r8), "r"(r9) : "rcx","r11","memory");
     return rax;
 }
+
+#define VDSO_CGT_NAME   "__vdso_clock_gettime"
+#define VDSO_CGT_VER    "LINUX_2.6"
