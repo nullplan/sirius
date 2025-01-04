@@ -92,6 +92,8 @@ void perror(const char *);
 char *ctermid(char *);
 int dprintf(int, const char *__restrict, ...);
 int vdprintf(int, const char *__restrict, va_list);
+int asprintf(char **__restrict, const char *__restrict, ...);
+int vasprintf(char **__restrict, const char *__restrict, va_list);
 FILE *fdopen(int, const char *);
 int fileno(FILE *);
 int fseeko(FILE *, off_t, int);

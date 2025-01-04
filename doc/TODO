@@ -797,24 +797,19 @@ int posix_spawnp(pid_t *__restrict, const char *__restrict, const posix_spawn_fi
 
 /* stdio.h */
 FILE *freopen(const char *__restrict, const char *__restrict, FILE *__restrict);
-int fprintf(FILE *__restrict, const char *__restrict, ...);
 int fscanf(FILE *__restrict, const char *__restrict, ...);
-int printf(const char *__restrict, ...);
 int scanf(const char *__restrict, ...);
-int snprintf(char *__restrict, size_t, const char *__restrict, ...);
 int sprintf(char *__restrict, const char *__restrict, ...);
 int sscanf(const char *__restrict, const char *__restrict, ...);
-int vfprintf(FILE *__restrict, const char *__restrict, va_list);
 int vfscanf(FILE *__restrict, const char *__restrict, va_list);
-int vprintf(const char *__restrict, va_list);
 int vscanf(const char *__restrict, va_list);
-int vsnprintf(char *__restrict, size_t, const char *__restrict, va_list);
-int vsprintf(char *__restrict, const char *__restrict, va_list);
 int vsscanf(const char *__restrict, const char *__restrict, va_list);
 
 char *ctermid(char *);
 int dprintf(int, const char *__restrict, ...);
 int vdprintf(int, const char *__restrict, va_list);
+int asprintf(char **__restrict, const char *__restrict, ...);
+int vasprintf(char **__restrict, const char *__restrict, va_list);
 FILE *fdopen(int, const char *);
 int ftrylockfile(FILE *);
 void flockfile(FILE *);
