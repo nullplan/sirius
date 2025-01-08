@@ -274,7 +274,7 @@ void psignal(int, const char *);
 int pthread_kill(pthread_t, int);
 int pthread_sigmask(int, const sigset_t *__restrict, sigset_t *__restrict);
 int sig2str(int, char *);
-int sigaction(int, const struct sigaction *__restrict, sigset_t *__restrict);
+int sigaction(int, const struct sigaction *__restrict, struct sigaction *__restrict);
 int sigaddset(sigset_t *, int);
 int sigdelset(sigset_t *, int);
 int sigemptyset(sigset_t *);

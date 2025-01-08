@@ -1,4 +1,3 @@
-#define SA_RESTORER     0x04000000
 #define MINSIGSTKSZ     8192
 #define SIGSTKSZ        32768
 
