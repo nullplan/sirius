@@ -12,12 +12,7 @@ struct tz {
     const char *name;
     const char *oppname;
 };
-/* year range: ±292277024626 + 101 */
-/* therefore time range: year range * 365 * 86400.
- * Yes, this excludes some years without overflow at the fringes.
- * But really, who cares?
- */
-extern hidden struct tz __time_to_tz(time_t);
+extern hidden struct tz __time_to_tz(long long, int);
 extern hidden long long __time_to_year(time_t);
 extern hidden time_t __year_to_time(long long, int *);
 extern hidden int __time_to_tm(struct tm *, time_t, const struct tz *);

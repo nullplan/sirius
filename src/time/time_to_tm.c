@@ -3,14 +3,15 @@
 #include <errno.h>
 
 /* Turns out the year being 32 bits is the bigger limitation
- * than the calculations in __year_to_time()
+ * than the calculations in __year_to_time().
+ *
+ * 365*86400 is a 25 bit number. tm_year is a 31 bit number.
+ * Therefore we just reject all input times outside of ±2^56.
  */
 
-#define MAX_T   (INT32_MAX * 365ll * 86400)
-#define MIN_T   (INT32_MIN * 365ll * 86400)
 hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
 {
-    if (t + 0ull - MIN_T < MAX_T + 0ull - MIN_T) {
+    if (t + (1ull << 56) >= 1ull << 57) {
         errno = EOVERFLOW;
         return -1;
     }
