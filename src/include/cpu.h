@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+struct uint128 { uint64_t hi, lo; };
 #include "cpu_arch.h"
 
 #ifndef a_barrier
@@ -141,6 +142,28 @@ static inline int a_ctz_64(uint64_t x) {
     if (sizeof (size_t) == 8) return a_ctz(x);
     if (!(size_t)x) return 32 + a_ctz(x>>32);
     return a_ctz(x);
+}
+#endif
+
+#ifndef a_mul128
+static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
+{
+    /* portable version:
+     * Split both inputs into two 32-bit numbers.
+     * (a_hi * 2^32 + a_lo) (b_hi * 2^32 + b_lo)
+     * = a_hi b_hi * 2^64 + (a_hi b_lo + a_lo b_hi) * 2^32 + a_lo b_lo
+     */
+    uint64_t a_hi = a >> 32;
+    uint64_t a_lo = a & 0xffffffff;
+    uint64_t b_hi = b >> 32;
+    uint64_t b_lo = b & 0xffffffff;
+    struct uint128 res;
+    res.lo = a_lo * b_lo;
+    res.hi = a_hi * b_hi;
+    uint64_t mid = a_hi * b_lo + a_lo * b_hi;
+    res.lo += mid << 32;
+    res.hi += mid >> 32 + (res.lo < (mid << 32));
+    return res;
 }
 #endif
 #endif

@@ -25,5 +25,5 @@ double sqrt(double x)
     if ((lds.i.mant & 0x7ff) == 0x400) {
         lds.i.mant ^= (sw & 0x200) + 0x300;
     }
-    return lds.f;
+    return (double)lds.f;
 }

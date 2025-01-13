@@ -23,3 +23,11 @@ static int a_ctz(size_t x)
     __asm__("bsf %1,%0" : "=r"(x) : "rm"(x) : "cc");
     return x;
 }
+
+#define a_mul128 a_mul128
+static struct uint128 a_mul128(uint64_t a, uint64_t b)
+{
+    struct uint128 res;
+    __asm__("mulq %2" : "=a"(res.lo), "=d"(res.hi) : "r"(b), "a"(a) : "cc");
+    return res;
+}

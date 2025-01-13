@@ -60,14 +60,23 @@ static inline void *a_cas_p(void *volatile *p, void *e, void *n)
     return v;
 }
 
-static void a_crash(void) {
+static inline void a_crash(void) {
     __asm__("ud" ::: "memory");
     __builtin_unreachable();
 }
 
 #define a_ctz a_ctz
-static int a_ctz(size_t x)
+static inline int a_ctz(size_t x)
 {
     __asm__("rbit %0, %1; clz %0, %0" : "=r"(x) : "r"(x));
     return x;
+}
+
+#define a_mul128 a_mul128
+static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
+{
+    struct uint128 res;
+    __asm__("umulh %0,%1,%2" : "=r"(res.hi) : "r"(a), "r"(b));
+    res.lo = a * b;
+    return res;
 }
