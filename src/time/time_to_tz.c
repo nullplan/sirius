@@ -18,8 +18,10 @@ static long __timezone;
 static long dstzone;
 static const char utc[] = "UTC";
 static const void *infofile;
-static const size_t infosize;
-static const uint64_t *transitions;
+static size_t infosize;
+static const unsigned char *transitions;
+static const unsigned char *transtypes;
+static const unsigned char *lttypes;
 static const char *abbrevs;
 static long long maxtime;
 struct rule {
@@ -58,7 +60,7 @@ static const char *getname(const char *s, char *buf, size_t len)
 static const char *getint(const char *s, long *val)
 {
     char *endp;
-    *val = strtol(s, &endp, val);
+    *val = strtol(s, &endp, 10);
     return endp == s? 0 : endp;
 }
 
@@ -129,12 +131,14 @@ static int is_posix_form(const char *tz)
     if (*tz == ':') return 0;
     char dummy[TZNAME_MAX + 1];
     tz = getname(tz, dummy, sizeof dummy);
+    if (!tz || *tz == '-' || *tz == '+' || isdigit(*tz)) return 0;
+    return 1;
 
 }
 
 static int is_tz_acceptable(const char *tz)
 {
-    return !__elevated || strcmp(tz, "/etc/localtime") == 0 || 
+    return !__elevated || strcmp(tz, "/etc/localtime") == 0 || (memchr(tz, 0, NAME_MAX) && !strstr(tz, "../"));
 }
 
 static int parse_posix_form(const char *s)
@@ -162,6 +166,24 @@ static int parse_posix_form(const char *s)
     if (s)
         __daylight = 1;
     return 0;
+}
+
+static uint32_t read_i32(const unsigned char *x)
+{
+    return (x[0] + 0ul) << 24 | x[1] << 16 | x[2] << 8 | x[3];
+}
+
+static uint64_t read_i64(const unsigned char *x)
+{
+    return (read_i32(x) + 0ull) << 32 | read_i32(x+4);
+}
+
+static size_t offset_dotprod(const unsigned char *p, const unsigned char *offs, const unsigned char *b, size_t n)
+{
+    size_t rv = 0;
+    for (size_t i = 0; i < n; i++)
+        rv += read_i32(p + offs[i]) * b[i];
+    return rv;
 }
 
 static void do_tzset(void)
@@ -215,20 +237,28 @@ static void do_tzset(void)
             }
             struct stat st;
             char magic[4];
+            const unsigned char *p;
             if (fd != -1
-                    && read(fd, magic, 4) == 4
+                    && __syscall(SYS_read, fd, magic, 4) == 4
                     && !memcmp(magic, "TZif", 4)
-                    && !fstat(fd, &st)
+                    && !__fstat(fd, &st)
                     && st.st_size < PTRDIFF_MAX
                     && (p = mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0)) != MAP_FAILED) {
                 infofile = p;
                 infosize = st.st_size;
-                tz = 0;
-                if (((char *)infofile)[infosize - 1] == '\n') {
-                    tz = (char *)infofile + infosize - 2;
-                    while (*tz != '\n') tz--;
-                    tz++;
-                }
+                p += 64 + offset_dotprod(p, (unsigned char[]){20,24,28,32,36,40}, (unsigned char[]){1,1,8,5,6,1}, 6);
+                uint32_t isutcnt = read_i32(p);
+                uint32_t isstdcnt = read_i32(p+4);
+                uint32_t leapcnt = read_i32(p+8);
+                uint32_t timecnt = read_i32(p+12);
+                uint32_t typecnt = read_i32(p+16);
+                uint32_t charcnt = read_i32(p+20);
+                transitions = p + 24;
+                transtypes = transitions + timecnt * 8;
+                lttypes = transtypes + timecnt;
+                abbrevs = (void *)(lttypes + typecnt * 6);
+                tz = abbrevs + charcnt + leapcnt * 12 + isstdcnt + isutcnt + 1;
+                maxtime = read_i64(transitions + (timecnt - 1) * 8);
             }
             if (fd != -1)
                 __syscall(SYS_close, fd);
@@ -236,7 +266,7 @@ static void do_tzset(void)
     }
     if (tz && parse_posix_form(tz)) {
         __daylight = 0;
-        __tzname[0] = utc;
+        __tzname[0] = (char *)utc;
         __timezone = 0;
     }
 }
@@ -257,9 +287,9 @@ static int num_days_in_month(int mon, int isleap)
 static time_t __rule_to_time(const struct rule *r, time_t yearstart, int isleap)
 {
     if (r->type == GREGORIAN)
-        return yearstart + r->u.day * 86400;
+        return yearstart + r->u.day * 86400 + r->time;
     if (r->type == JULIAN)
-        return yearstart + (r->u.day - 1 + (isleap && r->u.day > 59)) * 86400;
+        return yearstart + (r->u.day - 1 + (isleap && r->u.day > 59)) * 86400 + r->time;
     int daynum = yearstart / 86400;
     static const unsigned short monthstart[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
     int firstof = daynum + monthstart[r->u.para[0] - 1];
@@ -271,13 +301,40 @@ static time_t __rule_to_time(const struct rule *r, time_t yearstart, int isleap)
     return (firstof + wantedday) * 86400 + r->time;
 }
 
+static size_t find_transtype(long long time, int islocal)
+{
+    uint64_t t;
+    size_t n = (transtypes - transitions)/8;
+    size_t start = 0;
+    size_t end = n;
+    while (end > start) {
+        size_t mid = (end - start) / 2;
+        t = read_i64(transitions + mid * 8);
+        if (islocal) t += (int32_t)read_i32(lttypes + 6 * transtypes[mid]);
+        if (time < t) end = mid - 1;
+        else start = mid;
+    }
+    if (start == 0 && time < read_i64(transitions) + (islocal? (int32_t)read_i32(lttypes + 6 * transtypes[0]) : 0))
+        return 0;
+    return transtypes[start];
+}
+
 static void time_to_tz_unlocked(long long time, int islocal, struct tz *tz)
 {
     do_tzset();
     if (infofile && time < maxtime)
     {
-        int i = find_trans(time, islocal);
-        /* ... */
+        size_t i = find_transtype(time, islocal);
+        tz->gmtoff = (int32_t)read_i32(lttypes + 6 * i);
+        tz->isdst = lttypes[6 * i + 4];
+        tz->name = abbrevs + lttypes[6 * i + 5];
+        if (__daylight) {
+            tz->oppoff = tz->isdst? __timezone : dstzone;
+            tz->oppname = __tzname[!tz->isdst];
+        } else {
+            tz->oppoff = tz->gmtoff;
+            tz->oppname = tz->name;
+        }
     } else {
         if (__daylight) {
             long long year = __time_to_year(islocal? time + __timezone : time);
@@ -285,9 +342,9 @@ static void time_to_tz_unlocked(long long time, int islocal, struct tz *tz)
             time_t yearstart = __year_to_time(year, &isleap);
             time_t t0 = __rule_to_time(&rules[0], yearstart, isleap);
             time_t t1 = __rule_to_time(&rules[1], yearstart, isleap);
-            if (islocal) {
-                t0 -= __timezone;
-                t1 -= dstzone;
+            if (!islocal) {
+                t0 += __timezone;
+                t1 += dstzone;
             }
             if (t0 < t1) {
                 if (time < t0 || time >= t1) goto std;
@@ -324,7 +381,7 @@ hidden struct tz __time_to_tz(long long time, int islocal)
 {
     struct tz tz;
     __lock(&lock);
-    time_to_tz_unlocked(time, local, &tz);
+    time_to_tz_unlocked(time, islocal, &tz);
     __unlock(&lock);
     return tz;
 }
