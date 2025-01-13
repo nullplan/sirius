@@ -48,14 +48,23 @@ static void a_crash(void) {
 
 #define a_clz a_clz
 static int a_clz(size_t x) {
-    __asm__("cntlzw %0, %1" : "=r"(x) : "r"(x));
+    __asm__("cntlzd %0, %1" : "=r"(x) : "r"(x));
     return x;
 }
 
 #ifdef _ARCH_PWR9
 #define a_ctz a_ctz
 static int a_ctz(size_t x) {
-    __asm__("cnttzw %0, %1" : "=r"(x) : "r"(x));
+    __asm__("cnttzd %0, %1" : "=r"(x) : "r"(x));
     return x;
+}
+
+#define a_mul128 a_mul128
+static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
+{
+    struct uint128 res;
+    __asm__("mulhdu %0,%1,%2" : "=r"(res.hi) : "r"(a), "r"(b));
+    res.lo = a * b;
+    return res;
 }
 #endif
