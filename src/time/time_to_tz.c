@@ -18,7 +18,7 @@ static long __timezone;
 static long dstzone;
 static const char utc[] = "UTC";
 static const void *infofile;
-static const size_t infosize;
+static size_t infosize;
 static const uint64_t *transitions;
 static const char *abbrevs;
 static long long maxtime;
@@ -58,7 +58,7 @@ static const char *getname(const char *s, char *buf, size_t len)
 static const char *getint(const char *s, long *val)
 {
     char *endp;
-    *val = strtol(s, &endp, val);
+    *val = strtol(s, &endp, 10);
     return endp == s? 0 : endp;
 }
 
@@ -134,7 +134,7 @@ static int is_posix_form(const char *tz)
 
 static int is_tz_acceptable(const char *tz)
 {
-    return !__elevated || strcmp(tz, "/etc/localtime") == 0 || 
+    return !__elevated || strcmp(tz, "/etc/localtime") == 0;
 }
 
 static int parse_posix_form(const char *s)
@@ -215,8 +215,9 @@ static void do_tzset(void)
             }
             struct stat st;
             char magic[4];
+            unsigned char *p;
             if (fd != -1
-                    && read(fd, magic, 4) == 4
+                    && __syscall(SYS_read, fd, magic, 4) == 4
                     && !memcmp(magic, "TZif", 4)
                     && !fstat(fd, &st)
                     && st.st_size < PTRDIFF_MAX
@@ -236,7 +237,7 @@ static void do_tzset(void)
     }
     if (tz && parse_posix_form(tz)) {
         __daylight = 0;
-        __tzname[0] = utc;
+        __tzname[0] = (char *)utc;
         __timezone = 0;
     }
 }
@@ -276,7 +277,6 @@ static void time_to_tz_unlocked(long long time, int islocal, struct tz *tz)
     do_tzset();
     if (infofile && time < maxtime)
     {
-        int i = find_trans(time, islocal);
         /* ... */
     } else {
         if (__daylight) {
@@ -324,7 +324,7 @@ hidden struct tz __time_to_tz(long long time, int islocal)
 {
     struct tz tz;
     __lock(&lock);
-    time_to_tz_unlocked(time, local, &tz);
+    time_to_tz_unlocked(time, islocal, &tz);
     __unlock(&lock);
     return tz;
 }
