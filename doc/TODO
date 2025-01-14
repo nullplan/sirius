@@ -1057,15 +1057,8 @@ int tss_set(tss_t, void *);
 /* time.h */
 clock_t clock(void);
 double difftime(time_t, time_t);
-time_t mktime(struct tm *);
 time_t timegm(struct tm *);
 time_t time(time_t *);
-__deprecated char *asctime(const struct tm *);
-__deprecated char *ctime(const time_t *);
-struct tm *gmtime(const time_t *);
-struct tm *gmtime_r(const time_t *, struct tm *);
-struct tm *localtime(const time_t *);
-struct tm *localtime_r(const time_t *, struct tm *);
 size_t strftime(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
 int timespec_getres(struct timespec *, int);
 int clock_getcpuclockid(pid_t, clockid_t *);
@@ -1079,13 +1072,9 @@ int timer_delete(timer_t);
 int timer_getoverrun(timer_t);
 int timer_gettime(timer_t, struct itimerspec *);
 int timer_settime(timer_t, int, const struct itimerspec *__restrict, struct itimerspec *__restrict);
-void tzset(void);
-extern char *tzname[];
 int __getdate_err(void);
 struct tm *getdate(const char *);
 char *strptime(const char *__restrict, const char *__restrict, struct tm *__restrict);
-extern int daylight;
-extern long timezone;
 
 /* uchar.h */
 size_t mbrtoc8(char8_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
