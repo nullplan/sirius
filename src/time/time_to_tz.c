@@ -319,6 +319,20 @@ static size_t find_transtype(long long time, int islocal)
     return transtypes[start];
 }
 
+static void get_std_tz_unlocked(struct tz *tz)
+{
+    tz->gmtoff = __timezone;
+    tz->isdst = 0;
+    tz->name = __tzname[0];
+}
+
+static void get_dst_tz_unlocked(struct tz *tz)
+{
+    tz->gmtoff = dstzone;
+    tz->isdst = 1;
+    tz->name = __tzname[1];
+}
+
 static void time_to_tz_unlocked(long long time, int islocal, struct tz *tz)
 {
     do_tzset();
@@ -328,52 +342,25 @@ static void time_to_tz_unlocked(long long time, int islocal, struct tz *tz)
         tz->gmtoff = (int32_t)read_i32(lttypes + 6 * i);
         tz->isdst = lttypes[6 * i + 4];
         tz->name = abbrevs + lttypes[6 * i + 5];
-        if (__daylight) {
-            tz->oppoff = tz->isdst? __timezone : dstzone;
-            tz->oppname = __tzname[!tz->isdst];
+    } else if (__daylight) {
+        long long year = __time_to_year(islocal? time + __timezone : time);
+        int isleap;
+        time_t yearstart = __year_to_time(year, &isleap);
+        time_t t0 = __rule_to_time(&rules[0], yearstart, isleap);
+        time_t t1 = __rule_to_time(&rules[1], yearstart, isleap);
+        if (!islocal) {
+            t0 += __timezone;
+            t1 += dstzone;
+        }
+        if (t0 < t1) {
+            if (time < t0 || time >= t1) get_std_tz_unlocked(tz);
+            else get_dst_tz_unlocked(tz);
         } else {
-            tz->oppoff = tz->gmtoff;
-            tz->oppname = tz->name;
+            if (time < t1 || time >= t0) get_dst_tz_unlocked(tz);
+            else get_std_tz_unlocked(tz);
         }
     } else {
-        if (__daylight) {
-            long long year = __time_to_year(islocal? time + __timezone : time);
-            int isleap;
-            time_t yearstart = __year_to_time(year, &isleap);
-            time_t t0 = __rule_to_time(&rules[0], yearstart, isleap);
-            time_t t1 = __rule_to_time(&rules[1], yearstart, isleap);
-            if (!islocal) {
-                t0 += __timezone;
-                t1 += dstzone;
-            }
-            if (t0 < t1) {
-                if (time < t0 || time >= t1) goto std;
-                else goto dst;
-            } else {
-                if (time < t1 || time >= t0) goto dst;
-                else goto std;
-            }
-std:
-            tz->gmtoff = __timezone;
-            tz->isdst = 0;
-            tz->oppoff = dstzone;
-            tz->name = __tzname[0];
-            tz->oppname = __tzname[1];
-            return;
-
-dst:
-            tz->gmtoff = dstzone;
-            tz->isdst = 1;
-            tz->oppoff = __timezone;
-            tz->name = __tzname[1];
-            tz->oppname = __tzname[0];
-        } else {
-            tz->gmtoff = __timezone;
-            tz->isdst = 0;
-            tz->oppoff = __timezone;
-            tz->name = __tzname[0];
-            tz->oppname = __tzname[0];
-        }
+        get_std_tz_unlocked(tz);
     }
 }
 
@@ -382,6 +369,29 @@ hidden struct tz __time_to_tz(long long time, int islocal)
     struct tz tz;
     __lock(&lock);
     time_to_tz_unlocked(time, islocal, &tz);
+    __unlock(&lock);
+    return tz;
+}
+
+hidden struct tz __get_std_tz(void)
+{
+    struct tz tz;
+    __lock(&lock);
+    do_tzset();
+    get_std_tz_unlocked(&tz);
+    __unlock(&lock);
+    return tz;
+}
+
+hidden struct tz __get_dst_tz(void)
+{
+    struct tz tz;
+    __lock(&lock);
+    do_tzset();
+    if (__daylight)
+        get_dst_tz_unlocked(&tz);
+    else
+        get_std_tz_unlocked(&tz);
     __unlock(&lock);
     return tz;
 }
