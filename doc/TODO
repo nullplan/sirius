@@ -905,12 +905,10 @@ key_t ftok(const char *, int);
 /* sys/mman.h */
 int mlock(const void *, size_t);
 int mlockall(int);
-void *mmap(void *, size_t, int, int, int, off_t);
 int mprotect(void *, size_t, int);
 int msync(void *, size_t, int);
 int munlock(const void *, size_t);
 int munlockall(void);
-int munmap(void *, size_t);
 int posix_madvise(void *, size_t, int);
 int shm_open(const char *, int, mode_t);
 int shm_unlink(const char *);
