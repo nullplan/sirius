@@ -839,7 +839,6 @@ void srand(unsigned);
 int atexit(void (*)(void));
 int at_quick_exit(void (*)(void));
 _Noreturn void quick_exit(int);
-char *getenv(const char *);
 int system(const char *);
 void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
 void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
@@ -863,9 +862,6 @@ int posix_memalign(void **, size_t, size_t);
 void qsort_r(void *, size_t, size_t, int (*)(const void *, const void *, void *), void *);
 void *reallocarray(void *, size_t, size_t);
 char *realpath(const char *__restrict, char *__restrict);
-char *secure_getenv(const char *);
-int setenv(const char *, const char *, int);
-int unsetenv(const char *);
 long a64l(const char *);
 char *l64a(long);
 double drand48(void);
@@ -885,7 +881,6 @@ int unlockpt(int);
 int posix_openpt(int);
 char *ptsname(int);
 int ptsname_r(int, char *, size_t);
-int putenv(char *);
 
 /* strings.h */
 int strcasecmp(const char *, const char *);
