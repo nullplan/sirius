@@ -834,7 +834,6 @@ int atexit(void (*)(void));
 int at_quick_exit(void (*)(void));
 _Noreturn void quick_exit(int);
 int system(const char *);
-void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
 void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
 int abs(int);
 long labs(long);
