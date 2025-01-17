@@ -2,6 +2,7 @@
 #define STDIO_H
 
 #include "../../include/stdio.h"
+#include <stdint.h>
 
 struct __file {
     int fd;                                             /* file descriptor */
@@ -77,4 +78,5 @@ extern hidden int __shgetc(FILE *);
 #define shungetc(f) (IS_READ(f) && (f)->pos > (f)->buf? (f)->pos-- : 0)
 #define shcnt(f) ((f)->shcnt + ((f)->pos - (f)->buf))
 
+extern hidden uintmax_t __intscan(FILE *, int, uintmax_t);
 #endif

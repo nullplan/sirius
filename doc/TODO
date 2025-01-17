@@ -170,8 +170,6 @@ iconv_t iconv_open(const char *, const char *);
 /* inttypes.h */
 intmax_t imaxabs(intmax_t);
 imaxdiv_t imaxdiv(intmax_t, intmax_t);
-intmax_t strtoimax(const char *__restrict, char **__restrict, int);
-uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
 intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
 uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
@@ -830,10 +828,6 @@ int strfroml(char *__restrict, size_t, const char *__restrict, long double);
 double strtod(const char *__restrict, char **__restrict);
 float strtof(const char *__restrict, char **__restrict);
 long double strtold(const char *__restrict, char **__restrict);
-long strtol(const char *__restrict, char **__restrict, int);
-long long strtoll(const char *__restrict, char **__restrict, int);
-unsigned long strtoul(const char *__restrict, char **__restrict, int);
-unsigned long long strtoull(const char *__restrict, char **__restrict, int);
 int rand(void);
 void srand(unsigned);
 int atexit(void (*)(void));
