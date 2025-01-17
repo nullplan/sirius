@@ -214,7 +214,7 @@ static void do_tzset(void)
     memcpy(oldtz, tz, tzlen + 1);
 
     if (infofile) {
-        __syscall(SYS_munmap, infofile, infosize);
+        __munmap((void *)infofile, infosize);
         infofile = 0;
         infosize = 0;
     }
@@ -243,7 +243,7 @@ static void do_tzset(void)
                     && !memcmp(magic, "TZif", 4)
                     && !__fstat(fd, &st)
                     && st.st_size < PTRDIFF_MAX
-                    && (p = mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0)) != MAP_FAILED) {
+                    && (p = __mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0)) != MAP_FAILED) {
                 infofile = p;
                 infosize = st.st_size;
                 p += 64 + offset_dotprod(p, (unsigned char[]){20,24,28,32,36,40}, (unsigned char[]){1,1,8,5,6,1}, 6);

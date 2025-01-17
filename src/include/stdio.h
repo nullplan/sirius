@@ -2,6 +2,7 @@
 #define STDIO_H
 
 #include "../../include/stdio.h"
+#include <stdint.h>
 
 struct __file {
     int fd;                                             /* file descriptor */
@@ -13,7 +14,7 @@ struct __file {
     int dir;                                            /* direction (0 - undirected, 1 - read, -1 - write) */
     int lbf;                                            /* line buffering flag ('\n' - line buffered, -1 - not line buffered) */
     ssize_t (*read)(FILE *, void *, size_t);            /* reads to arg buffer first, then file buffer */
-    size_t (*write)(FILE *, const void *, size_t);     /* writes from file buffer first, then arg buffer */
+    size_t (*write)(FILE *, const void *, size_t);      /* writes from file buffer first, then arg buffer */
     off_t (*seek)(FILE *, off_t, int);                  /* seeks and returns new offset */
     int (*close)(FILE *);                               /* closes and does whatever */
     void *cookie;                                       /* miscellaneous stuff for other file types */
@@ -21,6 +22,9 @@ struct __file {
     FILE *lnext, *lprev;                                /* list pointers for lock list. */
     volatile int lock;                                  /* -1 - file doesn't need locks, 0 - free, other - owned by given thread. */
     unsigned count;                                     /* recursive lock count */
+    off_t shlim;                                        /* limit for the scan-helper functions. */
+    off_t shcnt;                                        /* number of read characters since last shlim */
+    unsigned char *shend;                               /* pointer to end for scan helpers */
 };
 
 #define UNGET       8       /* number of bytes for ungetc(), reserved in front of buffer */
@@ -64,4 +68,15 @@ extern hidden void __funlockfile(FILE *);
 extern hidden size_t __fwritex(const void *restrict, size_t, FILE *restrict);
 extern hidden FILE *__fdopen_flg(int, int);
 extern hidden int __fopen_flags(const char *);
+
+extern hidden int __shlim(FILE *, off_t);
+extern hidden int __shgetc(FILE *);
+
+#define sh_fromstr(f, s) ((f)->dir = 1, (f)->buf = (f)->pos = (void *)(s), (f)->end = (void *)(-1))
+#define shlim(f, c) __shlim((f), (c))
+#define shgetc(f) (IS_READ(f) && (f)->pos != (f)->shend? *(f)->pos++ : __shgetc(f))
+#define shungetc(f) (IS_READ(f) && (f)->pos > (f)->buf? (f)->pos-- : 0)
+#define shcnt(f) ((f)->shcnt + ((f)->pos - (f)->buf))
+
+extern hidden uintmax_t __intscan(FILE *, int, uintmax_t);
 #endif

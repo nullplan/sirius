@@ -170,8 +170,6 @@ iconv_t iconv_open(const char *, const char *);
 /* inttypes.h */
 intmax_t imaxabs(intmax_t);
 imaxdiv_t imaxdiv(intmax_t, intmax_t);
-intmax_t strtoimax(const char *__restrict, char **__restrict, int);
-uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
 intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
 uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
@@ -830,16 +828,11 @@ int strfroml(char *__restrict, size_t, const char *__restrict, long double);
 double strtod(const char *__restrict, char **__restrict);
 float strtof(const char *__restrict, char **__restrict);
 long double strtold(const char *__restrict, char **__restrict);
-long strtol(const char *__restrict, char **__restrict, int);
-long long strtoll(const char *__restrict, char **__restrict, int);
-unsigned long strtoul(const char *__restrict, char **__restrict, int);
-unsigned long long strtoull(const char *__restrict, char **__restrict, int);
 int rand(void);
 void srand(unsigned);
 int atexit(void (*)(void));
 int at_quick_exit(void (*)(void));
 _Noreturn void quick_exit(int);
-char *getenv(const char *);
 int system(const char *);
 void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
 void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
@@ -863,9 +856,6 @@ int posix_memalign(void **, size_t, size_t);
 void qsort_r(void *, size_t, size_t, int (*)(const void *, const void *, void *), void *);
 void *reallocarray(void *, size_t, size_t);
 char *realpath(const char *__restrict, char *__restrict);
-char *secure_getenv(const char *);
-int setenv(const char *, const char *, int);
-int unsetenv(const char *);
 long a64l(const char *);
 char *l64a(long);
 double drand48(void);
@@ -885,7 +875,6 @@ int unlockpt(int);
 int posix_openpt(int);
 char *ptsname(int);
 int ptsname_r(int, char *, size_t);
-int putenv(char *);
 
 /* strings.h */
 int strcasecmp(const char *, const char *);
@@ -905,12 +894,10 @@ key_t ftok(const char *, int);
 /* sys/mman.h */
 int mlock(const void *, size_t);
 int mlockall(int);
-void *mmap(void *, size_t, int, int, int, off_t);
 int mprotect(void *, size_t, int);
 int msync(void *, size_t, int);
 int munlock(const void *, size_t);
 int munlockall(void);
-int munmap(void *, size_t);
 int posix_madvise(void *, size_t, int);
 int shm_open(const char *, int, mode_t);
 int shm_unlink(const char *);

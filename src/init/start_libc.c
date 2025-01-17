@@ -26,6 +26,10 @@ hidden int __thread_list_lock;
 hidden unsigned long __page_size;
 hidden int __threaded;
 
+hidden char **__environ;
+weak_alias(environ, __environ);
+weak_alias(_environ, __environ);
+
 #define AUX_CNT 34
 hidden
 #ifdef __GNUC__
@@ -33,6 +37,7 @@ __attribute__((noinline))
 #endif
 void __init_libc(char *pn, char **envp)
 {
+    __environ = envp;
     size_t *auxv = (void *)envp;
     while (*auxv++);
     size_t aux[AUX_CNT] = {0};
