@@ -4,6 +4,7 @@
 hidden int __openat(int dfd, const char *name, int flags, mode_t m)
 {
     int rv;
+    flags |= O_LARGEFILE;
 #ifdef SYS_open
     if (dfd == AT_FDCWD || *name == '/')
         rv = __syscall(SYS_open, name, flags, m);
