@@ -2,7 +2,10 @@
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <fcntl.h>
+#include "libc.h"
 #include "syscall.h"
+
+#ifdef SYS_fstatat
 #include "kstat_arch.h"
 
 static int fstatat_legacy(int fd, const char *restrict name, struct stat *restrict st, int flags)
@@ -13,7 +16,7 @@ static int fstatat_legacy(int fd, const char *restrict name, struct stat *restri
     if ((flags & AT_EMPTY_PATH) && fd >= 0 && !*name) {
         rv = __syscall(SYS_fstat, fd, &kst);
         if (rv == -EBADF && __syscall(SYS_fcntl, fd, F_GETFD) >= 0) {
-            rv = __syscall(SYS_fstatat, fd, "", &kst, AT_EMPTY_FLAGS);
+            rv = __syscall(SYS_fstatat, fd, "", &kst, AT_EMPTY_PATH);
             if (rv == -EINVAL) {
                 char buf[PROCFD_LEN];
                 char *p = __procfdname(fd, buf + sizeof buf);
@@ -58,6 +61,7 @@ static int fstatat_legacy(int fd, const char *restrict name, struct stat *restri
     }
     return rv;
 }
+#endif
 
 struct statx_timestamp {
     long long   tv_sec;
@@ -105,7 +109,7 @@ static int fstatat_statx(int dfd, const char *restrict name, struct stat *restri
     if (!rv) {
         *st = (struct stat) {
             .st_dev = makedev(stx.stx_dev_major, stx.stx_dev_minor),
-            .st_ino = stx.stx_ino;
+            .st_ino = stx.stx_ino,
             .st_mode = stx.stx_mode,
             .st_nlink = stx.stx_nlink,
             .st_rdev = makedev(stx.stx_rdev_major, stx.stx_rdev_minor),
@@ -127,5 +131,15 @@ static int fstatat_statx(int dfd, const char *restrict name, struct stat *restri
 
 hidden int __fstatat(int dfd, const char *restrict name, struct stat *restrict st, int flags)
 {
+    int rv = -ENOSYS;
+#ifdef SYS_fstatat
+    if (sizeof ((struct kstat){0}.kst_atime) < sizeof (time_t))
+        rv = fstatat_statx(dfd, name, st, flags);
+    if (rv == -ENOSYS)
+        rv = fstatat_legacy(dfd, name, st, flags);
+#else
+    rv = fstatat_statx(dfd, name, st, flags);
+#endif
+    return __syscall_ret(rv);
 }
 weak_alias(fstatat, __fstatat);

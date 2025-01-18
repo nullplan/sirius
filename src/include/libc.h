@@ -29,4 +29,6 @@ extern hidden void __init_canary(const void *);
 #define MIN(a, b)       ((a) < (b)? (a) : (b))
 #define MAX(a, b)       ((a) < (b)? (b) : (a))
 
+#define PROCFD_LEN  (15 + 3 * sizeof (int))
+extern hidden char *__procfdname(int, char *);
 #endif
