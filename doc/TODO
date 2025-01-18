@@ -92,14 +92,6 @@ char *dlerror(void);
 void *dlopen(const char *, int);
 void *dlsym(void *__restrict, const char *__restrict);
 
-/* fcntl.h
-int creat(const char *, mode_t);
-int fcntl(int, int, ...);
-int open(const char *, int, ...);
-int openat(int, const char *, int, ...);
-int posix_fadvise(int, off_t, off_t, int);
-int posix_fallocate(int, off_t, off_t);
-
 /* fenv.h */
 int feclearexcept(int);
 int fegetexceptflag(fexcept_t *, int);

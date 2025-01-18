@@ -85,3 +85,4 @@ static inline long __syscall6(long nr, long a, long b, long c, long d, long e, l
 
 #define VDSO_CGT_NAME   "__kernel_clock_gettime64"
 #define VDSO_CGT_VER    "LINUX_2.6.15"
+#define ARCH_FADVISE_SWAP_ARGS
