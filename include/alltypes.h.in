@@ -81,7 +81,7 @@ TYPEDEF int gid_t;
 TYPEDEF int pid_t;
 TYPEDEF long long ino_t;
 TYPEDEF int key_t;
-TYPEDEF struct __localedef * locale_t;
+TYPEDEF const struct __localedef * locale_t;
 TYPEDEF struct { unsigned __st; } mbstate_t;
 TYPEDEF int mode_t;
 TYPEDEF int nl_item;

@@ -3,6 +3,7 @@
 
 #include "../../include/pthread.h"
 #include <stdint.h>
+#include <locale.h>
 #include "pthread_arch.h"
 
 struct __pthread
@@ -22,6 +23,7 @@ struct __pthread
     size_t hwcap;
     int errno_val;
     int tid;
+    locale_t locale;
 
     #ifndef TLS_VARIANT_1
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
