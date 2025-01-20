@@ -1,5 +1,7 @@
 #include <math.h>
 #include <pthread.h>
+/* According to GCC, fsqrt is supported on the Cell and on Power4 and all newer ones. */
+#define PPCSQ_MASK      		0x000f1100
 
 static double asm_sqrt(double x)
 {
@@ -19,7 +21,7 @@ double sqrt(double x)
 #ifdef _ARCH_PPCSQ
     return asm_sqrt(x);
 #else
-    if (__pthread_self()->hwcap & 0x00021100)
+    if (__pthread_self()->hwcap & PPCSQ_MASK)
         return asm_sqrt(x);
     return soft_sqrt(x);
 #endif
