@@ -30,6 +30,8 @@ hidden char **__environ;
 weak_alias(environ, __environ);
 weak_alias(_environ, __environ);
 
+hidden struct __localedef __global_locale = {{"C", "C", "C", "C", "C", "C"}, 0};
+
 #define AUX_CNT 34
 hidden
 #ifdef __GNUC__
@@ -57,6 +59,7 @@ void __init_libc(char *pn, char **envp)
     tp->canary = __next_canary();
     tp->hwcap = aux[AT_HWCAP];
     tp->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
+    tp->locale = &__global_locale;
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     if ((aux[0] & 0x7800) == 0x7800 && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
         return;

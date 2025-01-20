@@ -1,0 +1,20 @@
+struct kstat {
+    unsigned long long kst_dev;
+    unsigned long long kst_ino;
+    unsigned kst_mode;
+    unsigned kst_nlink;
+    unsigned kst_uid;
+    unsigned kst_gid;
+    unsigned long long kst_rdev;
+    unsigned short __pad0;
+    long long kst_size;
+    int kst_blksize;
+    long long kst_blocks;
+    int kst_atime;
+    unsigned kst_atime_nsec;
+    int kst_mtime;
+    unsigned kst_mtime_nsec;
+    int kst_ctime;
+    unsigned kst_ctime_nsec;
+    unsigned __unused[2];
+};

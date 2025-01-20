@@ -4,6 +4,7 @@
 #include <features.h>
 #include <stddef.h>
 #include <limits.h>
+#include <locale.h>
 struct __pthread;
 extern hidden long __sysinfo;
 extern hidden int __elevated;
@@ -18,6 +19,7 @@ extern hidden void __run_atexit_funcs(void);
 extern hidden struct __pthread *__init_from_phdrs(const void *, size_t, size_t);
 extern hidden size_t __next_canary(void);
 extern hidden void __init_canary(const void *);
+extern hidden struct __localedef __global_locale;
 
 #ifdef PAGESIZE
 #define PAGE_SIZE PAGESIZE
@@ -29,4 +31,6 @@ extern hidden void __init_canary(const void *);
 #define MIN(a, b)       ((a) < (b)? (a) : (b))
 #define MAX(a, b)       ((a) < (b)? (b) : (a))
 
+#define PROCFD_LEN  (15 + 3 * sizeof (int))
+extern hidden char *__procfdname(int, char *);
 #endif

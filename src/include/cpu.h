@@ -152,6 +152,10 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
      * Split both inputs into two 32-bit numbers.
      * (a_hi * 2^32 + a_lo) (b_hi * 2^32 + b_lo)
      * = a_hi b_hi * 2^64 + (a_hi b_lo + a_lo b_hi) * 2^32 + a_lo b_lo
+     *
+     * (2^32-1)² = (2^64 - 2^33 + 1)
+     * 2(2^32-1)² = 2^65 - 2^34 + 2 > 2^64
+     * i.e. the mid calculation can overflow
      */
     uint64_t a_hi = a >> 32;
     uint64_t a_lo = a & 0xffffffff;
@@ -160,9 +164,10 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     struct uint128 res;
     res.lo = a_lo * b_lo;
     res.hi = a_hi * b_hi;
-    uint64_t mid = a_hi * b_lo + a_lo * b_hi;
+    uint64_t mid1 = a_hi * b_lo;
+    uint64_t mid = mid1 + a_lo * b_hi;
     res.lo += mid << 32;
-    res.hi += mid >> 32 + (res.lo < (mid << 32));
+    res.hi += mid >> 32 + (res.lo < (mid << 32)) + ((0ull + (mid < mid1)) << 32);
     return res;
 }
 #endif
