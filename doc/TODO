@@ -109,9 +109,6 @@ int feholdexcept(fenv_t *);
 int fesetenv(const fenv_t *);
 int feupdateenv(const fenv_t *);
 
-/* float.h */
-int __flt_rounds(void);
-
 /* fmtmsg.h */
 int fmtmsg(long, const char *, int, const char *, const char *, const char *);
 
