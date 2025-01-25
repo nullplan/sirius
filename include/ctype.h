@@ -42,6 +42,12 @@ int toupper_l(int, locale_t);
 int tolower_l(int, locale_t);
 #endif
 
+#define isdigit(x)      ((x) - '0' < 10u)
+#ifndef __cplusplus
+static int __isxdigit(int __x) { return isdigit(__x) || (__x|32) - 'a' < 6u; }
+#define isxdigit(x) __isxdigit(x)
+#endif
+
 #ifdef __cplusplus
 }
 #endif

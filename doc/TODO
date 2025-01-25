@@ -8,10 +8,6 @@ int aio_suspend(const struct aiocb *const [], int, const struct timespec *);
 int aio_write(struct aiocb *);
 int lio_listio(int, struct aiocb *__restrict const [__restrict], int, struct sigevent *__restrict);
 
-/* arpa/inet.h */
-const char *inet_ntop(int, const void *__restrict, char *__restrict, socklen_t);
-int inet_pton(int, const char *__restrict, void *__restrict);
-
 /* complex.h */
 complex double   csin(complex double);
 complex double   ccos(complex double);
@@ -96,21 +92,13 @@ void *dlsym(void *__restrict, const char *__restrict);
 int feclearexcept(int);
 int fegetexceptflag(fexcept_t *, int);
 int feraiseexcept(int);
-int fesetexcept(int);
 int fesetexceptflag(const fexcept_t *, int);
 int fetestexceptflag(const fexcept_t *, int);
 int fetestexcept(int);
 int fegetround(void);
 int fesetround(int);
-int fegetmode(femode_t *);
-int fesetmode(const femode_t *);
 int fegetenv(fenv_t *);
-int feholdexcept(fenv_t *);
 int fesetenv(const fenv_t *);
-int feupdateenv(const fenv_t *);
-
-/* float.h */
-int __flt_rounds(void);
 
 /* fmtmsg.h */
 int fmtmsg(long, const char *, int, const char *, const char *, const char *);
