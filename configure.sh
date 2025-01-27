@@ -152,10 +152,12 @@ build lib: md
 build obj: md
 build obj/include: md
 build lib/libc.a: ar $OBJ || lib
+build lib/rcrt1.o: ldr obj/crt1c.o obj/rcrt1s.o || lib
 build lib/crt1.o: ldr obj/crt1c.o obj/crt1s.o || lib
 build lib/crti.o: as $srcdir/crt/crti.s
 build lib/crtn.o: as $srcdir/crt/crtn.s
 build obj/crt1c.o: cc $srcdir/crt/crt1c.c || obj
+build obj/rcrt1s.o: ccas $srcdir/crt/$ARCH/rcrt1s.S || obj
 build obj/include/alltypes.h: mkalltypes $srcdir/arch/$ARCH/alltypes.h.in $srcdir/include/alltypes.h.in || obj/include
 EOF
 

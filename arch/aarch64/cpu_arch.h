@@ -61,7 +61,7 @@ static inline void *a_cas_p(void *volatile *p, void *e, void *n)
 }
 
 static inline void a_crash(void) {
-    __asm__("ud" ::: "memory");
+    __asm__("udf #0" ::: "memory");
     __builtin_unreachable();
 }
 
