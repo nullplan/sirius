@@ -78,9 +78,6 @@ complex long double  cprojl(complex long double);
         long double  creall(        long double);
         long double  cimagl(        long double);
 
-/* devctl.h */
-int posix_devctl(int, int, void *__restrict, size_t, int *__restrict);
-
 /* dlfcn.h */
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
 int dlclose(void *);
@@ -527,11 +524,6 @@ int getaddrinfo(const char *__restrict, const char *__restrict, const struct add
 int getnameinfo(const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
 void freeaddrinfo(struct addrinfo *);
 const char *gai_strerror(int);
-
-
-/* netinet/in.h */
-extern const struct in6_addr in6addr_any;
-extern const struct in6_addr in6addr_loopback;
 
 /* nl_types.h */
 int catclose(nl_catd);
