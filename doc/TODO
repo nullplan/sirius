@@ -106,9 +106,6 @@ int fmtmsg(long, const char *, int, const char *, const char *, const char *);
 /* fnmatch.h */
 int fnmatch(const char *, const char *, int);
 
-/* ftw.h */
-int nftw(const char *, int (*)(const char *, const struct stat *, int, struct FTW *), int, int);
-
 /* glob.h */
 int glob(const char *__restrict, int, int (*)(const char *, int), glob_t *__restrict);
 void globfree(glob_t *);
