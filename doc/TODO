@@ -106,10 +106,6 @@ int fmtmsg(long, const char *, int, const char *, const char *, const char *);
 /* fnmatch.h */
 int fnmatch(const char *, const char *, int);
 
-/* glob.h */
-int glob(const char *__restrict, int, int (*)(const char *, int), glob_t *__restrict);
-void globfree(glob_t *);
-
 /* grp.h */
 struct group *getgrgid(gid_t);
 struct group *getgrnam(const char *);
