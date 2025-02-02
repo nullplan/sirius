@@ -17,15 +17,16 @@ struct __pthread
     size_t canary_pad;          /* x32 ABI: canary is the *seventh* word, for some reason. */
     #endif
     size_t canary;              /* i386, x86_64 ABI: canary is the *sixth* word. */
+    size_t hwcap;               /* internal i386 ABI: seventh word is hwcap. */
     #endif
 
     /* non-ABI free-for-all */
-    size_t hwcap;
     int errno_val;
     int tid;
     locale_t locale;
 
     #ifndef TLS_VARIANT_1
+    size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
     size_t *dtv;
     #endif

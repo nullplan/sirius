@@ -679,12 +679,6 @@ sem_t *sem_open(const char *, int, ...);
 int sem_close(sem_t *);
 int sem_unlink(const char *);
 
-/* setjmp.h */
-int setjmp(jmp_buf) __ret_twice;
-_Noreturn void longjmp(jmp_buf, int);
-int sigsetjmp(sigjmp_buf, int) __ret_twice;
-_Noreturn void siglongjmp(sigjmp_buf, int);
-
 /* signal.h */
 int __current_rtmin(void);
 int __current_rtmax(void);

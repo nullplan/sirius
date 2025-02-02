@@ -17,6 +17,16 @@
 #  endif
 #endif
 
+#ifdef __GNUC__
+#define _Alignas(x) __attribute__((aligned(x)))
+#elif __STDC_VERSION__ > 201100L
+/* just keep _Alignas around */
+#elif __cplusplus > 201100L
+#define _Alignas(x) alignas(x)
+#else
+#define _Alignas(x)
+#endif
+
 #if __STDC_VERSION__ >= 202311L
 #define __deprecated [[deprecated]]
 #else
