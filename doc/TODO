@@ -693,7 +693,6 @@ int posix_spawn(pid_t *__restrict, const char *__restrict, const posix_spawn_fil
 int posix_spawnp(pid_t *__restrict, const char *__restrict, const posix_spawn_file_actions_t *__restrict, const posix_spawnattr_t *__restrict, char *const [__restrict], char *const [__restrict]);
 
 /* stdio.h */
-FILE *freopen(const char *__restrict, const char *__restrict, FILE *__restrict);
 int fscanf(FILE *__restrict, const char *__restrict, ...);
 int scanf(const char *__restrict, ...);
 int sprintf(char *__restrict, const char *__restrict, ...);
