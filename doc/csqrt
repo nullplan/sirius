@@ -1,0 +1,57 @@
+Complex square root
+===================
+
+I could just cite the CACM like musl, but instead we can also just quickly
+recreate the formulas ourselves.
+
+Given a + bi, we are looking for x + yi such that
+
+(x + yi)² = a + bi
+x² + 2xyi - y² = a + bi
+x² - y² + 2xyi = a + bi
+
+This leads to the system of equations:
+
+I.      x² - y² = a
+II.     2xy     = b
+
+At this point we cannot continue with complete generality. So we use a case
+distinction here. Case 1: x ≠ 0. Then we can divide II. by 2x
+
+II.             y = b/(2x)
+II. in I.       x² - b²/(4x²) = a       | * x²
+                x⁴ - b²/4 = ax²         | - ax²
+                x⁴ - ax² - b²/4 = 0
+
+This is a quadratic equation in x². Using the normal formula:
+
+                x² = a/2 ± √(a²/4 + b²/4)
+                   = (a ± √(a² + b²))/2
+
+Which branch to take? If we take the negative branch, a ≥ 0 and b = 0 leads to
+x = 0, which we excluded. Also a ≥ 0 and b ≠ 0 leads to x² < 0, which is
+impossible since x is supposed to be a real number. And a < 0 always leads to
+x² < 0.
+
+So we reject the negative branch and require a ≥ 0 for this solution.
+
+                x = √((a + √(a² + b²))/2)
+                y = b/(2x)
+
+Case 2: y ≠ 0.
+
+II.             x = b/(2y)
+II. in I.       b²/(4y²) - y² = a       | * y²
+                b²/4 - y⁴ = ay²         | + y⁴ | -b²/4
+                0 = y⁴ + ay² - b²/4
+
+                y² = -a/2 ± √(a²/4 + b²/4)
+                   = (-a ± √(a² + b²))/2
+
+Again, which branch? If we take the negative branch, a ≥ 0 leads to y² ≤ 0. And
+a < 0, b = 0 leads to y = 0, which we excluded. Therefore we reject the negative
+branch and require a < 0 for this solution.
+                y = √((-a + √(a² + b²))/2)
+                x = b/(2y)
+
+Finally, what if x = y = 0? That is only possible if a = b = 0.

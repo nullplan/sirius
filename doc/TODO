@@ -23,7 +23,6 @@ complex double cacosh(complex double);
 complex double catanh(complex double);
 complex double   cexp(complex double);
 complex double   clog(complex double);
-complex double  csqrt(complex double);
 
 complex float   csinf(complex float);
 complex float   ccosf(complex float);
@@ -39,7 +38,6 @@ complex float cacoshf(complex float);
 complex float catanhf(complex float);
 complex float   cexpf(complex float);
 complex float   clogf(complex float);
-complex float  csqrtf(complex float);
 
 complex long double   csinl(complex long double);
 complex long double   ccosl(complex long double);
@@ -55,7 +53,6 @@ complex long double cacoshl(complex long double);
 complex long double catanhl(complex long double);
 complex long double   cexpl(complex long double);
 complex long double   clogl(complex long double);
-complex long double  csqrtl(complex long double);
 
 /* dlfcn.h */
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
