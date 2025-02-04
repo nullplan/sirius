@@ -34,11 +34,16 @@ hidden int __sigaction(int sig, const struct sigaction *restrict sa, struct siga
         errno = EINVAL;
         return -1;
     }
-    if (sig == SIGABRT)
+    sigset_t ss;
+    if (sig == SIGABRT) {
+        __block_usr_sigs(&ss);
         __lock(&__abort_lock);
+    }
     int rv = __libc_sigaction(sig, sa, osa);
-    if (sig == SIGABRT)
+    if (sig == SIGABRT) {
         __unlock(&__abort_lock);
+        __restore_sigs(&ss);
+    }
     return __syscall_ret(rv);
 }
 weak_alias(sigaction, __sigaction);
