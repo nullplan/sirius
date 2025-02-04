@@ -19,5 +19,6 @@ _Noreturn void abort(void)
     for (;;) {
         __syscall(SYS_exit_group, 1);
         __syscall(SYS_exit, 1);
+        a_crash();
     }
 }
