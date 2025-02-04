@@ -26,10 +26,10 @@ complex double   cpow(complex double, complex double);
 complex double  csqrt(complex double);
 complex double   conj(complex double);
 complex double  cproj(complex double);
-        double   carg(        double);
-        double   cabs(        double);
-        double  creal(        double);
-        double  cimag(        double);
+        double   carg(complex double);
+        double   cabs(complex double);
+        double  creal(complex double);
+        double  cimag(complex double);
 
 complex float   csinf(complex float);
 complex float   ccosf(complex float);
@@ -49,10 +49,10 @@ complex float   cpowf(complex float, complex float);
 complex float  csqrtf(complex float);
 complex float   conjf(complex float);
 complex float  cprojf(complex float);
-        float   cargf(        float);
-        float   cabsf(        float);
-        float  crealf(        float);
-        float  cimagf(        float);
+        float   cargf(complex float);
+        float   cabsf(complex float);
+        float  crealf(complex float);
+        float  cimagf(complex float);
 
 complex long double   csinl(complex long double);
 complex long double   ccosl(complex long double);
@@ -72,10 +72,10 @@ complex long double   cpowl(complex long double, complex long double);
 complex long double  csqrtl(complex long double);
 complex long double   conjl(complex long double);
 complex long double  cprojl(complex long double);
-        long double   cargl(        long double);
-        long double   cabsl(        long double);
-        long double  creall(        long double);
-        long double  cimagl(        long double);
+        long double   cargl(complex long double);
+        long double   cabsl(complex long double);
+        long double  creall(complex long double);
+        long double  cimagl(complex long double);
 
 
 #define creal(x) ((double)(x))
@@ -91,4 +91,7 @@ complex long double  cprojl(complex long double);
 #define CMPLXF(x, y) __CMPLX(x, y, float)
 #define CMPLXL(x, y) __CMPLX(x, y, long double)
 
+#define cpow(b, e) cexp((e) * clog(b))
+#define cpowf(b, e) cexpf((e) * clogf(b))
+#define cpowl(b, e) cexpl((e) * clogl(b))
 #endif
