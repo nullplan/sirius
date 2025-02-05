@@ -693,23 +693,7 @@ int posix_spawn(pid_t *__restrict, const char *__restrict, const posix_spawn_fil
 int posix_spawnp(pid_t *__restrict, const char *__restrict, const posix_spawn_file_actions_t *__restrict, const posix_spawnattr_t *__restrict, char *const [__restrict], char *const [__restrict]);
 
 /* stdio.h */
-int fscanf(FILE *__restrict, const char *__restrict, ...);
-int scanf(const char *__restrict, ...);
-int sprintf(char *__restrict, const char *__restrict, ...);
-int sscanf(const char *__restrict, const char *__restrict, ...);
-int vfscanf(FILE *__restrict, const char *__restrict, va_list);
-int vscanf(const char *__restrict, va_list);
-int vsscanf(const char *__restrict, const char *__restrict, va_list);
-
 char *ctermid(char *);
-int dprintf(int, const char *__restrict, ...);
-int vdprintf(int, const char *__restrict, va_list);
-int asprintf(char **__restrict, const char *__restrict, ...);
-int vasprintf(char **__restrict, const char *__restrict, va_list);
-FILE *fdopen(int, const char *);
-int ftrylockfile(FILE *);
-void flockfile(FILE *);
-void funlockfile(FILE *);
 ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
 ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);
 FILE *open_memstream(char **, size_t *);
