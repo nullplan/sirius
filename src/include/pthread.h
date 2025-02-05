@@ -24,6 +24,7 @@ struct __pthread
     int errno_val;
     int tid;
     locale_t locale;
+    struct __file *locked_files;
 
     #ifndef TLS_VARIANT_1
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
