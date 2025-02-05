@@ -82,8 +82,6 @@ int iconv_close(iconv_t);
 iconv_t iconv_open(const char *, const char *);
 
 /* inttypes.h */
-intmax_t imaxabs(intmax_t);
-imaxdiv_t imaxdiv(intmax_t, intmax_t);
 intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
 uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
@@ -653,7 +651,6 @@ void psignal(int, const char *);
 int pthread_kill(pthread_t, int);
 int pthread_sigmask(int, const sigset_t *__restrict, sigset_t *__restrict);
 int sig2str(int, char *);
-int sigaction(int, const struct sigaction *__restrict, sigset_t *__restrict);
 int sigaddset(sigset_t *, int);
 int sigdelset(sigset_t *, int);
 int sigemptyset(sigset_t *);
