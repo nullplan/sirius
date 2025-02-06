@@ -30,6 +30,7 @@ __clone:
 2:
     movq 8(%rsp), %rdi
     callq *(%rsp)
+    movl %eax, %edi
 1:
     movl $60, %eax
     syscall
