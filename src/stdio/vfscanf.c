@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <limits.h>
 #include <float.h>
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
 
 static void *nth_ptr(va_list ap, int n)
 {
@@ -85,6 +88,7 @@ static void set_int_ptr(void *p, enum lengthmod len, intmax_t val)
         case WF16:              *(int_fast16_t *)p = val; break;
         case WF32:              *(int_fast32_t *)p = val; break;
         case WF64:              *(int_fast64_t *)p = val; break;
+        default:                abort();
     }
 }
 
@@ -106,6 +110,7 @@ static void set_uint_ptr(void *p, enum lengthmod len, uintmax_t val)
         case WF16:              *(uint_fast16_t *)p = val; break;
         case WF32:              *(uint_fast32_t *)p = val; break;
         case WF64:              *(uint_fast64_t *)p = val; break;
+        default:                abort();
     }
 }
 
@@ -115,6 +120,7 @@ static void set_float_ptr(void *p, enum lengthmod len, long double val)
         case BARE:      *(float *)p = val; break;
         case LPRE:      *(double *)p = val; break;
         case CLPRE:     *(long double *)p = val; break;
+        default:        abort();
     }
 }
 
@@ -196,7 +202,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
                 allocate = 1;
                 fmt++;
             }
-            struct modifier *m = find_mod(fmt);
+            const struct modifier *m = find_mod(fmt);
             fmt += m->len;
             len = m->mod;
             int skipws = *fmt != '[' && *fmt != 'c' && *fmt != 'C' && *fmt != 'n';
@@ -214,7 +220,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
             void *p = 0;
             if (!suppress) {
                 if (argpos != -1)
-                    p = nth_ptr(ap);
+                    p = nth_ptr(ap, argpos);
                 else
                     p = va_arg(ap, void *);
             }
@@ -267,7 +273,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
                     break;
                 case 'a': case 'e': case 'f': case 'g':
                     {
-                        long double val = __floatscan(f, float_bits[len], float_emin[len]);
+                        long double val = __floatscan(f, 0, float_bits[len], float_emin[len]);
                         if (!shcnt(f)) goto quit;
                         if (p) set_float_ptr(p, len, val);
                         conversions++;

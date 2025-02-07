@@ -94,7 +94,7 @@ STRUCT __mtx { int __foo; };
 TYPEDEF struct __cnd pthread_cond_t;
 TYPEDEF struct __mtx pthread_mutex_t;
 TYPEDEF struct { int __v; } pthread_key_t;
-TYPEDEF struct { int __foo; } pthread_attr_t;
+TYPEDEF struct { int __flags; int __prio; int __pol; void *__addr; size_t __ss; size_t __gs; } pthread_attr_t;
 TYPEDEF struct { int __foo; } pthread_barrier_t;
 TYPEDEF struct { int __foo; } pthread_barrierattr_t;
 TYPEDEF struct { int __foo; } pthread_condattr_t;

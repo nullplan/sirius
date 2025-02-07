@@ -79,6 +79,7 @@ extern hidden int __shgetc(FILE *);
 #define shcnt(f) ((f)->shcnt + ((f)->pos - (f)->buf))
 
 extern hidden uintmax_t __intscan(FILE *, int, uintmax_t);
+extern hidden long double __floatscan(FILE *, int, int, int);
 
 extern hidden void __register_locked_file(FILE *);
 #endif
