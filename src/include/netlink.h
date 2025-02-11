@@ -6,6 +6,8 @@
  */
 #include <stdint.h>
 #include <features.h>
+#include <stddef.h>
+
 
 #define NETLINK_ROUTE   0
 
@@ -13,7 +15,7 @@ struct nlmsghdr {
     uint32_t nlmsg_len;
     uint16_t nlmsg_type;
     uint16_t nlmsg_flags;
-    uint32_t nlsmg_seq;
+    uint32_t nlmsg_seq;
     uint32_t nlmsg_pid;
 };
 
@@ -87,6 +89,6 @@ struct ifinfomsg {
 
 #define IFLA_IFNAME             3
 
-extern hidden int __netlink_transact(int (*)(void *, size_t, void *), void *, int (*)(const struct nlmsghdr *, void *), void *);
+extern hidden int __netlink_transact(int (*)(struct nlmsghdr *, size_t, void *), void *, int (*)(const struct nlmsghdr *, void *), void *);
 
 #endif
