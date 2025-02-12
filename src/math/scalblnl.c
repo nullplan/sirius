@@ -34,9 +34,3 @@ long double scalblnl(long double x, long n)
     return x * ldn.f;
 #endif
 }
-
-long double scalbnl(long double x, int n)
-{
-    return scalblnl(x, n);
-}
-weak_alias(ldexpl, scalbnl);
