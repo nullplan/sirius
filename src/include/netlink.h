@@ -72,7 +72,7 @@ struct rtattr {
 #define RTA_OK(rta,len)         ((len) >= 4 && (rta)->rta_len >= 4 && (rta)->rta_len <= (len))
 #define RTA_NEXT(rta,len)       ((len) -= RTA_ALIGN((rta)->rta_len), \
         (struct rtattr *)((char *)(rta) + RTA_ALIGN((rta)->rta_len)))
-#define RTA_DATA                ((void *)((char *)(rta) + 4))
+#define RTA_DATA(ret)           ((void *)((char *)(rta) + 4))
 
 struct rtgenmsg {
     unsigned char rtgen_family;
