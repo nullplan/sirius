@@ -451,7 +451,6 @@ int mq_unlink(const char *);
 /* net/if.h */
 void if_freenameindex(struct if_nameindex *);
 struct if_nameindex *if_nameindex(void);
-unsigned if_nametoindex(const char *);
 
 /* netdb.h */
 void sethostent(int);
