@@ -13,10 +13,14 @@ hidden int __netlink_transact(int (*prepare)(struct nlmsghdr *, size_t, void *),
     } u;
 
     int sendlen = prepare(&u.nlh, sizeof u, prepctx);
+    u.nlh.nlmsg_len = sendlen;
     u.nlh.nlmsg_seq = 0;
     u.nlh.nlmsg_pid = 0;
 
-    ssize_t rv = send(sk, &u, sendlen, 0);
+    if (sendlen & 15)
+        memset(u.buf + sendlen, 0, (-sendlen) & 15);
+
+    ssize_t rv = send(sk, &u, NLMSG_ALIGN(sendlen), 0);
     if (rv < sendlen) {
         rv = -1;
         goto out_close;
