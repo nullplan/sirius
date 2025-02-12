@@ -23,9 +23,3 @@ float scalblnf(float x, long n)
     }
     return x * __float_from_bits((n + 0x7f) << 23);
 }
-
-float scalbnf(float x, int n)
-{
-    return scalblnf(x, n);
-}
-weak_alias(ldexpf, scalbnf);

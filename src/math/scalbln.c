@@ -23,9 +23,3 @@ double scalbln(double x, long n)
     }
     return x * __double_from_bits((n + 0x3ffull) << 52);
 }
-
-double scalbn(double x, int n)
-{
-    return scalbln(x, n);
-}
-weak_alias(ldexp, scalbn);
