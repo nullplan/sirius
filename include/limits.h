@@ -113,7 +113,7 @@
 #define OPEN_MAX        0x80000000U
 #define PTHREAD_DESTRUCTOR_ITERATIONS   8
 #define PTHREAD_KEYS_MAX    256
-#define PTHREAD_STACK_MIN   64
+#define PTHREAD_STACK_MIN   (12 << 10)
 #define RTSIG_MAX           30
 #define SEM_VALUE_MAX       0x7fffffff
 #define STREAM_MAX          1024

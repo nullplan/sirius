@@ -1,0 +1,80 @@
+An investigation into thread stacks on various libcs
+====================================================
+
+Looking at what the concensus on thread stacks seems to be, I checked other
+implementations for how they handle it.
+
+musl
+----
+
+If an explicit stack is provided, it is used as stack, definitely. It is also
+used to house TLS+TD+TSD if those three together don't make up more than 1/8 of
+the stack, and don't add up to 2k or more. Otherwise, they get allocated.
+
+Minimum stack size is 2k "to align with sigaltstack", whatever that has to do
+with anything. Maximum stack size is SIZE_MAX/4 - 2k.
+
+glibc
+-----
+
+Minimum stack size varies by architecture. Popular choice seems to be 2 pages.
+There is no maximum stack size.
+
+If an explicit stack is provided, it is always used to house stack, static TLS,
+and TD. Since that means the minimum can change between setting the stack and
+creating the process, if the stack is too small for the entire thing and a "rest
+stack" (the size of which is arch-dependent, but 2k seems to be a popular
+choice), EINVAL is returned from pthread_create().
+
+dietlibc
+--------
+
+The minimum stack size equals the default stack size of 16k. The maximum varies
+by architecture. It is 32M for x86_64 and a few others, and for most other archs
+it is 8M. If there are justifications for these values in the commit logs, I
+lack the CVS skills to list them.
+
+dietlibc does not respect the stack size given when compiled with TLS support,
+and will overrun the explicit stack buffer unconditionally. It will always put
+the TLS on the stack, but since it increases the provided stack size by the TLS
+size, I guess that's OK.
+
+bionic
+------
+
+bionic rejects stack size not aligned to pages, and the minimum stack size is
+16k on 64-bit archs and 8k on 32-bit archs.
+
+bionic will always allocate the TLS away from the explicit stack and surround it
+with guard pages.
+
+Critique
+--------
+
+I don't like a lot of what I see. POSIX offers little guidance here. musl's
+approach is probably the best, as it allows pthread_create() to operate without
+calling mmap(), and it at most imposes upon 1/8 of the explicit stack. However,
+the ridiculous minimum stack size of 2k is juxtaposed with a stack requirement
+of 8k to call printf().
+
+It sems obvious to me that PTHREAD_STACK_MIN should be large enough for both
+whatever the threading implementation needs plus the deepest stack a single call
+to an implementation function can take. An application may be able to roughly
+gauge its own stack consumption (though in some ABIs this may be harder than in
+outhers), but it has absolutely no way of doing so with libc functions.
+
+glibc is not much better, in worst case leaving only 2k, and that depends on
+what libraries are linked at load time. glibc's realpath() takes roughly 4k of
+stack.
+
+dietlibc is obviously out of the question. Violating the contract like that is
+just irresponsible.
+
+bionic seems to be doing best size-wise, as most normal function calls should be
+able to be handled in the minimum stack size, and the TLS does not impose upon
+it.
+
+So what will I do? Since I use a similar design to musl's printf(), I require
+ca. 8k of stack in printf() as well. With odds and ends, I will set the min
+stack size to 12k and use musl's idea of using only up to 1/8 of the explicit
+stack for TLS and stuff.

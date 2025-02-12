@@ -37,6 +37,7 @@ struct __file {
 #define F_SETBUF    32      /* setvbuf() executed (don't automatically change buffer mode) */
 
 extern hidden void __stdio_list_init(void);     /* initializes open-file-list with used standard files. */
+extern hidden void __stdio_init_locks(void);    /* initializes locks in currently open files. */
 extern hidden void __stdio_exit(void);          /* flushes all open files, leaves stdio unusable */
 extern hidden void __stdio_exit_needed(void);   /* alias to force correct link */
 extern hidden FILE *__ofl_lock(void);           /* locks open-file-list, returns head pointer */

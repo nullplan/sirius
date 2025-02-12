@@ -25,6 +25,10 @@ struct __pthread
     int tid;
     locale_t locale;
     struct __file *locked_files;
+    void *map;
+    size_t map_size;
+    size_t *tsd;
+    int detachstate;
 
     #ifndef TLS_VARIANT_1
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
@@ -33,6 +37,7 @@ struct __pthread
     #endif
 };
 
+enum {DT_JOINABLE, DT_DETACHED, DT_EXITING};
 
 struct tls_data {
     size_t size;
