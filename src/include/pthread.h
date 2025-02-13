@@ -32,7 +32,7 @@ struct __pthread
     struct __file *locked_files;
     void *map;
     size_t map_size;
-    size_t *tsd;
+    void **tsd;
     void *result;
     struct __ptcb *cb;
 

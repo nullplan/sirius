@@ -20,6 +20,7 @@ extern hidden struct __pthread *__init_from_phdrs(const void *, size_t, size_t);
 extern hidden size_t __next_canary(void);
 extern hidden void __init_canary(const void *);
 extern hidden struct __localedef __global_locale;
+extern hidden void __init_tsd(void);
 
 #ifdef PAGESIZE
 #define PAGE_SIZE PAGESIZE
