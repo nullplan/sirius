@@ -41,17 +41,21 @@ static void cancel_handler(int sig, siginfo_t *si, void *ctx)
     ucontext_t *uc = ctx;
     pthread_t self = __pthread_self();
     if ((self->cancelstate & PTHREAD_CANCEL_DISABLE) || !self->cancel) return;
-    if (self->cancelstate & PTHREAD_CANCEL_ASYNCHRONOUS)
+    BITOP(uc->uc_sigmask.__ss, |=, (SIGCANCEL - 1));
+    if (self->cancelstate & PTHREAD_CANCEL_ASYNCHRONOUS) {
+        __restore_sigs(&uc->uc_sigmask);
         __cancel();
+    }
     if (uc->uc_mcontext.REG_IP >= (uintptr_t)__cp_begin && uc->uc_mcontext.REG_IP < (uintptr_t)__cp_end)
         uc->uc_mcontext.REG_IP = (uintptr_t)__cp_cancel;
-    BITOP(uc->uc_sigmask.__ss, |=, (SIGCANCEL - 1));
     __syscall(SYS_tkill, self->tid, SIGCANCEL);
 }
 
 static void init_cancel_sig(void)
 {
-    struct sigaction sa = {.sa_sigaction = cancel_handler, .sa_flags = SA_RESTART | SA_SIGINFO};
+    struct sigaction sa;
+    sa.sa_sigaction = cancel_handler;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO;
     memset(sa.sa_mask.__ss, -1, _NSIG / 8);
     __libc_sigaction(SIGCANCEL, &sa, 0);
 }
