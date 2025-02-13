@@ -24,7 +24,7 @@ hidden long __syscall_cp_c(syscall_arg_t a, syscall_arg_t b, syscall_arg_t c, sy
         return (__syscall6)(nr, a, b, c, d, e, f);
 
     long rv = __syscall_cp_asm(a, b, c, d, e, f, nr, &self->cancel);
-    if (rv == -EINTR && nr != SYS_close)
+    if (rv == -EINTR && self->cancel && nr != SYS_close)
         __cancel();
     return rv;
 }
