@@ -3,6 +3,7 @@
 
 int fclose(FILE *f)
 {
+    __flockfile(f);
     int r = fflush(f);
     r |= f->close(f);
 
