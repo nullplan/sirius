@@ -99,9 +99,9 @@ extern hidden int __clone(int (*)(void *), void *, int, void *, int *, uintptr_t
 #define FUTEX_OWNER_DIED            0x40000000
 #define FUTEX_WAITERS               0x80000000U
 
-extern hidden void __tl_lock();
-extern hidden void __tl_unlock();
-extern hidden void __tl_sync();
+extern hidden void __tl_lock(void);
+extern hidden void __tl_unlock(void);
+extern hidden void __tl_sync(void);
 
 extern hidden int __futex_wait(volatile int *, int, int);
 extern hidden int __futex_wake(volatile int *, int, int);
