@@ -19,6 +19,18 @@ static inline int a_swap(volatile int *p, int v)
     return v;
 }
 
+#define a_inc a_inc
+static inline void a_inc(volatile int *p)
+{
+    __asm__("lock; incl %0" : "+m"(*p) :: "cc");
+}
+
+#define a_dec a_dec
+static inline void a_dec(volatile int *p)
+{
+    __asm__("lock; decl %0" : "+m"(*p) :: "cc");
+}
+
 static inline void a_crash(void) {
     __asm__("ud2" ::: "memory");
     __builtin_unreachable();

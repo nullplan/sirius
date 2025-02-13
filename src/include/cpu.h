@@ -68,6 +68,26 @@ static inline int a_swap(volatile int *p, int v)
 }
 #endif
 
+#ifndef a_inc
+static inline void a_inc(volatile int *p) {
+    int v;
+    a_pre_llsc();
+    do v = a_ll(p);
+    while (!a_sc(p, v + 1u));
+    a_post_llsc();
+}
+#endif
+
+#ifndef a_dec
+static inline void a_dec(volatile int *p) {
+    int v;
+    a_pre_llsc();
+    do v = a_ll(p);
+    while (!a_sc(p, v - 1u));
+    a_post_llsc();
+}
+#endif
+
 #ifndef a_ctz
 #ifdef a_clz
 static inline int a_ctz(size_t x) {

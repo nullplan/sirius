@@ -22,6 +22,7 @@ struct __file {
     FILE *lnext, *lprev;                                /* list pointers for lock list. */
     volatile int lock;                                  /* -1 - file doesn't need locks, 0 - free, other - owned by given thread. */
     unsigned count;                                     /* recursive lock count */
+    int waiters;                                        /* waiters count */
     off_t shlim;                                        /* limit for the scan-helper functions. */
     off_t shcnt;                                        /* number of read characters since last shlim */
     unsigned char *shend;                               /* pointer to end for scan helpers */
