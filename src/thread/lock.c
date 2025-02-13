@@ -25,20 +25,10 @@
  * no contender to be awoken, and so we can save the syscall.
  */
 
-#define SPINS 100
 hidden void __lock(struct lock *lck)
 {
     int v = a_cas(&lck->l, 0, INT_MIN + 1);
     if (!v) return;
-
-    for (int spin = SPINS; spin > 0; spin--)
-    {
-        if (v >= 0) {
-            int n = a_cas(&lck->l, v, v + (INT_MIN + 1));
-            if (n == v) return;
-            v = n;
-        } else v = lck->l;
-    }
 
     do v = lck->l;
     while (a_cas(&lck->l, v, v + 1) != v);
