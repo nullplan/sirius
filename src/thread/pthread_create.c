@@ -98,7 +98,7 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
         new_td->map = map;
         new_td->map_size = map_size;
     }
-    new_td->tsd = tsd;
+    new_td->tsd = (void **)tsd;
     new_td->self = new_td;
 
     pthread_t self = __pthread_self();

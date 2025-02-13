@@ -177,6 +177,7 @@ void __ptcb_pop(int);
 #define pthread_cleanup_push(fn, a) do {struct __ptcb __cb = {(fn), (a)}; __ptcb_push(&__cb)
 #define pthread_cleanup_pop(x) __ptcb_pop(x); } while (0)
 
+#define pthread_equal(a, b) ((a) == (b))
 #ifdef __cplusplus
 }
 #endif
