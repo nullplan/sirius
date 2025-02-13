@@ -40,3 +40,10 @@ hidden void __stdio_exit(void)
     }
 }
 weak_alias(__stdio_exit_needed, __stdio_exit);
+
+hidden void __stdio_init_locks(void)
+{
+    for (FILE *f = head; f; f = f->next)
+        if (f->lock == -1)
+            f->lock = 0;
+}
