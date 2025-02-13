@@ -24,3 +24,10 @@ static int a_ctz(size_t x)
     __asm__("bsf %1,%0" : "=r"(x) : "rm"(x) : "cc");
     return x;
 }
+
+static inline void a_stackinvoke(void (*func)(void), void *stack)
+{
+    stack = (void *)((uintptr_t)stack & -16ul);
+    __asm__("movl %1, %%esp; calll *%0" :: "r"(func), "r"(stack));
+    __builtin_unreachable();
+}

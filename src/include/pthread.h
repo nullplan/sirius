@@ -6,6 +6,7 @@
 #include <locale.h>
 #include "pthread_arch.h"
 
+struct lock { volatile int l; };
 struct __pthread
 {
     struct __pthread *self;     /* i386, x32, x86_64 ABI: first word is pointer to self */
@@ -23,12 +24,17 @@ struct __pthread
     /* non-ABI free-for-all */
     int errno_val;
     int tid;
+    struct lock killlock;
+    int detachstate;
+    int cancelstate;
+    int cancel;
     locale_t locale;
     struct __file *locked_files;
     void *map;
     size_t map_size;
     size_t *tsd;
-    int detachstate;
+    void *result;
+    struct __ptcb *cb;
 
     #ifndef TLS_VARIANT_1
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
@@ -100,7 +106,9 @@ extern hidden void __tl_sync();
 extern hidden int __futex_wait(volatile int *, int, int);
 extern hidden int __futex_wake(volatile int *, int, int);
 
-struct lock { volatile int l; };
 extern hidden void __lock(struct lock *);
 extern hidden void __unlock(struct lock *);
+
+extern hidden const size_t __pthread_tsd_size;
+extern hidden void __pthread_tsd_destroy(void);
 #endif

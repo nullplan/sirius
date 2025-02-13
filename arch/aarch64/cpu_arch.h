@@ -80,3 +80,10 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     res.lo = a * b;
     return res;
 }
+
+static inline void a_stackinvoke(void (*func)(void), void *stack)
+{
+    stack = (void *)((uintptr_t)stack & -16ul);
+    __asm__("mov sp, %1; br %0" :: "r"(func), "r"(stack));
+    __builtin_unreachable();
+}

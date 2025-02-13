@@ -38,3 +38,10 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     __asm__("mulq %2" : "=a"(res.lo), "=d"(res.hi) : "r"(b), "a"(a) : "cc");
     return res;
 }
+
+static inline void a_stackinvoke(void (*func)(void), void *stack)
+{
+    stack = (void *)((uintptr_t)stack & -16ul);
+    __asm__("movq %1, %%rsp; callq *%0" :: "r"(func), "r"(stack));
+    __builtin_unreachable();
+}

@@ -43,3 +43,10 @@ static int a_ctz(size_t x) {
     return x;
 }
 #endif
+
+static inline void a_stackinvoke(void (*func)(void), void *stack)
+{
+    stack = (void *)(((uintptr_t)stack & -16ul) - 16);
+    __asm__("mr %%r1, %1; mtctr %%0; bctr" :: "r"(func), "r"(stack));
+    __builtin_unreachable();
+}
