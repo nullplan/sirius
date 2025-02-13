@@ -111,4 +111,6 @@ extern hidden void __unlock(struct lock *);
 
 extern hidden const size_t __pthread_tsd_size;
 extern hidden void __pthread_tsd_destroy(void);
+
+extern hidden void __testcancel(void);
 #endif

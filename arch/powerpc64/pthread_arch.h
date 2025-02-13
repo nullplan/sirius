@@ -6,3 +6,4 @@ static inline uintptr_t __get_tp(void)
 }
 #define TP_OFFSET   0x7000
 #define DTV_OFFSET  0x8000
+#define REG_IP gp_regs[32]

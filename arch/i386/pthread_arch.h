@@ -5,3 +5,4 @@ static inline uintptr_t __get_tp(void)
     return rv;
 }
 #define TLS_VARIANT_1
+#define REG_IP eip

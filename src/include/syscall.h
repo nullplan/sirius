@@ -37,6 +37,18 @@ _Static_assert(sizeof (syscall_arg_t) == sizeof (long long), "");
 #define __syscall5(nr, a, b, c, d, e)           __syscall5((nr), __scc(a), __scc(b), __scc(c), __scc(d), __scc(e))
 #define __syscall6(nr, a, b, c, d, e, f)        __syscall6((nr), __scc(a), __scc(b), __scc(c), __scc(d), __scc(e), __scc(f))
 
+extern hidden long __syscall_cp(syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t);
+extern hidden long __syscall_cp_c(syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t);
+#define __syscall_cp(...)       __SYSCALL_CONCAT(__syscall_cp, __SYSCALL_NARGS(__VA_ARGS__))(__VA_ARGS__)
+#define syscall_cp(...)         __syscall_ret(__syscall_cp(__VA_ARGS__))
+
+#define __syscall_cp0(nr)                       (__syscall_cp)(0, 0, 0, 0, 0, 0, (nr))
+#define __syscall_cp1(nr, a)                    (__syscall_cp)(__scc(a), 0, 0, 0, 0, 0, (nr))
+#define __syscall_cp2(nr, a, b)                 (__syscall_cp)(__scc(a), __scc(b), 0, 0, 0, 0, (nr))
+#define __syscall_cp3(nr, a, b, c)              (__syscall_cp)(__scc(a), __scc(b), __scc(c), 0, 0, 0, (nr))
+#define __syscall_cp4(nr, a, b, c, d)           (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), 0, 0, (nr))
+#define __syscall_cp5(nr, a, b, c, d, f)        (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), __scc(e), 0, (nr))
+#define __syscall_cp6(nr, a, b, c, d, e, f)     (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), __scc(e), __scc(f), (nr))
 #ifdef SYS_open
 #define __sys_open(nm, ...) __syscall(SYS_open, (nm), O_LARGEFILE | __VA_ARGS__)
 #else

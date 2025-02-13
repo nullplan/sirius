@@ -6,3 +6,4 @@ static inline uintptr_t __get_tp(void)
 }
 #define TLS_VARIANT_1
 #define CANARY_PAD
+#define REG_IP rip

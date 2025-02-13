@@ -16,7 +16,7 @@ typedef struct __uc {
     unsigned long uc_flags;
     struct __uc *uc_link;
     stack_t uc_stack;
-    sigset_t uc_sigset;
+    sigset_t uc_sigmask;
     unsigned long __pad;
     mcontext_t uc_mcontext;
 } ucontext_t;
