@@ -499,8 +499,6 @@ int pthread_cond_destroy(pthread_cond_t *);
 int pthread_join(pthread_t, void **);
 int pthread_getcpuclockid(pthread_t, clockid_t *);
 int pthread_getschedparam(pthread_t, int *__restrict, struct sched_param *__restrict);
-int pthread_setcancelstate(int, int *);
-int pthread_setcanceltype(int, int *);
 int pthread_setschedparam(pthread_t, int, const struct sched_param *);
 int pthread_setschedprio(pthread_t, int);
 int pthread_mutexattr_init(pthread_mutexattr_t *);
@@ -542,8 +540,6 @@ int pthread_spin_lock(pthread_spinlock_t *);
 int pthread_spin_trylock(pthread_spinlock_t *);
 int pthread_spin_unlock(pthread_spinlock_t *);
 int pthread_spin_destroy(pthread_spinlock_t *);
-void __ptcb_push(struct __ptcb *);
-void __ptcb_pop(int);
 
 /* pty.h */
 int openpty(int *, int *, char *, const struct termios *, const struct winsize *);
