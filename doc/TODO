@@ -637,39 +637,21 @@ int posix_spawn(pid_t *__restrict, const char *__restrict, const posix_spawn_fil
 int posix_spawnp(pid_t *__restrict, const char *__restrict, const posix_spawn_file_actions_t *__restrict, const posix_spawnattr_t *__restrict, char *const [__restrict], char *const [__restrict]);
 
 /* stdio.h */
-char *ctermid(char *);
 ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
 ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);
 FILE *open_memstream(char **, size_t *);
 FILE *popen(const char *, const char *);
 int pclose(FILE *);
-int renameat(int, const char *, int, const char *);
 
 /* stdlib.h */
-int __mb_cur_max(void);
 void call_once(once_flag *, void (*)(void));
-double atof(const char *);
 int atoi(const char *);
 long atol(const char *);
 long long atoll(const char *);
 int strfromd(char *__restrict, size_t, const char *__restrict, double);
 int strfromf(char *__restrict, size_t, const char *__restrict, float);
 int strfroml(char *__restrict, size_t, const char *__restrict, long double);
-double strtod(const char *__restrict, char **__restrict);
-float strtof(const char *__restrict, char **__restrict);
-long double strtold(const char *__restrict, char **__restrict);
-int rand(void);
-void srand(unsigned);
-int atexit(void (*)(void));
-int at_quick_exit(void (*)(void));
-_Noreturn void quick_exit(int);
 int system(const char *);
-int abs(int);
-long labs(long);
-long long llabs(long long);
-div_t div(int, int);
-ldiv_t ldiv(long, long);
-lldiv_t lldiv(long long, long long);
 int mblen(const char *, size_t);
 int mbtowc(wchar_t *__restrict, const char *__restrict, size_t);
 int wctomb(char *, wchar_t);
