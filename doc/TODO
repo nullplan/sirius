@@ -565,9 +565,6 @@ int sched_get_rr_interval(pid_t, struct timespec *);
 int sched_yield(void);
 
 /* search.h */
-int hcreate(size_t);
-void hdestroy(void);
-ENTRY *hsearch(ENTRY, ACTION);
 void *lfind(const void *, const void *, size_t *, size_t, int (*)(const void *, const void *));
 void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, const void *));
 void *tdelete(const void *__restrict, posix_tnode **__restrict, int (*)(const void *, const void *));
