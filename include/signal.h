@@ -101,7 +101,7 @@ struct sigevent {
 #define sigev_notify_function   _u._s._fn
 #define sigev_notify_attributes _u._s._attr
 
-#define SIG2STR_MAX     32
+#define SIG2STR_MAX     9
 
 typedef struct {
     void *ss_sp;

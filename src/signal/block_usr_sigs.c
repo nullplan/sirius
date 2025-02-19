@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <string.h>
 #include "syscall.h"
 
 static const unsigned long __usr_sigs[] = {
@@ -20,3 +21,8 @@ hidden int __block_usr_sigs(sigset_t *oss)
     return __syscall(SYS_rt_sigprocmask, SIG_BLOCK, __usr_sigs, oss, _NSIG/8);
 }
 
+int sigfillset(sigset_t *ss)
+{
+    memcpy(&ss->__ss, __usr_sigs, sizeof __usr_sigs);
+    return 0;
+}

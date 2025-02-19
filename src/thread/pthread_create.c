@@ -110,7 +110,6 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
 
     if (!__threaded) {
         __stdio_init_locks();
-        __init_sigs();
         __threaded = 1;
     }
 

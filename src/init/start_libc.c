@@ -82,6 +82,7 @@ static _Noreturn void start_main_stage2(int argc, char **argv, char **envp, int 
 {
     __stdio_list_init();
     __init_tsd();
+    __init_sigs();
     __run_constructors();
     exit(main(argc, argv, envp));
 }
