@@ -71,10 +71,7 @@ int pthread_cancel(pthread_t t)
     int rv = 0;
     if (t != __pthread_self())
     {
-        __lock(&t->killlock);
-        if (t->tid)
-            rv = -__syscall(SYS_tkill, t->tid, SIGCANCEL);
-        __unlock(&t->killlock);
+        rv = pthread_kill(t, SIGCANCEL);
     }
     return rv;
 }
