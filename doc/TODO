@@ -426,26 +426,6 @@ ssize_t strfmon(char *__restrict, size_t, const char *__restrict, ...);
 ssize_t strfmon_l(char *__restrict, size_t, locale_t, const char *__restrict, ...);
 
 /* netdb.h */
-void sethostent(int);
-struct hostent *gethostent(void);
-void endhostent(void);
-void setnetent(int);
-struct netent *getnetent(void);
-void endnetent(void);
-void setprotoent(int);
-struct protoent *getprotoent(void);
-void endprotoent(void);
-void setservent(int);
-struct servent *getservent(void);
-void endservent(void);
-
-struct netent *getnetbyaddr(uint32_t, int);
-struct netent *getnetbyname(const char *);
-struct protoent *getprotobynumber(int);
-struct protoent *getprotobyname(const char *);
-struct servent *getservbyport(int, const char *);
-struct servent *getservbyname(const char *, const char *);
-
 int getaddrinfo(const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
 int getnameinfo(const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
 void freeaddrinfo(struct addrinfo *);
