@@ -555,12 +555,6 @@ size_t regerror(int, const regex_t *__restrict, char *__restrict, size_t);
 int regexec(const regex_t *__restrict, const char *__restrict, size_t, regmatch_t [__restrict], int);
 void regfree(regex_t *);
 
-/* sched.h */
-int sched_get_priority_min(int);
-int sched_get_priority_max(int);
-int sched_get_rr_interval(pid_t, struct timespec *);
-int sched_yield(void);
-
 /* search.h */
 void *lfind(const void *, const void *, size_t *, size_t, int (*)(const void *, const void *));
 void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, const void *));
