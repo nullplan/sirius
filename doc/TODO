@@ -607,9 +607,6 @@ int pclose(FILE *);
 
 /* stdlib.h */
 void call_once(once_flag *, void (*)(void));
-int atoi(const char *);
-long atol(const char *);
-long long atoll(const char *);
 int strfromd(char *__restrict, size_t, const char *__restrict, double);
 int strfromf(char *__restrict, size_t, const char *__restrict, float);
 int strfroml(char *__restrict, size_t, const char *__restrict, long double);
@@ -723,7 +720,6 @@ int mknodat(int, const char *, mode_t, dev_t);
 int fstatvfs(int, struct statvfs *);
 int statvfs(const char *__restrict, struct statvfs *__restrict);
 
-
 /* utime.h */
 int utimes(const char *, const struct timeval [2]);
 
@@ -792,17 +788,7 @@ int tss_set(tss_t, void *);
 
 
 /* time.h */
-clock_t clock(void);
-double difftime(time_t, time_t);
-time_t timegm(struct tm *);
-time_t time(time_t *);
 size_t strftime(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
-int timespec_getres(struct timespec *, int);
-int clock_getcpuclockid(pid_t, clockid_t *);
-int clock_getres(clockid_t, struct timespec *);
-int clock_nanosleep(clockid_t, int, const struct timespec *, struct timespec *);
-int clock_settime(clockid_t, const struct timespec *);
-int nanosleep(const struct timespec *, struct timespec *);
 size_t strftime_l(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict, locale_t);
 int timer_create(clockid_t, struct sigevent *__restrict, timer_t *__restrict);
 int timer_delete(timer_t);
