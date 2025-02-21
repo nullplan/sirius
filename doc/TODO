@@ -426,9 +426,6 @@ ssize_t strfmon(char *__restrict, size_t, const char *__restrict, ...);
 ssize_t strfmon_l(char *__restrict, size_t, locale_t, const char *__restrict, ...);
 
 /* mqueue.h */
-int mq_close(mqd_t);
-int mq_getattr(mqd_t, struct mq_attr *);
-int mq_notify(mqd_t, const struct sigevent *);
 mqd_t mq_open(const char *, int, ...);
 ssize_t mq_receive(mqd_t, char *, size_t, unsigned *);
 int mq_send(mqd_t, const char *, size_t, unsigned);

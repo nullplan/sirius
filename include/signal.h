@@ -101,6 +101,11 @@ struct sigevent {
 #define sigev_notify_function   _u._s._fn
 #define sigev_notify_attributes _u._s._attr
 
+#define SIGEV_SIGNAL    0
+#define SIGEV_NONE      1
+#define SIGEV_THREAD    2
+#define SIGEV_THREAD_ID 4
+
 #define SIG2STR_MAX     9
 
 typedef struct {
