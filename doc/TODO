@@ -543,8 +543,6 @@ sem_t *sem_open(const char *, int, ...);
 int sem_close(sem_t *);
 int sem_unlink(const char *);
 
-
-
 /* spawn.h */
 int posix_spawn_file_actions_init(posix_spawn_file_actions_t *);
 int posix_spawn_file_actions_addchdir(posix_spawn_file_actions_t *__restrict, const char *__restrict);
@@ -574,7 +572,6 @@ FILE *popen(const char *, const char *);
 int pclose(FILE *);
 
 /* stdlib.h */
-void call_once(once_flag *, void (*)(void));
 int strfromd(char *__restrict, size_t, const char *__restrict, double);
 int strfromf(char *__restrict, size_t, const char *__restrict, float);
 int strfroml(char *__restrict, size_t, const char *__restrict, long double);
@@ -651,10 +648,6 @@ int getpriority(int, id_t);
 int getrusage(int, struct rusage *);
 int setpriority(int, id_t, int);
 
-/* sys/select.h */
-int pselect(int, fd_set *__restrict, fd_set *__restrict, fd_set *__restrict, const struct timespec *__restrict, const sigset_t *__restrict);
-int select(int, fd_set *__restrict, fd_set *__restrict, fd_set *__restrict, struct timeval *__restrict);
-
 /* sys/sem.h */
 int semctl(int, int, int, ...);
 int semget(key_t, int, int);
@@ -666,24 +659,6 @@ int shmctl(int, int, struct shmid_ds *);
 int shmdt(const void *);
 int shmget(key_t, size_t, int);
 
-/* sys/stat.h */
-int chmod(const char *, mode_t);
-int fchmod(int, mode_t);
-int fchmodat(int, const char *, mode_t, int);
-int fstat(int, struct stat *);
-int fstatat(int, const char *__restrict, struct stat *__restrict, int);
-int futimens(int, const struct timespec [2]);
-int lstat(const char *__restrict, struct stat *__restrict);
-int mkdir(const char *, mode_t);
-int mkdirat(int, const char *, mode_t);
-int mkfifo(const char *, mode_t);
-int mkfifoat(int, const char *, mode_t);
-int stat(const char *__restrict, struct stat *__restrict);
-mode_t umask(mode_t);
-int utimensat(int, const char *, const struct timespec [2], int);
-int mknod(const char *, mode_t, dev_t);
-int mknodat(int, const char *, mode_t, dev_t);
-
 /* sys/statfs.h */
 int fstatvfs(int, struct statvfs *);
 int statvfs(const char *__restrict, struct statvfs *__restrict);
@@ -693,10 +668,6 @@ int utimes(const char *, const struct timeval [2]);
 
 /* sys/times.h */
 clock_t times(struct tms *);
-
-/* sys/uio.h */
-ssize_t readv(int, const struct iovec *, int);
-ssize_t writev(int, const struct iovec *, int);
 
 /* sys/utsname.h */
 int uname(struct utsname *);
@@ -728,7 +699,6 @@ int tcgetwinsize(int, struct winsize *);
 int tcsetwinsize(int, const struct winsize *);
 
 /* threads.h */
-void call_once(once_flag *, void (*)(void));
 int cnd_broadcast(cnd_t *);
 void cnd_destroy(cnd_t *);
 int cnd_init(cnd_t *);
