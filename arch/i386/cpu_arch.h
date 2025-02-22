@@ -43,3 +43,9 @@ static inline void a_stackinvoke(void (*func)(void), void *stack)
     __asm__("movl %1, %%esp; calll *%0" :: "r"(func), "r"(stack));
     __builtin_unreachable();
 }
+
+#define a_pause a_pause
+static inline void a_pause(void)
+{
+    __asm__("pause" ::: "memory");
+}

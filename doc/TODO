@@ -500,11 +500,6 @@ int pthread_rwlockattr_init(pthread_rwlockattr_t *);
 int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *__restrict, int *__restrict);
 int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
 int pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
-int pthread_spin_init(pthread_spinlock_t *, int);
-int pthread_spin_lock(pthread_spinlock_t *);
-int pthread_spin_trylock(pthread_spinlock_t *);
-int pthread_spin_unlock(pthread_spinlock_t *);
-int pthread_spin_destroy(pthread_spinlock_t *);
 
 /* pty.h */
 int openpty(int *, int *, char *, const struct termios *, const struct winsize *);

@@ -191,4 +191,9 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     return res;
 }
 #endif
+
+#ifndef a_pause
+#define a_pause a_barrier
 #endif
+#endif
+
