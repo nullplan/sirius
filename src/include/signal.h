@@ -15,5 +15,6 @@ hidden void __init_sigs(void);
 hidden int __block_usr_sigs(sigset_t *);
 hidden int __block_all_sigs(sigset_t *);
 hidden int __restore_sigs(const sigset_t *);
+hidden void __get_handler_set(unsigned long *);
 
 #endif
