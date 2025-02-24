@@ -103,7 +103,7 @@ struct flock {
 #define AT_RENAME_NOREPLACE     0x0001
 #define AT_RENAME_EXCHANGE      0x0002
 #define AT_RENAME_WHITEOUT      0x0004
-#define AT_EACCES               0x200
+#define AT_EACCESS              0x200
 #define AT_REMOVEDIR            0x200
 #define AT_HANDLE_FID           0x200
 #define AT_HANDLE_MNT_ID_UNIQUE 0x001
