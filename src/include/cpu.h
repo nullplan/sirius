@@ -88,6 +88,16 @@ static inline void a_dec(volatile int *p) {
 }
 #endif
 
+#ifndef a_or_l
+static inline void a_or_l(volatile unsigned long *p, unsigned long m)
+{
+    unsigned long v;
+    a_pre_llsc();
+    do v = (unsigned long)a_ll_p((void *volatile *)p);
+    while (!a_sc_p((void *volatile *)p, (void *)(v | m)));
+    a_post_llsc();
+}
+#endif
 #ifndef a_ctz
 #ifdef a_clz
 static inline int a_ctz(size_t x) {

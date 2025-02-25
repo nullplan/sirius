@@ -49,3 +49,9 @@ static inline void a_pause(void)
 {
     __asm__("pause" ::: "memory");
 }
+
+#define a_or_l a_or_l
+static inline void a_or_l(volatile unsigned long *p, unsigned long m)
+{
+    __asm__("lock; orl %1, %0" : "+m"(*p) : "r"(m) : "cc");
+}
