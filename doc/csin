@@ -1,0 +1,36 @@
+Complex trigonometry
+====================
+
+exp(ix)  = cos(x) + i sin(x)
+exp(-ix) = cos(x) - i sin(x)
+
+Therefore:
+
+exp(ix) + exp(-ix) = 2 cos(x)
+exp(ix) - exp(-ix) = 2i sin(x)
+
+
+cos(x) = (exp(ix) + exp(-ix))/2
+sin(x) = (exp(ix) - exp(-ix))/(2i)
+
+
+Only question is what to do with the 1/(2i).
+
+1/(2i) = -i/2
+-i(a+bi) = -ia + b
+i(a+bi) = ia - b
+
+
+tan(x) = sin(x)/cos(x) = (exp(ix) - exp(-ix))/(i (exp(ix) + exp(-ix))) = -i ((exp(ix) - exp(-ix))/(exp(ix) + exp(-ix)))
+
+
+s = (exp(ix) - exp(-ix))/(2i)
+2is = exp(ix) - exp(-ix)
+2is exp(ix) = exp(2ix) - 1
+
+Let t = exp(ix)
+2ist = t² - 1
+t² - 2ist - 1 = 0
+t = is ± √(1 - s²)
+
+ln t = ix

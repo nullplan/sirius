@@ -9,9 +9,6 @@ int aio_write(struct aiocb *);
 int lio_listio(int, struct aiocb *__restrict const [__restrict], int, struct sigevent *__restrict);
 
 /* complex.h */
-complex double   csin(complex double);
-complex double   ccos(complex double);
-complex double   ctan(complex double);
 complex double  casin(complex double);
 complex double  cacos(complex double);
 complex double  catan(complex double);
@@ -21,12 +18,7 @@ complex double  ctanh(complex double);
 complex double casinh(complex double);
 complex double cacosh(complex double);
 complex double catanh(complex double);
-complex double   cexp(complex double);
-complex double   clog(complex double);
 
-complex float   csinf(complex float);
-complex float   ccosf(complex float);
-complex float   ctanf(complex float);
 complex float  casinf(complex float);
 complex float  cacosf(complex float);
 complex float  catanf(complex float);
@@ -36,12 +28,7 @@ complex float  ctanhf(complex float);
 complex float casinhf(complex float);
 complex float cacoshf(complex float);
 complex float catanhf(complex float);
-complex float   cexpf(complex float);
-complex float   clogf(complex float);
 
-complex long double   csinl(complex long double);
-complex long double   ccosl(complex long double);
-complex long double   ctanl(complex long double);
 complex long double  casinl(complex long double);
 complex long double  cacosl(complex long double);
 complex long double  catanl(complex long double);
@@ -51,8 +38,6 @@ complex long double  ctanhl(complex long double);
 complex long double casinhl(complex long double);
 complex long double cacoshl(complex long double);
 complex long double catanhl(complex long double);
-complex long double   cexpl(complex long double);
-complex long double   clogl(complex long double);
 
 /* dlfcn.h */
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
