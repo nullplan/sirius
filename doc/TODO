@@ -483,11 +483,6 @@ int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *__restrict, int *_
 int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
 int pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
 
-/* pty.h */
-int openpty(int *, int *, char *, const struct termios *, const struct winsize *);
-pid_t forkpty(int *, char *, const struct termios *, const struct winsize *);
-int login_tty(int);
-
 /* pwd.h */
 struct passwd *getpwnam(const char *);
 struct passwd *getpwuid(uid_t);
@@ -718,7 +713,6 @@ int execl(const char *, const char *, ...);
 int execle(const char *, const char *, ...);
 int execlp(const char *, const char *, ...);
 int execv(const char *, char *const []);
-int execve(const char *, char *const [], char *const []);
 int execvp(const char *, char *const []);
 int faccessat(int, const char *, int, int);
 int fchdir(int);
