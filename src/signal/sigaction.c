@@ -2,10 +2,23 @@
 #include <string.h>
 #include "syscall.h"
 #include "ksig_arch.h"
+#include "cpu.h"
 
 #ifdef SA_RESTORER
 extern hidden unsigned char __sigrestore[], __rt_sigrestore[];
 #endif
+
+static unsigned long handler_set[_NSIG/8/sizeof(long)];
+static void set_handler_bit(int sig)
+{
+    sig--;
+    a_or_l(handler_set + (sig / 8 / sizeof (long)), 1ul << (sig % (8 * sizeof (long))));
+}
+
+hidden void __get_handler_set(unsigned long *p)
+{
+    memcpy(p, handler_set, _NSIG/8);
+}
 
 hidden int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict osa)
 {
@@ -18,6 +31,8 @@ hidden int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct
         ksa.flags |= SA_RESTORER;
         ksa.restorer = ksa.flags & SA_SIGINFO? __rt_sigrestore : __sigrestore;
 #endif
+        if (sa->sa_handler != SIG_DFL && sa->sa_handler != SIG_IGN)
+            set_handler_bit(sig);
     }
     int rv = __syscall(SYS_rt_sigaction, sig, sa?&ksa:0, osa?&ksa:0, _NSIG/8);
     if (!rv && osa) {

@@ -9,9 +9,6 @@ int aio_write(struct aiocb *);
 int lio_listio(int, struct aiocb *__restrict const [__restrict], int, struct sigevent *__restrict);
 
 /* complex.h */
-complex double   csin(complex double);
-complex double   ccos(complex double);
-complex double   ctan(complex double);
 complex double  casin(complex double);
 complex double  cacos(complex double);
 complex double  catan(complex double);
@@ -21,12 +18,7 @@ complex double  ctanh(complex double);
 complex double casinh(complex double);
 complex double cacosh(complex double);
 complex double catanh(complex double);
-complex double   cexp(complex double);
-complex double   clog(complex double);
 
-complex float   csinf(complex float);
-complex float   ccosf(complex float);
-complex float   ctanf(complex float);
 complex float  casinf(complex float);
 complex float  cacosf(complex float);
 complex float  catanf(complex float);
@@ -36,12 +28,7 @@ complex float  ctanhf(complex float);
 complex float casinhf(complex float);
 complex float cacoshf(complex float);
 complex float catanhf(complex float);
-complex float   cexpf(complex float);
-complex float   clogf(complex float);
 
-complex long double   csinl(complex long double);
-complex long double   ccosl(complex long double);
-complex long double   ctanl(complex long double);
 complex long double  casinl(complex long double);
 complex long double  cacosl(complex long double);
 complex long double  catanl(complex long double);
@@ -51,8 +38,6 @@ complex long double  ctanhl(complex long double);
 complex long double casinhl(complex long double);
 complex long double cacoshl(complex long double);
 complex long double catanhl(complex long double);
-complex long double   cexpl(complex long double);
-complex long double   clogl(complex long double);
 
 /* dlfcn.h */
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
@@ -175,7 +160,6 @@ double        pow(double, double);
 double       fmod(double, double);
 double  remainder(double, double);
 double     remquo(double, double, int *);
-double   copysign(double, double);
 double  nextafter(double, double);
 double       fdim(double, double);
 double       fmax(double, double);
@@ -261,7 +245,6 @@ float        powf(float, float);
 float       fmodf(float, float);
 float  remainderf(float, float);
 float     remquof(float, float, int *);
-float   copysignf(float, float);
 float  nextafterf(float, float);
 float       fdimf(float, float);
 float       fmaxf(float, float);
@@ -347,8 +330,7 @@ long double        powl(long double, long double);
 long double       fmodl(long double, long double);
 long double  remainderl(long double, long double);
 long double     remquol(long double, long double, int *);
-long double   copysignl(long double, long double);
-long double  nextafterl(long double, long double);
+gong double  nextafterl(long double, long double);
 long double       fdiml(long double, long double);
 long double       fmaxl(long double, long double);
 long double       fminl(long double, long double);
@@ -500,11 +482,6 @@ int pthread_rwlockattr_init(pthread_rwlockattr_t *);
 int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *__restrict, int *__restrict);
 int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
 int pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
-
-/* pty.h */
-int openpty(int *, int *, char *, const struct termios *, const struct winsize *);
-pid_t forkpty(int *, char *, const struct termios *, const struct winsize *);
-int login_tty(int);
 
 /* pwd.h */
 struct passwd *getpwnam(const char *);
@@ -723,7 +700,6 @@ int execl(const char *, const char *, ...);
 int execle(const char *, const char *, ...);
 int execlp(const char *, const char *, ...);
 int execv(const char *, char *const []);
-int execve(const char *, char *const [], char *const []);
 int execvp(const char *, char *const []);
 int faccessat(int, const char *, int, int);
 int fchdir(int);
@@ -760,7 +736,6 @@ off_t lseek(int, off_t, int);
 long pathconf(const char *, int);
 int pause(void);
 int pipe(int [2]);
-int pipe2(int [2], int);
 int posix_close(int, int);
 ssize_t pread(int, void *, size_t, off_t);
 ssize_t pwrite(int, const void *, size_t, off_t);
