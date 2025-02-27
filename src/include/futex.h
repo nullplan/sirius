@@ -8,4 +8,11 @@
 #define FUTEX_TRYLOCK_PI    8
 #define FUTEX_PRIVATE_FLAG  128
 
+struct timespec;
+
+extern hidden int __futex_wait(volatile int *, int, int);
+extern hidden int __futex_wake(volatile int *, int, int);
+extern hidden int __timedwait(volatile int *, volatile int *, int, const struct timespec *, int);
+extern hidden int __timedwait_cp(volatile int *, volatile int *, int, const struct timespec *, int);
+
 #endif
