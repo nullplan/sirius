@@ -49,9 +49,6 @@ void *dlsym(void *__restrict, const char *__restrict);
 /* fmtmsg.h */
 int fmtmsg(long, const char *, int, const char *, const char *, const char *);
 
-/* fnmatch.h */
-int fnmatch(const char *, const char *, int);
-
 /* grp.h */
 struct group *getgrgid(gid_t);
 struct group *getgrnam(const char *);
