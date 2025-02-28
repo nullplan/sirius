@@ -16,7 +16,7 @@ pid_t forkpty(int *m, char *name, const struct termios *tio, const struct winsiz
 
     if (!rv) {
         if (login_tty(s))
-            _Exit(127);
+            _exit(127);
     } else close(s);
     return rv;
 }
