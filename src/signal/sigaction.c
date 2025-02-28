@@ -3,11 +3,13 @@
 #include "syscall.h"
 #include "ksig_arch.h"
 #include "cpu.h"
+#include "libc.h"
 
 #ifdef SA_RESTORER
 extern hidden unsigned char __sigrestore[], __rt_sigrestore[];
 #endif
 
+hidden int __eintr_valid;
 static unsigned long handler_set[_NSIG/8/sizeof(long)];
 static void set_handler_bit(int sig)
 {
@@ -31,8 +33,11 @@ hidden int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct
         ksa.flags |= SA_RESTORER;
         ksa.restorer = ksa.flags & SA_SIGINFO? __rt_sigrestore : __sigrestore;
 #endif
-        if (sa->sa_handler != SIG_DFL && sa->sa_handler != SIG_IGN)
+        if (sa->sa_handler != SIG_DFL && sa->sa_handler != SIG_IGN) {
+            if (!(sa->sa_flags & SA_RESTART))
+                a_swap(&__eintr_valid, 1);
             set_handler_bit(sig);
+        }
     }
     int rv = __syscall(SYS_rt_sigaction, sig, sa?&ksa:0, osa?&ksa:0, _NSIG/8);
     if (!rv && osa) {
