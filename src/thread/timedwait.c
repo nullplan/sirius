@@ -36,7 +36,7 @@ hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, con
         pthread_cleanup_push(cleanup, (void *)waiters);
         rv = __syscall_cp(SYS_futex, fut, FUTEX_WAIT, val, to);
         pthread_cleanup_pop(1);
-    } while (rv == -EINTR && !__eintr_valid);
+    } while (rv == -ETIMEDOUT || (rv == -EINTR && !__eintr_valid));
     return rv;
 }
 
