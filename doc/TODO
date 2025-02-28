@@ -529,16 +529,7 @@ void *reallocarray(void *, size_t, size_t);
 char *realpath(const char *__restrict, char *__restrict);
 long a64l(const char *);
 char *l64a(long);
-double drand48(void);
-double erand48(unsigned short [3]);
 char *initstate(unsigned, char *, size_t);
-long jrand48(unsigned short [3]);
-void lcong48(unsigned short [7]);
-long lrand48(void);
-long mrand48(void);
-long nrand48(unsigned short [3]);
-unsigned short *seed48(unsigned short [3]);
-void srand48(long);
 long random(void);
 void srandom(unsigned);
 int grantpt(int);
@@ -552,9 +543,6 @@ int strcasecmp(const char *, const char *);
 int strcasecmp_l(const char *, const char *, locale_t);
 int strncasecmp(const char *, const char *, size_t);
 int strncasecmp_l(const char *, const char *, size_t, locale_t);
-int ffs(int);
-int ffsl(long);
-int ffsll(long long);
 
 /* sys/ioctl.h */
 int ioctl(int, int, ...);
