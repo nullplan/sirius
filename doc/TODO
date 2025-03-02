@@ -512,7 +512,6 @@ int strfromf(char *__restrict, size_t, const char *__restrict, float);
 int strfroml(char *__restrict, size_t, const char *__restrict, long double);
 int system(const char *);
 int mblen(const char *, size_t);
-int mbtowc(wchar_t *__restrict, const char *__restrict, size_t);
 int wctomb(char *, wchar_t);
 size_t mbstowcs(wchar_t *__restrict, const char *__restrict, size_t);
 size_t wcstombs(char *__restrict, const wchar_t *__restrict, size_t);
