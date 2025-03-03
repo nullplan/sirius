@@ -1,6 +1,8 @@
 #ifndef FUTEX_H
 #define FUTEX_H
 
+#include <features.h>
+
 #define FUTEX_WAIT          0
 #define FUTEX_WAKE          1
 #define FUTEX_LOCK_PI       6

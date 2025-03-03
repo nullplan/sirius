@@ -49,9 +49,6 @@ void *dlsym(void *__restrict, const char *__restrict);
 /* fmtmsg.h */
 int fmtmsg(long, const char *, int, const char *, const char *, const char *);
 
-/* fnmatch.h */
-int fnmatch(const char *, const char *, int);
-
 /* grp.h */
 struct group *getgrgid(gid_t);
 struct group *getgrnam(const char *);
@@ -529,16 +526,7 @@ void *reallocarray(void *, size_t, size_t);
 char *realpath(const char *__restrict, char *__restrict);
 long a64l(const char *);
 char *l64a(long);
-double drand48(void);
-double erand48(unsigned short [3]);
 char *initstate(unsigned, char *, size_t);
-long jrand48(unsigned short [3]);
-void lcong48(unsigned short [7]);
-long lrand48(void);
-long mrand48(void);
-long nrand48(unsigned short [3]);
-unsigned short *seed48(unsigned short [3]);
-void srand48(long);
 long random(void);
 void srandom(unsigned);
 int grantpt(int);
@@ -552,12 +540,6 @@ int strcasecmp(const char *, const char *);
 int strcasecmp_l(const char *, const char *, locale_t);
 int strncasecmp(const char *, const char *, size_t);
 int strncasecmp_l(const char *, const char *, size_t, locale_t);
-int ffs(int);
-int ffsl(long);
-int ffsll(long long);
-
-/* sys/ioctl.h */
-int ioctl(int, int, ...);
 
 /* sys/ipc.h */
 key_t ftok(const char *, int);
@@ -565,7 +547,6 @@ key_t ftok(const char *, int);
 /* sys/mman.h */
 int mlock(const void *, size_t);
 int mlockall(int);
-int mprotect(void *, size_t, int);
 int msync(void *, size_t, int);
 int munlock(const void *, size_t);
 int munlockall(void);
@@ -699,7 +680,6 @@ int execle(const char *, const char *, ...);
 int execlp(const char *, const char *, ...);
 int execv(const char *, char *const []);
 int execvp(const char *, char *const []);
-int faccessat(int, const char *, int, int);
 int fchdir(int);
 int fchown(int, uid_t, gid_t);
 int fchownat(int, const char *, uid_t, gid_t);
@@ -728,7 +708,6 @@ pid_t getppid(void);
 pid_t getsid(pid_t);
 int isatty(int);
 int lchown(const char *, uid_t, gid_t);
-int link(const char *, const char *);
 int linkat(int, const char *, int, const char *, int);
 off_t lseek(int, off_t, int);
 long pathconf(const char *, int);
@@ -755,9 +734,7 @@ int tcsetpgrp(int, pid_t);
 int truncate(const char *, off_t);
 char *ttyname(int);
 int ttyname_r(int, char *, size_t);
-int unlink(const char *);
 int unlinkat(int, const char *);
-ssize_t write(int, const void *, size_t);
 char *crypt(const char *, const char *);
 int gethostid(void);
 int getresgid(gid_t *__restrict, gid_t *__restrict, gid_t *__restrict);
