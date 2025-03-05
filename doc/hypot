@@ -1,0 +1,13 @@
+fdlibm's hypot works like this:
+
+1st: It takes the absolute value of both inputs and orders them by magnitude.
+2nd: If their ratio is >2^60, it returns their sum.
+3rd: If the larger value is >2^500 (so squaring might overflow), it scales both by -600.
+4th: If the smaller value is <2^-500 (so squaring might underflow), it scales both by 600.
+
+Finally it applies the method given in the "method" section:
+If x > 2y, then t = x1*x1+(y*y+(x2*(x+x1))) where x1 is x with the low half zeroed and x2 = x - x1.
+Else t = t1*y1+((x-y)*(x-y)+(t1*y2+t2*y))
+    where t1 = 2x with lower 32 bits cleared, t2 = 2x-t1, 
+    y1= y with lower 32 bits chopped, y2 = y-y1.
+Then it calculates sqrt(t) and scales back whatever it did at the start.
