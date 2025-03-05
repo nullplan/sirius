@@ -5,9 +5,26 @@ fdlibm's hypot works like this:
 3rd: If the larger value is >2^500 (so squaring might overflow), it scales both by -600.
 4th: If the smaller value is <2^-500 (so squaring might underflow), it scales both by 600.
 
+Special cases: If either input is ±∞, it returns ∞, else if either input is nan it returns nan.
+
 Finally it applies the method given in the "method" section:
-If x > 2y, then t = x1*x1+(y*y+(x2*(x+x1))) where x1 is x with the low half zeroed and x2 = x - x1.
-Else t = t1*y1+((x-y)*(x-y)+(t1*y2+t2*y))
+If x > 2y, then w = sqrt(x1*x1-(y*(-y)-x2*(x+x1)));
+    where x1 = x with low 32 bits cleared, x2 = x - x1,
+Else w  = sqrt(t1*y1-((x-y)*(-(x-y))-(t1*y2+t2*y)));
     where t1 = 2x with lower 32 bits cleared, t2 = 2x-t1, 
     y1= y with lower 32 bits chopped, y2 = y-y1.
-Then it calculates sqrt(t) and scales back whatever it did at the start.
+Then it scales back whatever it did at the start.
+
+Discussion
+==========
+
+x = x1+x2
+x² = (x1+x2)² = x1² + 2x1x2 + x2²
+
+x2 (x+x1) = x2 (x1 + x2 + x1) = x2 (2x1 + x2) = 2x1x2 + x2²
+
+So that is what that does.
+
+Why chop off the low 32 bits? It creates a number that can be squared without loss of precision. But how does that help?
+
+Because in the end, it all gets stored into w, and w doesn't magically gain any more precision.

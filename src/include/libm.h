@@ -29,4 +29,13 @@ union ldshape {
 
 #define __double_from_bits(x) ((union {uint64_t __i; double __d;}){(x)}.__d)
 #define __float_from_bits(x)  ((union {uint32_t __i; float __f;}){(x)}.__f)
+
+#ifdef __GNUC__
+#define unlikely(x) __builtin_expect((x), 0)
+#define likely(x) __builtin_expect((x), 1)
+#else
+#define unlikely(x) (x)
+#define likely(x) (x)
+#endif
+
 #endif
