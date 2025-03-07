@@ -38,4 +38,24 @@ union ldshape {
 #define likely(x) (x)
 #endif
 
+static inline void force_evalf(float v)
+{
+    volatile float x;
+    x = v;
+}
+
+static inline void force_evald(double v)
+{
+    volatile double x;
+    x = v;
+}
+
+static inline void force_evall(long double v)
+{
+    volatile long double x;
+    x = v;
+}
+
+#define FORCE_EVAL(x) (sizeof (x) == sizeof (float)? force_evalf(x) : \
+        sizeof (x) == sizeof (double)? force_evald(x) : force_evall(x))
 #endif

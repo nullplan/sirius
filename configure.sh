@@ -82,7 +82,7 @@ case "$($CC -v 2>&1 )" in
 esac
 printf "%s\n" "$flavor"
 
-CFLAGS="$CFLAGS -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-maybe-uninitialized -Wno-abi -Wno-unknown-pragmas"
+CFLAGS="$CFLAGS -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-maybe-uninitialized -Wno-abi -Wno-unknown-pragmas -Wno-unused-but-set-variable"
 
 CFLAGS="$CFLAGS -std=c11 -ffreestanding -ffunction-sections -fdata-sections -D_XOPEN_SOURCE -nostdinc -isystem $srcdir/include -isystem $srcdir/arch/$ARCH -isystem obj/include -I $srcdir/src/include"
 
