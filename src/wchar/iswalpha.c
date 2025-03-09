@@ -6,7 +6,7 @@ static const unsigned char alpha[] = {
 
 int iswalpha(wint_t x)
 {
-    return __is_in_set(x, alpha);
+    return __is_in_set(x, alpha, sizeof alpha);
 }
 
 static int __iswalpha_l(wint_t x, locale_t l)

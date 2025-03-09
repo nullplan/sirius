@@ -1,4 +1,4 @@
-#include <wchar.h>
+#include <wctype.h>
 
 int iswalnum(wint_t x)
 {
