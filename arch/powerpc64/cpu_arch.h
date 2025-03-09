@@ -58,6 +58,7 @@ static int a_ctz(size_t x) {
     __asm__("cnttzd %0, %1" : "=r"(x) : "r"(x));
     return x;
 }
+#endif
 
 #define a_mul128 a_mul128
 static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
@@ -67,7 +68,6 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     res.lo = a * b;
     return res;
 }
-#endif
 
 static inline void a_stackinvoke(void (*func)(void), void *stack)
 {

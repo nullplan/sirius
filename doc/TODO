@@ -421,10 +421,6 @@ int ppoll(struct pollfd [], nfds_t, const struct timespec *__restrict, const sig
 
 /* pthread.h */
 int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
-int pthread_barrierattr_init(pthread_barrierattr_t *);
-int pthread_barrierattr_getpshared(const pthread_barrierattr_t *__restrict, int *__restrict);
-int pthread_barrierattr_setpshared(pthread_barrierattr_t *, int);
-int pthread_barrierattr_destroy(pthread_barrierattr_t *);
 int pthread_barrier_init(pthread_barrier_t *__restrict, const pthread_barrierattr_t *__restrict, unsigned);
 int pthread_barrier_wait(pthread_barrier_t *);
 int pthread_barrier_destroy(pthread_barrier_t *);
@@ -464,21 +460,6 @@ int pthread_mutex_trylock(pthread_mutex_t *);
 int pthread_mutex_unlock(pthread_mutex_t *);
 int pthread_mutex_destroy(pthread_mutex_t *);
 int pthread_once(pthread_once_t *, void (*)(void));
-int pthread_rwlock_init(pthread_rwlock_t *__restrict, const pthread_rwlockattr_t *__restrict);
-int pthread_rwlock_clockrdlock(pthread_rwlock_t *__restrict, clockid_t, const struct timespec *__restrict);
-int pthread_rwlock_clockwrlock(pthread_rwlock_t *__restrict, clockid_t, const struct timespec *__restrict);
-int pthread_rwlock_rdlock(pthread_rwlock_t *);
-int pthread_rwlock_timedrdlock(pthread_rwlock_t *__restrict, const struct timespec *__restrict);
-int pthread_rwlock_timedwrlock(pthread_rwlock_t *__restrict, const struct timespec *__restrict);
-int pthread_rwlock_tryrdlock(pthread_rwlock_t *);
-int pthread_rwlock_trywrlock(pthread_rwlock_t *);
-int pthread_rwlock_unlock(pthread_rwlock_t *);
-int pthread_rwlock_wrlock(pthread_rwlock_t *);
-int pthread_rwlock_destroy(pthread_rwlock_t *);
-int pthread_rwlockattr_init(pthread_rwlockattr_t *);
-int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *__restrict, int *__restrict);
-int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
-int pthread_rwlockattr_destroy(pthread_rwlockattr_t *);
 
 /* pwd.h */
 struct passwd *getpwnam(const char *);
@@ -593,7 +574,6 @@ int uname(struct utsname *);
 /* sys/wait.h */
 pid_t wait(int *);
 int waitid(idtype_t , id_t, siginfo_t *, int);
-pid_t waitpid(pid_t, int *, int);
 
 /* syslog.h */
 void closelog(void);
@@ -691,11 +671,7 @@ long fpathconf(int, int);
 int fsync(int);
 int ftruncate(int, off_t);
 char *getcwd(char *, size_t);
-gid_t getegid(void);
 int getentropy(void *, size_t);
-uid_t geteuid(void);
-gid_t getgid(void);
-uid_t getuid(void);
 int getgroups(int, gid_t []);
 int gethostname(char *, size_t);
 char *getlogin(void);
@@ -725,7 +701,6 @@ int seteuid(uid_t);
 int setgid(gid_t);
 int setuid(uid_t);
 int setpgid(pid_t, pid_t);
-pid_t setsid(void);
 unsigned sleep(unsigned);
 int symlink(const char *, const char *);
 int symlinkat(const char *, int, const char *);

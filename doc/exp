@@ -1,0 +1,65 @@
+Exp algorithm
+=============
+
+How does fdlibm do it?
+
+1st: Reduce argument. Find integer k such that
+x = k ln 2 + r, |r| ≤ 1/2 ln 2
+Because then exp(x) = exp(r) 2^k
+
+2nd: Approximate exp(r) with a rational function.
+We define R(r²) := r (exp(r)+1)/(exp(r)-1) = 2 + r²/6 - r⁴/360 + ...
+
+The calculation of exp(r) then is
+
+exp(r) = 1 + 2r/(R - r)
+
+
+Also note that exp(x) has a very limited domain where it doesn't overflow.
+
+DBL_MAX ≈ 0x1p1024
+ln DBL_MAX ≈ 1024 ln 2 ≈ 709.782713
+
+DBL_TRUE_MIN = 0x1p-1074
+ln DBL_TRUE_MIN = -1074 ln 2 ≈ -744.440072
+
+
+How does the argument reduction work, then?
+
+If x is already in range, nothing happens (we set r = x, k = 0).
+Else if |x| ≤ 3/2 ln 2, we set k = ±1 and r = x ± ln 2
+Else k = (int)(x/ln 2 ± 1/2), r = x - k ln 2
+
+Oh, and the factors for R(z) are
+P1   =  1.66666666666666019037e-01, /* 0x3FC55555, 0x5555553E */
+P2   = -2.77777777770155933842e-03, /* 0xBF66C16C, 0x16BEBD93 */
+P3   =  6.61375632143793436117e-05, /* 0x3F11566A, 0xAF25DE2C */
+P4   = -1.65339022054652515390e-06, /* 0xBEBBBD41, 0xC5D26BF1 */
+P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
+
+
+So P1 = 1/6, P2 = -1/360, P3 = 1/15120, P4 = -1/604818, P5 = 1/24165465.
+Or at least I hope I reverse engineered these right.
+
+Modifications for other precisions:
+For float, I can just use fewer terms. Have to experiment how many are needed
+for 23-bit convergence.
+
+For long double, I use the same algorithm, since I don't understand it enough
+to extend it. Then it isn't going to be precise enough, but oh well.
+
+Special cases:
+exp(nan) = nan
+exp(∞) = ∞
+exp(-∞) = 0
+
+Also exp(0) = 1, and so there is a range around 0 where exp(x) ≈ 1 + x, and no
+better approximation is available. fdlibm puts the point at |x| ≤ 2^-28.
+
+(exp(x) - 1 - x)/exp(x) > 2^-52
+1 - (1 + x) exp(-x) > 2^-52
+(1 + x) exp(-x) < 1 - 2^-52
+
+Wolfram Alpha calculates the limit at more like 2^-25. But 28 has the advantage
+of definitely making 1+x² inexact.
+
