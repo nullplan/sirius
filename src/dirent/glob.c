@@ -109,6 +109,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                 if (flags & GLOB_NOESCAPE) fnm_flags |= FNM_NOESCAPE;
                 memcpy(pattern, name, n);
                 pattern[n] = 0;
+                int saved_errno = errno;
                 errno = 0;
                 while ((de = readdir(d))) {
                     if (strcmp(de->d_name, ".") && strcmp(de->d_name, "..") && !fnmatch(pattern, de->d_name, fnm_flags)) {
@@ -136,6 +137,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                     int rv = errfunc(candidates->paths[i], errno);
                     if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
                 }
+                errno = saved_errno;
             }
         }
     }
