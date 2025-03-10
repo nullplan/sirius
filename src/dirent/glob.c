@@ -215,6 +215,10 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
 
     if (result != &a1) freelist(&a1);
     if (result != &a2) freelist(&a2);
+    if (rv) {
+        if (result != &noalloc) freelist(result);
+        return rv;
+    }
     for (size_t i = 0; i < result->n; ) {
         struct stat st;
         if (lstat(result->paths[i], &st)) {
