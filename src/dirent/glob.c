@@ -67,7 +67,7 @@ static int push_back_path(struct pathlist *pl, char *path)
 
 static int default_errfunc(const char *path, int err)
 {
-    if (errno == ENOENT || errno == ENOTDIR) return 0;
+    if (err == ENOENT || err == ENOTDIR) return 0;
     return 1;
 }
 
@@ -109,6 +109,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                 if (flags & GLOB_NOESCAPE) fnm_flags |= FNM_NOESCAPE;
                 memcpy(pattern, name, n);
                 pattern[n] = 0;
+                int saved_errno = errno;
                 errno = 0;
                 while ((de = readdir(d))) {
                     if (strcmp(de->d_name, ".") && strcmp(de->d_name, "..") && !fnmatch(pattern, de->d_name, fnm_flags)) {
@@ -136,6 +137,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                     int rv = errfunc(candidates->paths[i], errno);
                     if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
                 }
+                errno = saved_errno;
             }
         }
     }
@@ -213,6 +215,10 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
 
     if (result != &a1) freelist(&a1);
     if (result != &a2) freelist(&a2);
+    if (rv) {
+        if (result != &noalloc) freelist(result);
+        return rv;
+    }
     for (size_t i = 0; i < result->n; ) {
         struct stat st;
         if (lstat(result->paths[i], &st)) {
