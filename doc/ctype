@@ -1,0 +1,71 @@
+The character sets
+==================
+
+Design goal: Locale independence of ctype, support UTF-8
+Restrictions: Must support POSIX locale.
+
+In POSIX locale: MB_CUR_MAX = 1, mbtowc() never returns EILSEQ.
+
+What does this all mean, taken together? It means that I want a UTF-8 locale and
+a POSIX locale. Since in UTF-8 mode, isalpha(x) must return 0 for high bytes,
+the only possible choice of charset for the POSIX locale is ASCII (because that
+is the only 1-byte charset I know that also says the same).
+
+And while mbtowc() must not return EILSEQ in POSIX locale, nobody said the
+conversion had to be an identity conversion. Since isalpha(x) returns 0 for high
+bytes, in POSIX locale, high bytes must be converted to such wide characters
+that iswalpha(x) also returns 0. Thankfully, due to UTF-16 there is a large
+block of characters cut out from Unicode where all the functions returns 0.
+
+That block is the surrogate characters, which range from D000 to DFFF. Idea
+would be to convert each high byte to a surrogate, so the conversion is
+bijective.
+
+Character classes
+=================
+
+
+ALL
+|- control
+|  |- control whitespace
+|  `- other control
+`- printing
+   |- printing whitespace
+   `- graphing
+      |- alpha
+      |  |- lower
+      |  |- upper
+      |  `- other alpha
+      |- punct
+      `- digit
+
+iswalnum    : alpha+digit
+iswalpha    : alpha = Unicode category L
+iswblank    : ' ' + '\t'    (seems to be the consensus)
+iswcntrl    : control   = 0000..001F, 007F..009F, 2028, 2029
+iswdigit    : '0'-'9' (POSIX definition)
+iswgraph    : graphing = all printing characters that have a non-empty rune
+iswlower    : lower = all characters that have a case fold to upper case
+iswprint    : printing = all Unicode characters that aren't control
+iswpunct    : punct = all printing that isn't alpha or digit
+iswspace    : control whitespace + printing whitespace  = Unicode property "White_space" = 0009..000D, 0020, 0085, 00A0, 1680, 2000..200A, 2028, 2029, 202F, 205F, 3000
+iswupper    : upper = all characters that have a case fold to lower case
+iswxdigit   : '0'-'9', 'A'-'F', 'a'-'f' (POSIX definition)
+
+I need a list of
+    - alphabetic characters. Raw in alpha.txt.
+    - printing characters. Raw in printable.txt
+    - space (but that is a small list; I just use the musl list).
+
+as well as a list for the case map (Raw in casefold.txt).
+
+Executive decision: I use the standard blank set, which musl also does. The
+definition is that blank characters are those whitespace characters used to
+separate words in a line, and that concept doesn't mean a whole lot in cultures
+that don't use the ASCII space.
+
+I also use the space list from musl, since it and the glibc list are basically
+the same. And I use the control list from musl, since it makes more sense to me
+than the glibc one. But I use my own "printable" list, since Unicode does have
+holes. Printable is all defined Unicode characters that aren't control
+characters or surrogates.
