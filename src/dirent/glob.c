@@ -67,7 +67,7 @@ static int push_back_path(struct pathlist *pl, char *path)
 
 static int default_errfunc(const char *path, int err)
 {
-    if (errno == ENOENT || errno == ENOTDIR) return 0;
+    if (err == ENOENT || err == ENOTDIR) return 0;
     return 1;
 }
 
