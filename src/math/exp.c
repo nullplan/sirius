@@ -10,6 +10,10 @@ static const double othresh = 0x1.62e42fefa39efP9,      /* 1024 ln 2 */
              P4   = -0x1.BBD41C5D26BF1p-20,
              P5   =  0x1.6376972BEA4D0p-25;
 
+#ifdef __GNUC__
+#define fabs(x) __builtin_fabs(x)
+#endif
+
 double exp(double x)
 {
     if (!isfinite(x)) {
