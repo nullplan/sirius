@@ -58,4 +58,14 @@ static inline void force_evall(long double v)
 
 #define FORCE_EVAL(x) (sizeof (x) == sizeof (float)? force_evalf(x) : \
         sizeof (x) == sizeof (double)? force_evald(x) : force_evall(x))
+
+struct rempio2 {
+    int n;
+    double val[2];
+};
+
+extern hidden struct rempio2 __rem_pio2(double);
+extern hidden double __kernel_sin(double, double, int);
+extern hidden double __kernel_cos(double, double);
+extern hidden double __kernel_tan(double, double, int);
 #endif
