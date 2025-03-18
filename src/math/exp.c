@@ -27,7 +27,7 @@ double exp(double x)
 
     double absx = fabs(x);
     if (absx <= 0x1p-28) {
-        FORCE_EVAL(1 + x * x);
+        FORCE_EVAL(0x1p54 + x); /* raise inexact if x != 0 */
         return 1 + x;
     }
     if (absx <= ln2hi/2) {

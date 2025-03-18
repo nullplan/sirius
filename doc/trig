@@ -1,0 +1,95 @@
+Trigonometric function
+======================
+
+All three trigonometric functions are implemented using a kernel function that
+computes the actual function over a small domain, and a function that reduces
+the input modulo the smaller domain.
+
+__kernel_sin(x,y)
+-----------------
+
+The function is called with two arguments and computes sin(x+y), but we require
+|y| < |x|*2^-52. The sine is computed with the Taylor series to the 13th degree.
+
+sin(x) ≈ x - 1/3! x³ + 1/5! x⁵ - 1/7! x⁷ + 1/9! x⁹ - 1/11! x¹¹ + 1/13! x¹³
+
+As a special case, if |x| < 2^-27, just return x, because the relative error of
+that is below 2^-53.
+
+However, we also have y to think about, and so we use that
+
+sin(x+y) = sin(x) + sin'(x) y ≈ sin(x) + (1-x²/2) y
+
+"For better accuracy", fdlibm says to use
+
+r = S₂ x³ + S₃ x⁵ + S₄ x⁷ + S₅ x⁹ + S₆ x¹¹
+sin(x) = x + (S₁ x³ + (x² (r-y/2) + y))
+
+We can optimize this a bit if we know ahead of time that y is 0, then we just
+need to finish the normal polynomial calculation. Which is why the function has
+a third argument, which is an integer, and it indicates that we know ahead of
+time that y is 0.
+
+__kernel_cos()
+--------------
+
+Similar to above but a different Taylor series
+
+cos(x) ≈ 1 - 1/2 x² + 1/4! x⁴ - ...
+
+This time to the 14th degree. The approximation of the addition theorem is also
+different:
+
+cos(x+y) ≈ cos(x) + sin(x)*y ≈ cos(x) + xy
+
+But a correction term is necessary so
+Let r be the above poly for everything from the 4th degree onward.
+cos(x+y) ≈ 1 - (x²/2 - (r - xy))
+
+Because of this, cos() can't benefit as much from knowing that y is zero ahead
+of time, so it doesn't get a boolean parameter as well.
+
+__kernel_tan()
+--------------
+
+This one is a lot more complicated. Starts with the Taylor series:
+
+tan(x) = sum(k=1..∞, ((-1)^(n-1) 2^2n (2^2n - 1) B_2n)/(2n)! x^(2n-1))
+
+This time we calculate it up to degree 27. Coefficients therefore are:
+1
+1/3
+2/15
+17/315
+62/2835
+1382/155925
+21844/6081075
+929569/638512875
+6404582/10854718875
+443861162/1856156927625
+113927491862/2900518163668125
+58870668456604/3698160658676859375
+8374643517010684/1298054391195577640625
+
+Funny that the alternating sign from the (-1)^(n-1) term cancels out the one from the Bernoulli numbers.
+
+tan(x+y) = tan(x) + tan'(x)y ≈ tan(x) + (1+x²)y 
+
+The third parameter in this case is a boolean flag saying whether the multiplier
+with π/4 was odd. If |x|<2^-28, then we return x only if the multiplier was
+even. If it was odd, we are currently at a pole and need to return -1/(x+y).
+
+And that last point is because we are reducing the argument modulo π/2, but the
+period of the tangent is π. Even with reflection we only get down to π/2, but to
+make up that last bit, if T = tan(x) and the multiplier is even, we need to
+return T, but if it is odd, we need to return -1/T.
+
+__rem_pio2()
+--------------------
+
+The job of __rem_pio2() is to calculate n = copysign(round(fabs(x) * (2/π) + 1/2), x),
+then calculate y = x - n * (π/2) with double-word precision and return (n%4, y).
+
+The difficulty of this comes from the fact that π is infinite precision. If x
+happens to be close to n * (π/2), there will be significant cancellation, and we
+will need to become ever more precise to deal with this.
