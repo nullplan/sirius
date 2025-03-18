@@ -60,6 +60,6 @@ better approximation is available. fdlibm puts the point at |x| ≤ 2^-28.
 1 - (1 + x) exp(-x) > 2^-52
 (1 + x) exp(-x) < 1 - 2^-52
 
-Wolfram Alpha calculates the limit at more like 2^-25. But 28 has the advantage
-of definitely making 1+x² inexact.
+Wolfram Alpha calculates the limit at more like 2^-25. But I'm using 28 because
+that's what fdlibm uses and I'm a chicken; I might have missed something.
 
