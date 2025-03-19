@@ -662,7 +662,6 @@ pid_t fork(void);
 long fpathconf(int, int);
 int fsync(int);
 int ftruncate(int, off_t);
-char *getcwd(char *, size_t);
 int getentropy(void *, size_t);
 int getgroups(int, gid_t []);
 int gethostname(char *, size_t);
