@@ -19,22 +19,21 @@ long double hypotl(long double x, long double y)
         ldy.f = x;
     }
     if (ldx.i.se - ldy.i.se > 128) return x + y;
-    int scale = 0;
+    long double scale = 1;
     if (ldx.i.se >= (0x3fff+8192)) {
         if (ldx.i.se == 0x7fff) {
             if (isinf(x) || isinf(y)) return INFINITY;
             return NAN;
         }
-        x = scalblnl(x, -9000);
-        y = scalblnl(y, -9000);
-        scale = 9000;
+        x *= 0x1p-9000L;
+        y *= 0x1p-9000L;
+        scale = 0x1p9000L;
     } else if (ldy.i.se < (0x3fff-8192)) {
-        x = scalblnl(x, 9000);
-        y = scalblnl(y, 9000);
-        scale = -9000;
+        x *= 0x1p9000L;
+        y *= 0x1p9000L;
+        scale = 0x1p-9000L;
     }
     long double t = sqrtl(x*x+y*y);
-    if (scale) t = scalblnl(t, scale);
-    return t;
+    return t * scale;
     #endif
 }

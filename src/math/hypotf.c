@@ -2,7 +2,6 @@
 
 #ifdef __GNUC__
 #define fabsf(x) __builtin_fabsf(x)
-#define scalblnf(x, y) __builtin_scalblnf(x, y)
 #define sqrtf(x) __builtin_sqrtf(x)
 #endif
 
@@ -22,7 +21,7 @@ float hypotf(float x, float y)
      * non-nearest rounding, and so is hypot(x,y).
      */
     if (ix - iy > 25ul << 23) return x + y;
-    int scale = 0;
+    float scale = 1;
     /* if x >= 2^64, then x² overflows. */
     if (ix >= (0x7f+64ul) << 23)
     {
@@ -30,16 +29,15 @@ float hypotf(float x, float y)
             if (ix == 0xfful << 23 || iy == 0xfful << 23) return INFINITY;
             return NAN;
         }
-        x = scalblnf(x, -100);
-        y = scalblnf(y, -100);
-        scale = 100;
+        x *= 0x1p-100;
+        y *= 0x1p-100;
+        scale = 0x1p100;
     } else if (iy < (0x7f-64ul) << 23) {
-        x = scalblnf(x, 100);
-        y = scalblnf(y, 100);
-        scale = -100;
+        x *= 0x1p100;
+        y *= 0x1p100;
+        scale = 0x1p-100;
     }
     float t = sqrtf(x*x+y*y);
-    if (scale) t = scalblnf(t, scale);
-    return t;
+    return t * scale;
 }
 
