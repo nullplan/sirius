@@ -4,11 +4,11 @@ static const double othresh = 0x1.62e42fefa39efP9,      /* 1024 ln 2 */
              uthresh = -0x1.74385446d71c3P9,            /* -1074 ln 2 */
              ln2hi = 0x1.62e42fefa39efP-1,              /* ln 2 */
              ln2lo = 0x1.5b6f3e1f32e0aP-57,             /* ln 2 - ln2hi */
-             P1   =  0x1.555555555553Ep-3,
-             P2   = -0x1.6C16C16BEBD93p-9,
-             P3   =  0x1.1566AAF25DE2Cp-14,
-             P4   = -0x1.BBD41C5D26BF1p-20,
-             P5   =  0x1.6376972BEA4D0p-25;
+             P1   =  1.0/6.0,
+             P2   = -1.0/360.0,
+             P3   =  1.0/15120.0,
+             P4   = -1.0/604800.0,
+             P5   =  1.0/23950080.0;
 
 double exp(double x)
 {
