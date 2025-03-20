@@ -5,6 +5,7 @@
 setjmp:
 __setjmp:
     mflr %r0
+    mfcr %r5
     stw %r1, 0(%r3)
     stw %r2, 4(%r3)
     stw %r13, 8(%r3)
@@ -27,6 +28,7 @@ __setjmp:
     stw %r30, 76(%r3)
     stw %r31, 80(%r3)
     stw %r0, 84(%r3)
+    stw %r5, 88(%r3)
 #ifndef __NO_FPRS__
     stfd %f14, 96(%r3)
     stfd %f15, 104(%r3)
