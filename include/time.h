@@ -60,6 +60,10 @@ struct itimerspec {
     struct timespec it_value;
 };
 
+#define ITIMER_REAL     0
+#define ITIMER_VIRTUAL  1
+#define ITIMER_PROF     2
+
 #define CLOCK_REALTIME              0
 #define CLOCK_MONOTONIC             1
 #define CLOCK_PROCESS_CPUTIME_ID    2

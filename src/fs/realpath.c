@@ -75,8 +75,7 @@ char *realpath(const char *restrict path, char *restrict result)
             to_be_resolved += len;
         }
         ssize_t rv = readlink(stack, buffer, sizeof buffer);
-        if (rv == -1 && errno == EINVAL) {
-            /* file exists and is no symlink */
+        if (rv == -1 && errno == EINVAL) { /* file exists and is no symlink */
             if (*tail == '/') { /* this was only a dir test for a . or .. component */
                 *tail = 0; /* so strip off the / we appended */
                 if (len == 2) {
