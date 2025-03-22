@@ -5,7 +5,7 @@
  * Shewchuk, "Arbitrary Precision Floating-Point Arithmetic", Carnegie Mellon University, Pittsburgh, 1997
  */
 #include "libm.h"
-static const double pio2 = 0x1.921fb54442d18p0;
+static const double halfpi = 0x1.921fb54442d18p0;
 
 struct pair {
     double hi, lo;
@@ -41,20 +41,29 @@ static struct pair twosum(double a, double b)
     return (struct pair){x, y};
 }
 
+#ifdef __GNUC__
+#define fabs(x) __builtin_fabs(x)
+#endif
+
 hidden struct rempio2 __rem_pio2(double x)
 {
-    if (x >= 8/DBL_EPSILON) /* ULP > 2π -> just return 0/0 */
+    if (fabs(x) >= 8/DBL_EPSILON) /* ULP > 2π -> just return 0/0 */
         return (struct rempio2){0};
-    double n = round(x/pio2);
+    double n = round(x/halfpi);
 
-    if (x >= 2/DBL_EPSILON) /* ULP > π/2 -> return n/0 */
+    if (fabs(x) >= 2/DBL_EPSILON) /* ULP > π/2 -> return n/0 */
         return (struct rempio2){(int64_t)n, {0}};
 
-    struct pair mnpio2 = twoprod(pio2, -n);
-    struct pair p = twosum(x, mnpio2.lo);
-    struct pair q = twosum(p.hi, mnpio2.hi);
-    if (q.hi)
-        return (struct rempio2){(int64_t)n, {q.hi, q.lo}};
-    else
+    struct pair mnhalfpi = twoprod(halfpi, -n);
+    struct pair p = twosum(x, mnhalfpi.lo);
+    struct pair q = twosum(p.hi, mnhalfpi.hi);
+    if (q.hi) {
+        if (q.lo)
+            return (struct rempio2){(int64_t)n, {q.hi, q.lo}};
+        else
+            return (struct rempio2){(int64_t)n, {q.hi, p.lo}};
+    } else if (q.lo)
         return (struct rempio2){(int64_t)n, {q.lo, p.lo}};
+    else
+        return (struct rempio2){(int64_t)n, {p.lo, 0}};
 }
