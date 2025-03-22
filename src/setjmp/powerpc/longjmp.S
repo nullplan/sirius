@@ -23,7 +23,9 @@ longjmp:
     lwz %r30, 76(%r3)
     lwz %r31, 80(%r3)
     lwz %r5, 84(%r3)
+    lwz %r6, 88(%r3)
     mtctr %r5
+    mtcr %r6
 #ifndef __NO_FPRS__
     lfd %f14, 96(%r3)
     lfd %f15, 104(%r3)

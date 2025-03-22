@@ -6,7 +6,7 @@
 int faccessat(int dfd, const char *name, int mode, int flags)
 {
 #ifdef SYS_access
-    if ((dfd == -100 || *name == '/') && !flags)
+    if ((dfd == AT_FDCWD || *name == '/') && !flags)
         return syscall(SYS_access, name);
 #endif
     int rv;
