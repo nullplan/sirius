@@ -38,8 +38,7 @@ P4   = -1.65339022054652515390e-06, /* 0xBEBBBD41, 0xC5D26BF1 */
 P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
 
-So P1 = 1/6, P2 = -1/360, P3 = 1/15120, P4 = -1/604818, P5 = 1/24165465.
-Or at least I hope I reverse engineered these right.
+So P1 = 1/6, P2 = -1/360, P3 = 1/15120, P4 = -1/604800, P5 = 1/23950080.
 
 Modifications for other precisions:
 For float, I can just use fewer terms. Have to experiment how many are needed
