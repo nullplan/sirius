@@ -22,8 +22,9 @@ double hypot(double x, double y)
      */
     if (ix - iy > 54ull << 52) return x + y;
     double scale = 1;
-    /* if x >= 2^512, then x² overflows. */
-    if (ix >= 0x5ffULL << 52)
+    /* if x >= 2^512, then x² overflows. But also, if x >= 2^511, y might also be
+     * as big as 2^511, and then x²+y² overflows. */
+    if (ix >= 0x5feULL << 52)
     {
         if (ix >= 0x7ffULL << 52) {
             if (ix == 0x7ffULL << 52 || iy == 0x7ffULL << 52) return INFINITY;
