@@ -17,8 +17,8 @@ static const double othresh = 0x1.62e42fefa39efP9,      /* 1024 ln 2 */
 double exp(double x)
 {
     if (!isfinite(x)) {
-        if (isnan(x) || x > 0) return x;
-        return 0;
+        if (x < 0) return 0;
+        return x;
     }
     int k;
     double hi, lo, r, z, R;
@@ -30,11 +30,11 @@ double exp(double x)
         FORCE_EVAL(0x1p54 + x); /* raise inexact if x != 0 */
         return 1 + x;
     }
-    if (absx <= ln2hi/2) {
+    if (absx <= 0.5 * ln2hi) {
         r = x;
         k = 0;
     } else {
-        if (absx <= 3.0*ln2hi/2) {
+        if (absx <= 1.5*ln2hi) {
             hi = copysign(absx - ln2hi, x);
             lo = copysign(ln2lo, x);
             k = signbit(x)? -1 : 1;
