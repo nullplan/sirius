@@ -23,8 +23,8 @@ hidden double __kernel_tan(double x, double y, int isodd)
     double t = T[11];
     for (int i = 10; i-- > 0;)
         t = t * x2 + T[i];
-    t = x * (1 + t);
-    t += (1 + x2) * y;
+    t = x + x * t;
+    t += y + x2 * y;
     if (isodd) t = -1.0/t;
     return t;
 }
