@@ -1,19 +1,46 @@
 #include "libm.h"
 
+/* For the most part, I just use the Taylor series up to degree 23 here.
+ *
+ * But the Taylor series is most precise around zero, so I use a couple
+ * of reflection formulas derived from the arctangent addition formula:
+ *
+ * arctan u + arctan v = arctan ((u + v)/(1 - uv))
+ *
+ * Therefore if I fix u, I can find some v such that
+ * the argument on the RHS is x.
+ *
+ * x = (u + v)/(1 - uv)
+ * (1 - uv) x = u + v
+ * x - uvx = u + v
+ * x - u = v + uvx
+ * x - u = v (1 + ux)
+ * (x - u)/(1 + ux) = v
+ *
+ * So we use the formula:
+ *
+ * arctan x = arctan a + arctan ((x - a)/(1 + ax)) for some a.
+ *
+ * Also one more thing: Since tan (x + π/2) = -1/tan x, we have arctan x = π/2 + arctan (-1/x),
+ * which we can use for large x.
+ *
+ * We use the series up to degree 23, so the error is O(x²⁴).
+ */
+
 double atan(double x)
 {
     static const double c[] = {
-        +0x1.555555555550dP-2,
-        -0x1.999999998ebc4P-3,
-        +0x1.24924920083ffP-3,
-        -0x1.c71c6fe231671P-4,
-        +0x1.745cdc54c206eP-4,
-        -0x1.3b0f2af749a6dP-4,
-        +0x1.10d66a0d03d51P-4,
-        -0x1.dde2d52defd9aP-5,
-        +0x1.97b4b24760debP-5,
-        -0x1.2b4442c6a6c2fP-5,
-        +0x1.0ad3ae322da11P-6,
+        +1.0/3.0,
+        -1.0/5.0,
+        +1.0/7.0,
+        -1.0/9.0,
+        +1.0/11.0,
+        -1.0/13.0,
+        +1.0/15.0,
+        -1.0/17.0,
+        +1.0/19.0,
+        -1.0/21.0,
+        +1.0/23.0,
     };
     static const double atanhi[] = {
         0x1.dac670561bb4fP-2,           /* atan(1/2) */
