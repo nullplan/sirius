@@ -301,7 +301,7 @@ int execvp(const char *, char *const []);
 int faccessat(int, const char *, int, int);
 int fchdir(int);
 int fchown(int, uid_t, gid_t);
-int fchownat(int, const char *, uid_t, gid_t);
+int fchownat(int, const char *, uid_t, gid_t, int);
 int fdatasync(int);
 int fexecve(int, char *const [], char *const []);
 pid_t _Fork(void);
@@ -357,7 +357,7 @@ int truncate(const char *, off_t);
 char *ttyname(int);
 int ttyname_r(int, char *, size_t);
 int unlink(const char *);
-int unlinkat(int, const char *);
+int unlinkat(int, const char *, int);
 ssize_t write(int, const void *, size_t);
 
 #ifdef _XOPEN_SOURCE
@@ -370,7 +370,7 @@ int nice(int);
 int setregid(gid_t, gid_t);
 int setreuid(uid_t, uid_t);
 int setresgid(gid_t, gid_t, gid_t);
-int setresuid(uid_t, uid_t, gid_t);
+int setresuid(uid_t, uid_t, uid_t);
 void swab(const void *__restrict, void *__restrict, size_t);
 void sync(void);
 #endif
