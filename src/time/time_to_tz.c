@@ -198,7 +198,7 @@ static void do_tzset(void)
     if (!strcmp(tz, oldtz)) return;
 
     size_t tzlen = strlen(tz);
-    if (tzlen >= oldtzsize) {
+    if (!oldtz || tzlen >= oldtzsize) {
         /* yes, I know this leaks, but I'll avoid free() to avoid pulling it
          * into static linking where it might be unwanted.
          * Most applications never change the TZ ever. Most TZs fit inside of varbuf.
@@ -206,12 +206,10 @@ static void do_tzset(void)
          */
         size_t l = oldtzsize;
         while (l <= tzlen) l *= 2;
-        char *p = malloc(l);
-        if (!p) return; /* XXX: What do? */
-        oldtz = p;
+        oldtz = malloc(l);
         oldtzsize = l;
     }
-    memcpy(oldtz, tz, tzlen + 1);
+    if (oldtz) memcpy(oldtz, tz, tzlen + 1);
 
     if (infofile) {
         __munmap((void *)infofile, infosize);
@@ -292,7 +290,7 @@ static time_t __rule_to_time(const struct rule *r, time_t yearstart, int isleap)
         return yearstart + (r->u.day - 1 + (isleap && r->u.day > 59)) * 86400 + r->time;
     int daynum = yearstart / 86400;
     static const unsigned short monthstart[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-    int firstof = daynum + monthstart[r->u.para[0] - 1];
+    int firstof = daynum + monthstart[r->u.para[0] - 1] + (isleap && r->u.para[0] > 2);
     int firstdowof = (r->u.para[2] - firstof - 4) % 7;
     if (firstdowof < 0) firstdowof += 7;
     int wantedday = firstdowof + (r->u.para[1] - 1) * 7;
@@ -311,7 +309,7 @@ static size_t find_transtype(long long time, int islocal)
         size_t mid = (end - start) / 2;
         t = read_i64(transitions + mid * 8);
         if (islocal) t += (int32_t)read_i32(lttypes + 6 * transtypes[mid]);
-        if (time < t) end = mid - 1;
+        if (time < t) end = mid;
         else start = mid;
     }
     if (start == 0 && time < read_i64(transitions) + (islocal? (int32_t)read_i32(lttypes + 6 * transtypes[0]) : 0))
