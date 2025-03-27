@@ -113,4 +113,6 @@ extern hidden const size_t __pthread_tsd_size;
 extern hidden void __pthread_tsd_destroy(void);
 
 extern hidden void __testcancel(void);
+
+extern hidden void __synccall(void (*)(void *), void *);
 #endif
