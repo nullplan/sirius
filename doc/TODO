@@ -410,7 +410,6 @@ int poll(struct pollfd [], nfds_t, int);
 int ppoll(struct pollfd [], nfds_t, const struct timespec *__restrict, const sigset_t *__restrict);
 
 /* pthread.h */
-int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 int pthread_barrier_init(pthread_barrier_t *__restrict, const pthread_barrierattr_t *__restrict, unsigned);
 int pthread_barrier_wait(pthread_barrier_t *);
 int pthread_barrier_destroy(pthread_barrier_t *);
@@ -636,8 +635,6 @@ size_t c32rtomb(char *__restrict, char32_t, mbstate_t *__restrict);
 extern char *optarg;
 extern int opterr, optind, optopt;
 size_t confstr(int, char *, size_t);
-pid_t _Fork(void);
-pid_t fork(void);
 long fpathconf(int, int);
 int getopt(int, char *const [], const char *);
 long pathconf(const char *, int);
