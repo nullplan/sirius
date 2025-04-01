@@ -42,51 +42,46 @@ double atan(double x)
         -1.0/21.0,
         +1.0/23.0,
     };
-    static const double atanhi[] = {
-        0x1.dac670561bb4fP-2,           /* atan(1/2) */
-        0x1.921fb54442d18P-1,           /* atan(1) = π/4 */
-        0x1.f730bd281f69bP-1,           /* atan(1.5) */
-        0x1.921fb54442d18P0,            /* π/2 */
-    };
-    static const double atanlo[] = {
-        0x1.a2b7f222f65e2P-56,          /* atan(1/2) */
-        0x1.1a62633145c07P-55,          /* atan(1) = π/4 */
-        0x1.007887af0cbbdP-54,          /* atan(1.5) */
-        0x1.1a62633145c07P-54,          /* π/2 */
-    };
     int ex = ((__double_bits(x) >> 52) & 0x7ff) - 0x3ff;
     if (ex >= 66) {
         if (isnan(x)) return x;
-        return copysign(atanhi[3] + atanlo[3], x);
+        FORCE_EVAL(0x1p54 + 0x1p-3);
+        return copysign(M_PI_2, x);
     }
     if (ex < -29) {
         FORCE_EVAL(0x1p54 + x);
         return x;
     }
     int flip = signbit(x);
-    x = fabs(x);
-    int id;
+    if (flip) x = -x;
+    int addconst = 1;
+    double hiconst;
+    double loconst;
     if (x < 0.4375)
-        id = -1;
+        addconst = 0;
     else if (x < 0.6875) {
-        id = 0;
-        x = (2.0 * x - 1.0)/(2.0 + x);
+        hiconst = 0x1.dac670561bb4fP-2;           /* atan(1/2) */
+        loconst = 0x1.a2b7f222f65e2P-56;          /* atan(1/2) */
+        x = (x - 0.5)/(1.0 + 0.5 * x);
     } else if (x < 1.1875) {
-        id = 1;
+        hiconst = 0x1.921fb54442d18P-1;           /* atan(1) = π/4 */
+        loconst = 0x1.1a62633145c07P-55;          /* atan(1) = π/4 */
         x = (x - 1.0)/(x + 1.0);
     } else if (x < 2.4375) {
-        id = 2;
+        hiconst = 0x1.f730bd281f69bP-1;           /* atan(1.5) */
+        loconst = 0x1.007887af0cbbdP-54;          /* atan(1.5) */
         x = (x - 1.5)/(1.0 + 1.5 * x);
     } else {
-        id = 3;
+        hiconst = 0x1.921fb54442d18P0;            /* π/2 */
+        loconst = 0x1.1a62633145c07P-54;          /* π/2 */
         x = -1.0/x;
     }
 
-    double z = x * x, w = z * z;
-    double s1 = z * (c[0] + w * (c[2] + w * (c[4] + w * (c[6] + w * (c[8] + w * c[10])))));
-    double s2 = w * (c[1] + w * (c[3] + w * (c[5] + w * (c[7] + w * c[9]))));
-    if (id < 0) z = x - x * (s1 + s2);
-    else z = atanhi[id] - (x * (s1 + s2) - atanlo[id] - x);
-    if (flip) z = -z;
-    return z;
+    double x2 = x * x, x4 = x2 * x2;
+    double s1 = x2 * (c[0] + x4 * (c[2] + x4 * (c[4] + x4 * (c[6] + x4 * (c[8] + x4 * c[10])))));
+    double s2 = x4 * (c[1] + x4 * (c[3] + x4 * (c[5] + x4 * (c[7] + x4 * c[9]))));
+    if (!addconst) x = x - x * (s1 + s2);
+    else x = hiconst - (x * (s1 + s2) - loconst - x);
+    if (flip) x = -x;
+    return x;
 }
