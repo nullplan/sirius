@@ -3,6 +3,7 @@
 
 #include "../../include/netdb.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 /* getaddrinfo()/gethostbyname()/getservbyname() middleware */
@@ -28,7 +29,7 @@ extern hidden int __lookup_ipliteral(const char *, int, struct address *);
 #define MAXNS           3
 struct resolvconf {
     struct address ns[MAXNS];
-    size_t nns;
+    int nns;
     char search[256];
     int ndots;
     int timeout;

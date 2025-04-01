@@ -395,9 +395,7 @@ ssize_t strfmon(char *__restrict, size_t, const char *__restrict, ...);
 ssize_t strfmon_l(char *__restrict, size_t, locale_t, const char *__restrict, ...);
 
 /* netdb.h */
-int getaddrinfo(const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
 int getnameinfo(const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
-void freeaddrinfo(struct addrinfo *);
 const char *gai_strerror(int);
 
 /* nl_types.h */
