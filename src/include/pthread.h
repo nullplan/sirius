@@ -115,4 +115,7 @@ extern hidden void __pthread_tsd_destroy(void);
 extern hidden void __testcancel(void);
 
 extern hidden void __synccall(void (*)(void *), void *);
+
+/* arg == -1 for preparations, arg == 0 for parent handlers, arg == 1 for child handlers. */
+extern hidden void __atfork_run(int);
 #endif

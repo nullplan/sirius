@@ -36,7 +36,7 @@
  * I choose to encode the base high nibble, followed by the allowed range for that nibble.
  */
 #define R(base,range)     (((base) + 0ul) <<28 | (range)<<26)
-hidden unsigned __utftab[0xf4 - 0xc2 + 1] = {
+hidden const unsigned __utftab[0xf4 - 0xc2 + 1] = {
     [0xc2 - 0xc2] = R(0x8,3) | 0x2,
     [0xc3 - 0xc2] = R(0x8,3) | 0x3,
     [0xc4 - 0xc2] = R(0x8,3) | 0x4,

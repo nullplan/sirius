@@ -95,11 +95,13 @@ static struct __pthread *static_init_from_phdrs(const void *start, size_t phnum,
 #ifdef TLS_VARIANT_1
         tls_data.size = (tls_size + alignof(struct __pthread) - 1) & -alignof(struct __pthread);
         tls_data.size += sizeof (struct __pthread) + GAP_ABOVE_TP + 2 * sizeof (size_t);
+#else
+        tls_data.size = (2 * sizeof (size_t) + sizeof (struct __pthread) + GAP_ABOVE_TP + tls_align - 1) & -tls_align;
+        tls_data.size += tls_size;
+#endif
         tls_data.align = tls_align;
         if (tls_data.align < alignof (struct __pthread))
             tls_data.align = alignof (struct __pthread);
-#else
-#endif
     } else {
         tls_data.size = sizeof (struct __pthread) + GAP_ABOVE_TP;
         tls_data.align = alignof (struct __pthread);

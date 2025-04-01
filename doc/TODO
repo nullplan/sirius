@@ -395,9 +395,7 @@ ssize_t strfmon(char *__restrict, size_t, const char *__restrict, ...);
 ssize_t strfmon_l(char *__restrict, size_t, locale_t, const char *__restrict, ...);
 
 /* netdb.h */
-int getaddrinfo(const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
 int getnameinfo(const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
-void freeaddrinfo(struct addrinfo *);
 const char *gai_strerror(int);
 
 /* nl_types.h */
@@ -410,7 +408,6 @@ int poll(struct pollfd [], nfds_t, int);
 int ppoll(struct pollfd [], nfds_t, const struct timespec *__restrict, const sigset_t *__restrict);
 
 /* pthread.h */
-int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 int pthread_barrier_init(pthread_barrier_t *__restrict, const pthread_barrierattr_t *__restrict, unsigned);
 int pthread_barrier_wait(pthread_barrier_t *);
 int pthread_barrier_destroy(pthread_barrier_t *);
@@ -557,9 +554,6 @@ int utimes(const char *, const struct timeval [2]);
 /* sys/times.h */
 clock_t times(struct tms *);
 
-/* sys/utsname.h */
-int uname(struct utsname *);
-
 /* sys/wait.h */
 pid_t wait(int *);
 int waitid(idtype_t , id_t, siginfo_t *, int);
@@ -636,8 +630,6 @@ size_t c32rtomb(char *__restrict, char32_t, mbstate_t *__restrict);
 extern char *optarg;
 extern int opterr, optind, optopt;
 size_t confstr(int, char *, size_t);
-pid_t _Fork(void);
-pid_t fork(void);
 long fpathconf(int, int);
 int getopt(int, char *const [], const char *);
 long pathconf(const char *, int);
