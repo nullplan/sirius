@@ -21,7 +21,7 @@ struct address {
 
 #define MAXSERVICE      2       /* at most one TCP and one UDP service, right? */
 #define MAXADDR         16      /* ought to be enough for anyone */
-extern hidden int __lookup_service(const char *, int, struct service [static MAXSERVICE]);
+extern hidden int __lookup_service(const char *, int, int, struct service [static MAXSERVICE]);
 extern hidden int __lookup_name(const char *, int, struct address [static MAXADDR], char *);
 extern hidden int __lookup_ipliteral(const char *, int, struct address *);
 

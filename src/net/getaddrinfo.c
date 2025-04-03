@@ -34,7 +34,7 @@ int getaddrinfo(const char *restrict nodename, const char *restrict servname, co
         if (flags >= 128)
             return EAI_BADFLAGS;
     }
-    int nserv = __lookup_service(servname, flags, service);
+    int nserv = __lookup_service(servname, flags, type, service);
     if (nserv < 0) return nserv;
     if (nserv == 0) return EAI_SERVICE;
 
