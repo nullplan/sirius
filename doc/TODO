@@ -93,14 +93,7 @@ char *ngettext_l(const char *, const char *, unsigned long int, locale_t);
 char *textdomain(const char *);
 
 /* locale.h */
-char *setlocale(int, const char *);
-struct lconv *localeconv(void);
-locale_t duplocale(locale_t);
-void freelocale(locale_t);
 const char *getlocalename_l(int, locale_t);
-locale_t newlocale(int, const char *, locale_t);
-locale_t uselocale(locale_t);
-
 
 /* math.h */
 double j0(double);
