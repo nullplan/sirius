@@ -743,7 +743,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             case 'S':
             case 's':
                 if (st == PWCHAR) {
-                    const wchar_t *ws = arg.p;
+                    const wchar_t *ws = arg.p? arg.p : L"(null)";
                     mbstate_t state = {0};
                     size_t mbslen = 0;
                     size_t n = 0;
@@ -763,7 +763,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                     pad(f, ' ', width, mbslen, flags ^ FLG_LEFT);
                     continue;
                 }
-                a = arg.p;
+                a = arg.p? arg.p : "(null)";
                 if (prec < 0) z = a + strlen(a);
                 else {
                     const char *ptr = memchr(a, 0, prec);
