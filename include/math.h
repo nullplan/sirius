@@ -124,10 +124,7 @@ static inline uint32_t __float_bits(float __d)
 #define __fpclassifyd(x)    ((x) == 0? FP_ZERO : (x) < (1ull << 52)? FP_SUBNORMAL : (x) < (0x7ffull << 52)? FP_NORMAL : (x) == (0x7ffull << 52)? FP_INFINITE : FP_NAN)
 int __fpclassifyl(long double);
 int __signbitl(long double);
-int __iscanonicall(long double);
 
-#define __iscanonical(x) ((x) <= (0x7ffULL << 52) || (x) == (0x7ff8ULL << 48))
-#define __iscanonicalf(x) ((x) <= (0xff << 23) || (x) == (0xff8 << 19))
 
 #define fpclassify(x) (sizeof (x) == sizeof (float)? __fpclassifyf(__float_bits(x) & 0x7fffffff) : sizeof (x) == sizeof (double)? __fpclassifyd(__double_bits(x) & 0x7fffffffffffffffULL) : __fpclassifyl(x))
 #define isfinite(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) < (0xff << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) < (0x7ffULL << 53) : __fpclassifyl(x) < FP_INFINITE)
@@ -136,11 +133,18 @@ int __iscanonicall(long double);
 #define isnormal(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) - (1u << 24) < (0xffu << 24) - (1u << 24) : \
         sizeof (x) == sizeof (double)? (__double_bits(x) << 1) - (1ull << 53) < (0x7ffULL << 53) - (1ull << 53) : __fpclassifyl(x) == FP_NORMAL)
 #define signbit(x) (sizeof (x) == sizeof (float)? (int)(__float_bits(x) >> 31) : sizeof (x) == sizeof (double)? (int)(__double_bits(x) >> 63) : __signbitl(x))
-#define iscanonical(x) (sizeof (x) == sizeof (float)? __iscanonicalf(__float_bits(x) << 1 >> 1) : sizeof (x) == sizeof (double)? __iscanonical(__double_bits(x) << 1 >> 1) : __iscanonicall(x))
 #define issignaling(x) (0)
 #define issubnormal(x) (sizeof (x) == sizeof (float)? (__float_bits(x) & 0x7fffffff) - 1u < (1 << 23) - 1u : \
         sizeof (x) == sizeof (double)? (__double_bits(x) << 1 >> 1) - 1ull < (1ull << 52) - 1ull : __fpclassifyl(x) == FP_SUBNORMAL)
 #define iszero(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1 >> 1) == 0 : sizeof (x) == sizeof (double)? (__double_bits(x) << 1 >> 1) == 0 : __fpclassifyl(x) == FP_ZERO)
+/* All values in IEEE 754 binary formats are canonical.
+ * But according to glibc, we must convert each value to
+ * its semantic type first. 
+ * And since non-GNU C99 compilers are the baseline for this file,
+ * I must make the normal sizeof switch here
+ */
+#define __discard(x) (sizeof (x) == sizeof (float)? (void)((float)(x)) : sizeof (x) == sizeof (double)? (void)((double)(x)) : (void)((long double)(x)))
+#define iscanonical(x) (__discard(x), 1)
 
 #define isunordered(x, y) (isnan(x) || isnan(y))
 #define __iscmp(x, y, c) (!isunordered(x) && (x) c (y))
