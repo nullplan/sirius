@@ -10,7 +10,7 @@
 static int has_unescaped_globchars(const char *s, size_t n, int flags)
 {
     if (flags & GLOB_NOESCAPE)
-        return s[strcspn(s, "*?[")] != 0;
+        return strcspn(s, "*?[") < n;
 
     int escape = 0;
     while (n--) {
