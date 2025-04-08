@@ -622,7 +622,6 @@ long sysconf(int);
 char *crypt(const char *, const char *);
 int nice(int);
 void swab(const void *__restrict, void *__restrict, size_t);
-void sync(void);
 
 /* utmpx.h */
 void          endutxent(void);
