@@ -38,7 +38,7 @@ int getaddrinfo(const char *restrict nodename, const char *restrict servname, co
     if (nserv < 0) return nserv;
     if (nserv == 0) return EAI_SERVICE;
 
-    int naddr = __lookup_name(nodename, flags, address, canonname);
+    int naddr = __lookup_name(nodename, flags, family, address, canonname);
     if (naddr < 0) return naddr;
     if (naddr == 0) return EAI_NONAME;
 

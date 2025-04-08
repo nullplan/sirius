@@ -22,7 +22,7 @@ struct address {
 #define MAXSERVICE      2       /* at most one TCP and one UDP service, right? */
 #define MAXADDR         16      /* ought to be enough for anyone */
 extern hidden int __lookup_service(const char *, int, int, struct service [static MAXSERVICE]);
-extern hidden int __lookup_name(const char *, int, struct address [static MAXADDR], char *);
+extern hidden int __lookup_name(const char *, int, int, struct address [static MAXADDR], char *);
 extern hidden int __lookup_ipliteral(const char *, int, struct address *);
 
 /* backend stuff */
@@ -45,8 +45,8 @@ extern hidden void __get_resolvconf(struct resolvconf *);
 extern hidden int __dns_create_query(const char *, int, unsigned char *, size_t);
 
 #define DNS_MAXRESULT   768     /* DNS response to AAAA query with maxed-out CNAME */
-extern hidden int __dns_transact(const unsigned char *const *, const size_t *, const struct resolvconf *, unsigned char *const *);
-extern hidden void __dns_process(const unsigned char *, size_t, int (*)(const unsigned char *, int, void *), void *);
+extern hidden int __dns_transact(unsigned char *const *, const size_t *, int, const struct resolvconf *, unsigned char *const *, size_t *);
+extern hidden void __dns_process(const unsigned char *, size_t, int (*)(const unsigned char *, size_t, const unsigned char *, size_t, int, void *), void *);
 extern hidden int __dn_expand(const unsigned char *, const unsigned char *, size_t, char *, size_t);
 
 
