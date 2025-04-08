@@ -371,7 +371,7 @@ int setregid(gid_t, gid_t);
 int setreuid(uid_t, uid_t);
 int setresgid(gid_t, gid_t, gid_t);
 int setresuid(uid_t, uid_t, uid_t);
-void swab(const void *__restrict, void *__restrict, size_t);
+void swab(const void *__restrict, void *__restrict, ssize_t);
 void sync(void);
 #endif
 #ifdef __cplusplus

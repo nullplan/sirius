@@ -39,7 +39,7 @@ static int recurse(char *buf, int len, int (*cb)(const char *, const struct stat
 
     if (type == FTW_SL) {
         struct stat discard;
-        if (!(flags & FTW_PHYS) || stat(buf, &discard)) {
+        if (stat(buf, &discard)) {
             type = FTW_SLN;
         }
     }
@@ -63,7 +63,7 @@ static int recurse(char *buf, int len, int (*cb)(const char *, const struct stat
     if (hist && (flags & FTW_XDEV) && st.st_dev != hist->dev) {
         if (flags & FTW_DEPTH) rv = cb(buf, &st, FTW_DP, &(struct FTW){.base = len, .level = level});
         close(fd);
-        return 0;
+        return rv;
     }
     if (level >= lim) {
         close(fd);

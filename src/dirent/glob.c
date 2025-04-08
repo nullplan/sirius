@@ -10,7 +10,7 @@
 static int has_unescaped_globchars(const char *s, size_t n, int flags)
 {
     if (flags & GLOB_NOESCAPE)
-        return s[strcspn(s, "*?[")] != 0;
+        return strcspn(s, "*?[") < n;
 
     int escape = 0;
     while (n--) {
@@ -87,7 +87,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
         for (size_t i = 0; i < candidates->n; i++) {
             size_t cl = strlen(candidates->paths[i]);
             out->paths[out->n] = malloc(cl + len + 3); /* one is extra for GLOB_MARK */
-            if (!out->paths[out->n]) goto oom;
+            if (!out->paths[out->n]) return GLOB_NOSPACE;
             if (cl) {
                 memcpy(out->paths[out->n], candidates->paths[i], cl);
                 out->paths[out->n][cl++] = '/';
@@ -101,7 +101,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
             DIR *d = opendir(candidates->paths[i]);
             if (!d) {
                 int rv = errfunc(candidates->paths[i], errno);
-                if (rv || (flags & GLOB_ERR)) goto error;
+                if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
             } else {
                 struct dirent *de;
                 char pattern[n + 1];
@@ -143,12 +143,6 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
     }
 
     return 0;
-
-oom:
-    return GLOB_NOSPACE;
-
-error:
-    return GLOB_ABORTED;
 }
 
 static int pathcmp(const void *a, const void *b)
@@ -179,13 +173,14 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     struct pathlist *result = &noalloc;
     noalloc.n = 0;
     int rv = GLOB_NOMATCH;
+    char *p = "/";
     if (*pat) {
-        char *p = "/";
-
         noalloc.n = 1;
         noalloc.paths = &p;
         if (*pat != '/')
             p++;
+        else
+            rv = 0;
 
         struct pathlist *in = &noalloc;
         const char *a = pat;
@@ -215,7 +210,7 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
 
     if (result != &a1) freelist(&a1);
     if (result != &a2) freelist(&a2);
-    if (rv) {
+    if (rv == GLOB_NOSPACE || rv == GLOB_ABORTED) {
         if (result != &noalloc) freelist(result);
         return rv;
     }
@@ -248,15 +243,30 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
         result = &noalloc;
         noalloc.n = 1;
         noalloc.paths = (void *)&pat;
-    } 
+    }
+
+    if (result == &noalloc) {
+        a1.paths = malloc(result->n * sizeof (char *));
+        if (!a1.paths)
+            return GLOB_NOSPACE;
+
+        for (a1.n = 0; a1.n < result->n; a1.n++)
+        {
+            a1.paths[a1.n] = strdup(result->paths[a1.n]);
+            if (!a1.paths[a1.n]) break;
+        }
+        if (a1.n < result->n) {
+            freelist(&a1);
+            return GLOB_NOSPACE;
+        }
+        result = &a1;
+    }
 
     if (!(flags & GLOB_NOSORT) && result->n > 1)
         qsort(result->paths, result->n, sizeof (char *), pathcmp);
 
     char **final = realloc(g->gl_pathv, off + g->gl_pathc + result->n + 1);
     if (!final) {
-        if (result != &noalloc)
-            freelist(result);
         return GLOB_NOSPACE;
     }
     g->gl_pathv = final;
@@ -264,7 +274,5 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     memcpy(g->gl_pathv + off + g->gl_pathc, result->paths, result->n * sizeof (char *));
     g->gl_pathv[off + g->gl_pathc + result->n] = 0;
     g->gl_pathc += result->n;
-    if (result != &noalloc)
-        free(result->paths);
     return 0;
 }
