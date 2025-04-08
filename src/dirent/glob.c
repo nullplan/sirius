@@ -87,7 +87,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
         for (size_t i = 0; i < candidates->n; i++) {
             size_t cl = strlen(candidates->paths[i]);
             out->paths[out->n] = malloc(cl + len + 3); /* one is extra for GLOB_MARK */
-            if (!out->paths[out->n]) goto oom;
+            if (!out->paths[out->n]) return GLOB_NOSPACE;
             if (cl) {
                 memcpy(out->paths[out->n], candidates->paths[i], cl);
                 out->paths[out->n][cl++] = '/';
@@ -101,7 +101,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
             DIR *d = opendir(candidates->paths[i]);
             if (!d) {
                 int rv = errfunc(candidates->paths[i], errno);
-                if (rv || (flags & GLOB_ERR)) goto error;
+                if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
             } else {
                 struct dirent *de;
                 char pattern[n + 1];
@@ -143,12 +143,6 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
     }
 
     return 0;
-
-oom:
-    return GLOB_NOSPACE;
-
-error:
-    return GLOB_ABORTED;
 }
 
 static int pathcmp(const void *a, const void *b)
