@@ -123,8 +123,8 @@ static void clear(size_t p[static 2], size_t x)
 hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, const void *, void *), void *ctx)
 {
     if (n <= 1) return;
-    size_t p[2] = {2, 0};
-    size_t order = 1;
+    size_t p[2] = {3, 0};
+    size_t order = 0;
     char *head = (char *)base + sz;
 
     size_t leo[12 * sizeof(size_t)];
