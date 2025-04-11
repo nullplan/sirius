@@ -134,5 +134,5 @@ remove_component:
         memmove(stack + (dirtail - buffer), start, (tail - start) + 1);
         memcpy(stack, buffer, dirtail - buffer);
     }
-    return result? strcpy(result, stack) : strdup(stack);
+    return result? memcpy(result, stack, tail - stack + 1) : strdup(stack);
 }

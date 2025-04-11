@@ -91,7 +91,7 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
             munmap(map, guardsize + alloc);
             return EAGAIN;
         }
-        thread_mem = (void *)(((uintptr_t)thread_mem + guardsize + alloc - tls_data.size) & -tls_data.align);
+        thread_mem = (void *)(((uintptr_t)map + guardsize + alloc - tls_data.size) & -tls_data.align);
         tsd = (void *)(((uintptr_t)thread_mem - __pthread_tsd_size) & -alignof(size_t));
         if (!sp) sp = (void *)((uintptr_t)tsd & -16ul);
         new_td = __copy_tls(thread_mem);

@@ -3,5 +3,5 @@
 
 char *ctermid(char *s)
 {
-    return strcpy(s, "/dev/tty");
+    return memcpy(s, "/dev/tty", 9);
 }

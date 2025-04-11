@@ -22,15 +22,15 @@ hidden size_t __stdio_write(FILE *f, const void *buf, size_t len)
         else
             wr = syscall(SYS_writev, f->fd, pio, iovlen);
 
-        /* fast-track success */
-        if ((iovlen == 1 && wr == pio->iov_len)
-                || (iovlen == 2 && wr == iov[0].iov_len + iov[1].iov_len))
-            return len;
-
         if (wr < 0) {
             f->flags |= F_ERR;
             return rv;
         }
+
+        /* fast-track success */
+        if ((iovlen == 1 && wr == pio->iov_len)
+                || (iovlen == 2 && wr == iov[0].iov_len + iov[1].iov_len))
+            return len;
 
         /* if we get here, it is a partial success. */
         if (wr >= pio->iov_len) {

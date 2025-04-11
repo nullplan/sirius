@@ -14,7 +14,7 @@ hidden void __init_tsd(void)
 
 static pthread_rwlock_t dtors_lock = PTHREAD_RWLOCK_INITIALIZER;
 static void (*dtors[PTHREAD_KEYS_MAX])(void *);
-static void sentinel(void *) {}
+static void sentinel(void *x) {}
 
 hidden void __pthread_tsd_destroy(void)
 {
@@ -25,14 +25,17 @@ hidden void __pthread_tsd_destroy(void)
         if (pthread_rwlock_rdlock(&dtors_lock)) return;
         for (size_t j = 0; j < PTHREAD_KEYS_MAX; j++)
         {
-            if (self->tsd[j] && dtors[j] != sentinel) {
+            if (self->tsd[j]) {
                 data_found = 1;
                 void *data = self->tsd[j];
                 void (*dtor)(void *) = dtors[j];
                 self->tsd[j] = 0;
-                pthread_rwlock_unlock(&dtors_lock);
-                dtor(data);
-                pthread_rwlock_rdlock(&dtors_lock);
+                if (dtor != sentinel)
+                {
+                    pthread_rwlock_unlock(&dtors_lock);
+                    dtor(data);
+                    pthread_rwlock_rdlock(&dtors_lock);
+                }
             }
         }
         pthread_rwlock_unlock(&dtors_lock);
