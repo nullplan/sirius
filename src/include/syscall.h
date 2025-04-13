@@ -13,7 +13,7 @@ static inline long __syscall_ret(long rv)
     return rv;
 }
 #define __SYSCALL_NARGS2(nr, a, b, c, d, e, f, n, ...) n
-#define __SYSCALL_NARGS(...) __SYSCALL_NARGS2(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
+#define __SYSCALL_NARGS(...) __SYSCALL_NARGS2(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0, 0)
 #define __SYSCALL_CONCAT2(a, b) a##b
 #define __SYSCALL_CONCAT(a, b) __SYSCALL_CONCAT2(a, b)
 #define __syscall(...)  __SYSCALL_CONCAT(__syscall, __SYSCALL_NARGS(__VA_ARGS__))(__VA_ARGS__)
