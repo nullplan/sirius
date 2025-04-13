@@ -55,7 +55,7 @@ static void init_cancel_sig(void)
 {
     struct sigaction sa;
     sa.sa_sigaction = cancel_handler;
-    sa.sa_flags = SA_RESTART | SA_SIGINFO;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK;
     memset(sa.sa_mask.__ss, -1, _NSIG / 8);
     __libc_sigaction(SIGCANCEL, &sa, 0);
 }
