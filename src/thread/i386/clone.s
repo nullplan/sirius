@@ -12,9 +12,9 @@ __clone:
     movl %esi, 36(%esp)
     movl %edi, 32(%esp)
     movl %ebx, 28(%esp)
+    xorl %eax, %eax
     movw %gs, %ax
     shrl $3, %eax
-    andl $0x1fff, %eax
     movl %eax, (%esp)
     movl 28(%ebp), %eax
     movl %eax, 4(%esp)
