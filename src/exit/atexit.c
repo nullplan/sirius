@@ -22,7 +22,10 @@ void __run_atexit_funcs(void)
             __lock(&lock);
         }
         else
+        {
             head = head->next;
+            n = 32;
+        }
     }
     __unlock(&lock);
 }

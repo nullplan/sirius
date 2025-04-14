@@ -27,7 +27,10 @@ void __run_quick_exit_funcs(void)
             __lock(&lock);
         }
         else
+        {
             head = head->next;
+            n = 32;
+        }
     }
     __unlock(&lock);
     __restore_sigs(&ss);
