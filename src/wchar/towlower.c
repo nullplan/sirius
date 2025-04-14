@@ -12,7 +12,7 @@ static int read_sleb128(const unsigned char **pp)
     do {
         rv |= (*p & 0x7f) << k;
         k += 7;
-    } while (!(*p++ & 0x80));
+    } while (*p++ & 0x80);
     if (rv & (1u << (k - 1)))
         rv |= -1u << k;
     *pp = p;
@@ -32,6 +32,7 @@ static wint_t casemap(wint_t x, int lower)
         wint_t upper = lower? x - diff : x;
         if (upper - u < len && !((upper - u) & (stride - 1)))
             return lower? upper : upper + diff;
+        u += len;
     }
     return x;
 }

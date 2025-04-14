@@ -27,7 +27,7 @@ static int fstatat_legacy(int fd, const char *restrict name, struct stat *restri
 #endif
             }
         }
-    } 
+    }
 #ifdef SYS_stat
     else if ((fd == AT_FDCWD || *name == '/') && flags == 0)
         rv = __syscall(SYS_stat, name, &kst);
