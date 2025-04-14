@@ -174,10 +174,9 @@ static int match(const char *pattern, size_t plen, const char *string, size_t sl
     size_t tlen;
     int t;
     wchar_t s0, sfold;
-    assert(plen && slen);
-    if ((flags & FNM_PERIOD) && *string == '.')
+    if ((flags & FNM_PERIOD) && slen && *string == '.')
     {
-        if (*pattern != '.') return FNM_NOMATCH;
+        if (!plen || *pattern != '.') return FNM_NOMATCH;
         string++;
         slen--;
         pattern++;
@@ -284,7 +283,8 @@ int fnmatch(const char *pattern, const char *string, int flags)
         for (;;) {
             size_t plen = __stridx(pattern, '/');
             size_t slen = __stridx(string, '/');
-            if (match(pattern, plen, string, slen, flags) || pattern[plen] != string[slen]) return FNM_NOMATCH;
+            if (pattern[plen] != string[slen]) return FNM_NOMATCH;
+            if (match(pattern, plen, string, slen, flags)) return FNM_NOMATCH;
             if (!pattern[plen]) return 0;
             pattern += plen + 1;
             string += slen + 1;
