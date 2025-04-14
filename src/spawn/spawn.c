@@ -53,11 +53,13 @@ static int child(void *args)
                 rv = __sys_open(fa->name, fa->fd2, fa->mode);
                 if (rv < 0) goto out_rv;
                 if (rv != fa->fd) {
+                    int ofd = rv;
                     #ifdef SYS_dup2
-                    rv = __syscall(SYS_dup2, rv, fa->fd);
+                    rv = __syscall(SYS_dup2, ofd, fa->fd);
                     #else
-                    rv = __syscall(SYS_dup3, rv, fa->fd, 0);
+                    rv = __syscall(SYS_dup3, ofd, fa->fd, 0);
                     #endif
+                    __syscall(SYS_close, ofd);
                     if (rv < 0) goto out_rv;
                 }
                 break;
