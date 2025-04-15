@@ -2,7 +2,6 @@
 #include <string.h>
 #include "netlink.h"
 
-extern hidden int __netlink_transact(int (*)(struct nlmsghdr *, size_t, void *), void *, int (*)(const struct nlmsghdr *, void *), void *);
 struct prepctx {
     const char *name;
     size_t len;
