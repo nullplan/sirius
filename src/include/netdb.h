@@ -42,6 +42,8 @@ extern hidden void __get_resolvconf(struct resolvconf *);
 #define DNS_RR_CNAME    5
 #define DNS_RR_PTR      12
 #define DNS_RR_AAAA     28
+#define DNS_MAXNAME     256 /* as per RFC 1035, maximum name length is 256 */
+#define DNS_MAXQUERY    (DNS_MAXNAME + 17)
 extern hidden int __dns_create_query(const char *, int, unsigned char *, size_t);
 
 #define DNS_MAXRESULT   768     /* DNS response to AAAA query with maxed-out CNAME */

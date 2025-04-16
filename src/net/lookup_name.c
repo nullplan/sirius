@@ -117,7 +117,7 @@ static int process_cb(const unsigned char *data, size_t datalen, const unsigned 
 
 static int name_from_fqdn(const char *name, int family, struct address addr[static MAXADDR], char *cname, const struct resolvconf *conf)
 {
-    unsigned char querybuf[2][256];
+    unsigned char querybuf[2][DNS_MAXQUERY];
     unsigned char *queryptr[2] = {querybuf[0], querybuf[1]};
     unsigned char resultbuf[2][DNS_MAXRESULT];
     unsigned char *resultptr[2] = {resultbuf[0], resultbuf[1]};
@@ -142,7 +142,11 @@ static int name_from_fqdn(const char *name, int family, struct address addr[stat
         nquery++;
     }
 
+    if (nquery == 2 && querybuf[0][0] == querybuf[1][0])
+        querybuf[1][0]++;
+
     if (__dns_transact(queryptr, querylen, nquery, conf, resultptr, resultlen)) return 0;
+
     for (int i = 0; i < nquery; i++) {
         ctx.reqtype = qtype[i];
         __dns_process(resultbuf[i], resultlen[i], process_cb, &ctx);
