@@ -252,7 +252,7 @@
 #define SYS_process_vm_readv 270
 #define SYS_process_vm_writev 271
 #define SYS_kcmp 272
-#define SYS_finit_module 273
+#define SYS_finit_module 273        /* baseline (v3.10) */
 #define SYS_sched_setattr 274
 #define SYS_sched_getattr 275
 #define SYS_renameat2 276

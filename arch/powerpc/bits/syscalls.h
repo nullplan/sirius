@@ -370,7 +370,7 @@
 #define SYS_pidfd_send_signal 424
 #define SYS_io_uring_setup 425
 #define SYS_io_uring_enter 426
-#define SYS_io_uring_register 427
+#define SYS_io_uring_register 427           /* baseline (v5.1) */
 #define SYS_open_tree 428
 #define SYS_move_mount 429
 #define SYS_fsopen 430

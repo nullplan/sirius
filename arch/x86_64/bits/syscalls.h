@@ -217,7 +217,7 @@
 #define SYS_epoll_wait 232
 #define SYS_epoll_ctl 233
 #define SYS_tgkill 234
-#define SYS_utimes 235
+#define SYS_utimes 235                  /* baseline */
 #define SYS_mbind 237
 #define SYS_set_mempolicy 238
 #define SYS_get_mempolicy 239

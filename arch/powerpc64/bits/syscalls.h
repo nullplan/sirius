@@ -232,7 +232,7 @@
 #define SYS_tgkill 250
 #define SYS_utimes 251
 #define SYS_statfs 252
-#define SYS_fstatfs 253
+#define SYS_fstatfs 253                 /* baseline */
 #define SYS_rtas 255
 #define SYS_sys_debug_setcontext 256
 #define SYS_migrate_pages 258
