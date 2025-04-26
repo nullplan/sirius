@@ -148,8 +148,10 @@ static int name_from_fqdn(const char *name, int family, struct address addr[stat
     if (__dns_transact(queryptr, querylen, nquery, conf, resultptr, resultlen)) return 0;
 
     for (int i = 0; i < nquery; i++) {
-        ctx.reqtype = qtype[i];
-        __dns_process(resultbuf[i], resultlen[i], process_cb, &ctx);
+        if (resultlen[i] - 1 < DNS_MAXRESULT - 1) {
+            ctx.reqtype = qtype[i];
+            __dns_process(resultbuf[i], resultlen[i], process_cb, &ctx);
+        }
     }
     return MAXADDR - ctx.naddr;
 }
