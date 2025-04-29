@@ -58,7 +58,7 @@ set +C
 trap 'rm -f $tmpc' INT QUIT TERM EXIT
 trycpp() {
     printf "Testing %s... " "$1"
-    printf "#if !%s\n#error fail\n#endif" "$2" > $tmpc
+    printf "#if !(%s)\n#error fail\n#endif" "$2" > $tmpc
     if $CC $CFLAGS -c -o /dev/null $tmpc >/dev/null 2>&1
     then
         printf "yes\n"
@@ -81,6 +81,12 @@ case "$($CC -v 2>&1 )" in
     *clang\ version*) flavor=clang ;;
 esac
 printf "%s\n" "$flavor"
+
+pic_default=
+if trycpp "if PIC is default" "defined __PIC__ && !defined __PIE__"
+then
+    pic_default=yes
+fi
 
 CFLAGS="$CFLAGS -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-maybe-uninitialized -Wno-abi -Wno-unknown-pragmas -Wno-unused-but-set-variable"
 
@@ -113,12 +119,32 @@ for i in $SRC; do
     OBJ="$OBJ $(map_obj_file "$i")"
 done
 
+if [ "$pic_default" ]; then
+    LOBJ="$OBJ"
+else
+    LOBJ=
+    for i in $SRC; do
+        ext="${i##*.}"
+        o=$(map_obj_file "$i")
+        if [ "$ext" = c ]; then
+            o="${o%.o}.lo"
+        fi
+        LOBJ="$LOBJ $o"
+    done
+fi
+
 DIRS=
 for i in $OBJ; do
     DIRS="$DIRS\n${i%/*.o}"
 done
 
 DIRS=$(echo "$DIRS" | sort -u)
+
+if [ "$pic_default" ]; then
+    CRT1PIC=obj/crt1c.o
+else
+    CRT1PIC=obj/crt1c.lo
+fi
 
 cat >build.ninja <<EOF
 cc = $CC
@@ -139,6 +165,9 @@ rule as
 rule ldr
     command = \$cc -r -o \$out \$in
 
+rule lds
+    command = \$cc -shared -Wl,-e,_start,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list -o \$out \$in
+
 rule ar
     command = \$ar crs \$out \$in
 
@@ -152,14 +181,30 @@ build lib: md
 build obj: md
 build obj/include: md
 build lib/libc.a: ar $OBJ || lib
-build lib/rcrt1.o: ldr obj/crt1c.o obj/rcrt1s.o || lib
+build lib/rcrt1.o: ldr $CRT1PIC obj/rcrt1s.o || lib
 build lib/crt1.o: ldr obj/crt1c.o obj/crt1s.o || lib
+build lib/Scrt1.o: ldr $CRT1PIC obj/crt1s.o || lib
 build lib/crti.o: as $srcdir/crt/crti.s
 build lib/crtn.o: as $srcdir/crt/crtn.s
 build obj/crt1c.o: cc $srcdir/crt/crt1c.c || obj
 build obj/rcrt1s.o: ccas $srcdir/crt/$ARCH/rcrt1s.S || obj
 build obj/include/alltypes.h: mkalltypes $srcdir/arch/$ARCH/alltypes.h.in $srcdir/include/alltypes.h.in || obj/include
 EOF
+
+if [ "$pic_default" ]; then
+    echo "build lib/libc.so: lds obj/rcrt1s.o obj/ldso.o $OBJ || lib" >>build.ninja
+    echo "build obj/ldso.o: cc $srcdir/ldso/ldso.c | obj/include/alltypes.h || obj" >>build.ninja
+else
+    cat >>build.ninja <<EOF
+rule ccpic
+    command = \$cc \$cflags -MD -MF \$out.d -c -fPIC \$in -o \$out
+    depfile = \$out.d
+
+build obj/crt1c.lo: ccpic $srcdir/crt/crt1c.c || obj
+build lib/libc.so: lds obj/rcrt1s.o obj/ldso.lo $LOBJ || lib
+build obj/ldso.lo: ccpic $srcdir/ldso/ldso.c | obj/include/alltypes.h || obj
+EOF
+fi
 
 if [ -e $srcdir/crt/$ARCH/crt1s.S ]
 then
@@ -182,4 +227,7 @@ for i in $SRC; do
     o=$(map_obj_file "$i")
     dir=${o%/*.o}
     echo "build $o: $builder $i $extra || $dir" >> build.ninja
+    if ! [ "$pic_default" ] && [ "$builder" = cc ]; then
+        echo "build ${o%.o}.lo: ccpic $i $extra || $dir" >> build.ninja
+    fi
 done
