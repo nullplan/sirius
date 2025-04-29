@@ -69,5 +69,103 @@ _start:
 
     addq (AUX_NUM+DYN_NUM)*8, %rsp
     movq %r15, %rdi
+    movq %r14, %rsi
+    movq %r13, %rdx
     call _start_c
     ud2
+
+decode_vec:
+    movq (%rsi), %rax
+    testq %rax, %rax
+    jz 3f
+1:
+    cmpq %rdx, %rax
+    jae 2f
+    movq 8(%rsi), %rcx
+    movq %rcx, (%rdi, %rax, 8)
+2:
+    addq $16, %rsi
+    movq (%rsi), %rax
+    testq %rax, %rax
+    jnz 1b
+3:
+    retq
+
+find_base:
+    movl (%rdi), %eax
+    cmpl $PT_DYNAMIC, %eax
+    jz 1f
+    addq %rdx, %rdi
+    decq %rsi
+    jnz find_base
+    ud2
+
+1:
+    movq %r14, %rax
+    subq 16(%rdi), %rax
+    retq
+
+do_rel:
+    testq %rsi, %rsi
+    jz 3f
+1:
+    movl 8(%rdi), %eax
+    cmpl $R_X86_64_RELATIVE, %eax
+    jnz 2f
+    movq (%rdi), %rax
+    addq %r13, (%r13, %rax)
+2:
+    addq $16, %rdi
+    subq $16, %rsi
+    jnz 1b
+3:
+    retq
+
+do_rela:
+    testq %rsi, %rsi
+    jz 3f
+1:
+    movl 8(%rdi), %eax
+    cmpl $R_X86_64_RELATIVE, %eax
+    jnz 2f
+    movq (%rdi), %rax
+    movq 16(%rdi), %r8
+    addq %r13, %r8
+    movq %r8, (%r13, %rax)
+2:
+    addq $24, %rdi
+    subq $24, %rsi
+    jnz 1b
+3:
+    retq
+
+do_relr:
+    xorl %eax, %eax
+    testq %rsi, %rsi
+    jz 3f
+1:
+    movq (%rdi), %r8
+    testq $1, %r8
+    jnz 10f
+
+    leaq 8(%r13, %r8), %rax
+    addq %r13, -8(%rax)
+    jmp 11f
+10:
+    shrq %r8
+    movl $63, %ecx
+20:
+    shrq %r8
+    jnc 21f
+    addq %r13, (%rax)
+21:
+    addq $8, %rax
+    decb %cl
+    jnz 20b
+
+11:
+    addq $8, %rdi
+    subq $8, %rsi
+    jnz 1b
+3:
+    retq
