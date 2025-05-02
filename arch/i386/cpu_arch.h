@@ -37,6 +37,12 @@ static int a_ctz(size_t x)
     return x;
 }
 
+static inline void a_stackjmp(void *func, void *stack)
+{
+    __asm__("movl %1, %%esp; jmpl *%0" :: "r"(func), "r"(stack));
+    __builtin_unreachable();
+}
+
 static inline void a_stackinvoke(void (*func)(void), void *stack)
 {
     stack = (void *)((uintptr_t)stack & -16ul);
