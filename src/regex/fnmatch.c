@@ -152,7 +152,7 @@ static int next_token(const char *pattern, size_t plen, size_t *tlen, int flags)
             len++;
         }
         if (pattern[len] == ']') {
-            *tlen = len;
+            *tlen = len + 1;
             return BRACKET;
         }
     }
@@ -189,7 +189,7 @@ static int match(const char *pattern, size_t plen, const char *string, size_t sl
         sfold = casefold(s0, flags);
         if (s0 == 0) return FNM_NOMATCH;
         if (t == BRACKET && !match_bracket(pattern, s0, sfold, flags)) return FNM_NOMATCH;
-        else if (t != QUESTION && s0 != t && sfold != t) return FNM_NOMATCH;
+        else if (t >= 0 && s0 != t && sfold != t) return FNM_NOMATCH;
         pattern += tlen;
         plen -= tlen;
     }
@@ -240,7 +240,7 @@ static int match(const char *pattern, size_t plen, const char *string, size_t sl
         if (!s0) return FNM_NOMATCH;
         sfold = casefold(s0, flags);
         if (t == BRACKET && !match_bracket(tail, s0, sfold, flags)) return FNM_NOMATCH;
-        else if (t != QUESTION && t != s0 && t != sfold) return FNM_NOMATCH;
+        else if (t >= 0 && t != s0 && t != sfold) return FNM_NOMATCH;
         tail += tlen;
         taillen -= tlen;
     }
