@@ -867,6 +867,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
         pad(f, ' ', width, prec+preflen, flags);
         out(f, prefix, preflen);
         pad(f, '0', width, prec+preflen, flags ^ FLG_ZERO);
+        pad(f, '0', prec, z - a, 0);
         out(f, a, z - a);
         pad(f, ' ', width, prec+preflen, flags ^ FLG_LEFT);
     }
