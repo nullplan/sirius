@@ -55,7 +55,7 @@ struct pathlist {
 static int push_back_path(struct pathlist *pl, char *path)
 {
     if (pl->n == pl->capacity) {
-        size_t attempt = MIN(16, pl->n + pl->n/2);
+        size_t attempt = MAX(16, pl->n + pl->n/2);
         char **p = realloc(pl->paths, attempt * sizeof (char *));
         if (!p) return -1;
         pl->capacity = attempt;
@@ -98,7 +98,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
         }
     } else {
         for (size_t i = 0; i < candidates->n; i++) {
-            DIR *d = opendir(candidates->paths[i]);
+            DIR *d = opendir(candidates->paths[i][0]? candidates->paths[i] : ".");
             if (!d) {
                 int rv = errfunc(candidates->paths[i], errno);
                 if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
