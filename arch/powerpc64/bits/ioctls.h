@@ -4,20 +4,11 @@
 #define FIONBIO		_IOW('f', 126, int)
 #define FIONREAD	_IOR('f', 127, int)
 #define TIOCINQ		FIONREAD
-#define FIOQSIZE	_IOR('f', 128, loff_t)
-#define TIOCGETP	_IOR('t', 8, struct sgttyb)
-#define TIOCSETP	_IOW('t', 9, struct sgttyb)
-#define TIOCSETN	_IOW('t', 10, struct sgttyb)	/* TIOCSETP wo flush */
-#define TIOCSETC	_IOW('t', 17, struct tchars)
-#define TIOCGETC	_IOR('t', 18, struct tchars)
+#define FIOQSIZE	_IOR('f', 128, off_t)
 #define TCGETS		_IOR('t', 19, struct termios)
 #define TCSETS		_IOW('t', 20, struct termios)
 #define TCSETSW		_IOW('t', 21, struct termios)
 #define TCSETSF		_IOW('t', 22, struct termios)
-#define TCGETA		_IOR('t', 23, struct termio)
-#define TCSETA		_IOW('t', 24, struct termio)
-#define TCSETAW		_IOW('t', 25, struct termio)
-#define TCSETAF		_IOW('t', 28, struct termio)
 #define TCSBRK		_IO('t', 29)
 #define TCXONC		_IO('t', 30)
 #define TCFLSH		_IO('t', 31)
@@ -26,8 +17,6 @@
 #define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
 #define	TIOCSTOP	_IO('t', 111)		/* stop output, like ^S */
 #define TIOCOUTQ        _IOR('t', 115, int)     /* output queue size */
-#define TIOCGLTC	_IOR('t', 116, struct ltchars)
-#define TIOCSLTC	_IOW('t', 117, struct ltchars)
 #define TIOCSPGRP	_IOW('t', 118, int)
 #define TIOCGPGRP	_IOR('t', 119, int)
 #define TIOCEXCL	0x540C
