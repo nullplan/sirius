@@ -97,7 +97,7 @@ TYPEDEF struct { int __v; } pthread_key_t;
 TYPEDEF struct { int __flags; int __prio; int __pol; void *__addr; size_t __ss; size_t __gs; } pthread_attr_t;
 TYPEDEF struct { int __foo; } pthread_barrier_t;
 TYPEDEF struct { int __ps; } pthread_barrierattr_t;
-TYPEDEF struct { int __foo; } pthread_condattr_t;
+TYPEDEF struct { unsigned __flg; int __clk; } pthread_condattr_t;
 TYPEDEF struct { unsigned __flg; } pthread_mutexattr_t;
 TYPEDEF struct { volatile int __lock; volatile int __waiters; int __ps; } pthread_rwlock_t;
 TYPEDEF struct { int __ps; } pthread_rwlockattr_t;
