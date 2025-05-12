@@ -35,6 +35,11 @@ struct __pthread
     void **tsd;
     void *result;
     struct __ptcb *cb;
+    struct {
+        struct __mtx *head;
+        long off;
+        struct __mtx *pending;
+    } robust;
 
     #ifndef TLS_VARIANT_1
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */

@@ -90,7 +90,7 @@ TYPEDEF long long off_t;
 TYPEDEF struct { volatile int __ctrl; } once_flag;
 TYPEDEF struct { volatile int __ctrl; } pthread_once_t;
 STRUCT __cnd { int __foo; };
-STRUCT __mtx { int __foo; };
+STRUCT __mtx { struct __mtx *__next; volatile int __lock; int __flg; unsigned __ctx; };
 TYPEDEF struct __cnd pthread_cond_t;
 TYPEDEF struct __mtx pthread_mutex_t;
 TYPEDEF struct { int __v; } pthread_key_t;

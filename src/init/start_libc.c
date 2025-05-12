@@ -26,6 +26,7 @@ hidden int __elevated;
 hidden int __thread_list_lock;
 hidden unsigned long __page_size;
 hidden int __threaded;
+hidden int __robust_list_works;
 
 hidden char **__environ;
 weak_alias(environ, __environ);
@@ -63,6 +64,13 @@ void __init_libc(char *pn, char **envp)
     tp->locale = &__global_locale;
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     __global_locale = __c_locale;
+
+    tp->robust.head = (void *)&tp->robust.head;
+    tp->robust.off = offsetof(struct __mtx, __lock);
+    tp->robust.pending = 0;
+    if (!__syscall(SYS_set_robust_list, &tp->robust, sizeof tp->robust))
+        __robust_list_works = 1;
+
     if ((aux[0] & 0x7800) == 0x7800 && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
         return;
 
