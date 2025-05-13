@@ -34,7 +34,10 @@ hidden void __tl_sync(void)
     int v;
     for (;;) {
         v = __thread_list_lock;
-        if (!v) return;
+        if (!v) {
+            if (waiters) __futex_wake(&__thread_list_lock, 0, 1);
+            return;
+        }
         if (!(v & FUTEX_WAITERS)) {
             if (a_cas(&__thread_list_lock, v, v | FUTEX_WAITERS) != v)
                 continue;
