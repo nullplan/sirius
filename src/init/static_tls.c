@@ -80,6 +80,8 @@ static struct __pthread *static_init_from_phdrs(const void *start, size_t phnum,
             ph_tls = ph;
         else if (ph->p_type == PT_DYNAMIC && _DYNAMIC)
             base = (uintptr_t)_DYNAMIC - ph->p_vaddr;
+        else if (ph->p_type == PT_PHDR)
+            base = (uintptr_t)start - ph->p_vaddr;
         else if (ph->p_type == PT_LOAD && !found_load)
         {
             found_load = 1;
