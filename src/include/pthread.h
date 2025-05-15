@@ -101,6 +101,7 @@ extern hidden int __clone(int (*)(void *), void *, int, void *, int *, uintptr_t
 #define DEFAULT_GUARD_SIZE          (4 << 10)
 
 #define FUTEX_TID_MASK              0x3fffffff
+#define FUTEX_NR_TID_MASK           0x7fffffff
 #define FUTEX_OWNER_DIED            0x40000000
 #define FUTEX_WAITERS               0x80000000U
 

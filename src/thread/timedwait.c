@@ -14,7 +14,7 @@ hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, int
 {
     int rv;
     do {
-        struct timespec relto, *to = 0;
+        struct timespec relto = {0}, *to = 0;
         if (absto) {
             if (absto->tv_nsec >= 1000000000ull) return -EINVAL;
             struct timespec now;
@@ -27,18 +27,13 @@ hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, int
                 relto.tv_sec--;
             }
             if (relto.tv_sec < 0) return -ETIMEDOUT;
-#ifndef __SIXTY_FOUR
-            relto.__pad = 0;
-#endif
             to = &relto;
         }
         a_inc(waiters);
         pthread_cleanup_push(cleanup, (void *)waiters);
         int op = FUTEX_WAIT;
-        if (priv) op |= FUTEX_PRIVATE_FLAG;
+        if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
         rv = __syscall_cp(SYS_futex, fut, op, val, to);
-        if (rv == -ENOSYS && priv)
-            rv = __syscall_cp(SYS_futex, fut, FUTEX_WAIT, val, to);
         pthread_cleanup_pop(1);
     } while (rv == -ETIMEDOUT || (rv == -EINTR && !__eintr_valid));
     return rv;

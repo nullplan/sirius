@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include "futex.h"
 
 static void dummy(const void *p) {}
 weak_alias(__init_vdso, dummy);
@@ -27,6 +28,8 @@ hidden int __thread_list_lock;
 hidden unsigned long __page_size;
 hidden int __threaded;
 hidden int __robust_list_works;
+hidden int __pi_futex_works;
+hidden int __private_futex_works;
 
 hidden char **__environ;
 weak_alias(environ, __environ);
@@ -70,6 +73,17 @@ void __init_libc(char *pn, char **envp)
     tp->robust.pending = 0;
     if (!__syscall(SYS_set_robust_list, &tp->robust, sizeof tp->robust))
         __robust_list_works = 1;
+    /* According to the manpage, PI futexes were added in 2.6.18 and private
+     * ones in 2.6.22.
+     * So there are kernels with PI futexes but without private ones, but no
+     * kernels with private futexes and no PI futexes.
+     */
+    if (__syscall(SYS_futex, &(int){0}, FUTEX_UNLOCK_PI | FUTEX_PRIVATE_FLAG) != -ENOSYS) {
+        __pi_futex_works = 1;
+        __private_futex_works = 1;
+    } else if (__syscall(SYS_futex, &(int){0}, FUTEX_UNLOCK_PI) != -ENOSYS) {
+        __pi_futex_works = 1;
+    }
 
     if ((aux[0] & 0x7800) == 0x7800 && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
         return;

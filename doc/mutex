@@ -1,0 +1,69 @@
+Mutexes got way overcomplicated for such a simple concept.
+
+I have essentially three mutex implementations rolled into one. The first one is
+the simple mutex. In it, the lockword is
+
+0               - free
+EBUSY           - taken
+WAITERS | EBUSY - taken, possibly with waiters
+
+Why EBUSY? It does not matter, precisely which nonzero value is used for
+"taken", and this allows me to just return "val & FUTEX_TID_MASK" from trylock.
+
+The FUTEX_WAITERS flag is set when a thread goes to wait and is cleared on
+unlock. We need a waiters count to also trigger a wakeup call on unlock for this
+reason.
+
+Note that just FUTEX_WAITERS is invalid.
+
+This lock implementation is used only for the simplest of mutexes. The only flag
+they can have is PTHREAD_PROCESS_SHARED.
+
+All other options require tracking of ownership. However, priority inheritance
+changes a few things, so I have to split them up.
+
+The normal TID lock has the following values:
+
+0                               - free
+tid                             - taken by tid
+WAITERS | tid                   - taken by tid, with waiters possibly present
+OWNER_DIED                      - previous owner died
+OWNER_DIED | tid                - taken by tid, but lock is still inconsistent
+WAITERS | OWNER_DIED | tid      - as above, but with waiters present
+OWNER_DIED | TID_MASK           - lock is not recoverable
+
+As before, the waiters flag is set whenever a thread goes to sleep and cleared
+on unlock, and so a waiters count is needed. The OWNER_DIED bit is set when a
+thread exits with such a mutex still held to forestall a resource re-use issue
+(a future thread might spawn with the same TID again).
+
+The OWNER_DIED bit remains set as long as the lock is inconsistent.
+pthread_mutex_consistent() removes it. If it is still set when
+pthread_mutex_unlock() is called, the lock goes into unrecoverable state.
+
+Non-robust mutexes that track ownership simply include the OWNER_DIED bit in the
+TID mask. Therefore OWNER_DIED becomes an unmatchable TID and the lock is dead.
+
+The PI TID lock has the same values, but works a little differently: The waiters
+bit is maintained by the kernel. Locking is just attempting to change the value
+from 0 to tid and falling back on the syscall if that doesn't work. Unlocking is
+attempting to change the value from tid to 0 and falling back.
+
+Since PI mutexes maintain their waiters count in kernel, the user-space waiters
+count is free to be used otherwise. I set it to
+1 - previous owner died
+2 - not recoverable
+
+The kernel lock function leaves the OWNER_DIED bit untouched. The unlock
+function clears it, however. And using FUTEX_WAKE with PI mutexes is invalid.
+Therefore the processing of the robust list in userspace will set waiters to 1
+and perform a normal unlock. The lock function will then pick up on both
+waiters==1 and OWNER_DIED by clearing OWNER_DIED, setting waiters=1, and
+returning EOWNERDEAD. pthread_mutex_consistent() merely sets waiters=0. The
+unlock function picks up on waiters=1 and sets waiters=2, which the lock
+functions see after locking, and then immediately unlock the mutex and return
+ENOTRECOVERABLE.
+
+Non-robust PI mutexes seeing OWNER_DIED or waiters=1 will perform the action
+associated with the lock still being taken, i.e. return EBUSY from trylock and
+deadlock in lock. That state will never change again!

@@ -14,6 +14,8 @@ extern hidden size_t __page_size;
 extern hidden int __threaded;
 extern hidden int __eintr_valid;
 extern hidden int __robust_list_works;
+extern hidden int __pi_futex_works;
+extern hidden int __private_futex_works;
 extern hidden void __run_constructors(void);
 extern hidden void __run_destructors(void);
 extern hidden void __stdio_exit(void);
