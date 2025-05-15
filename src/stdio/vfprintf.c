@@ -205,6 +205,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
 
     while (e2 > 0) {
         int sh = MIN(29, e2);
+        e2 -= sh;
         uint32_t carry = 0;
         for (uint32_t *i = z; i-- > z;) {
             carry |= (uint64_t)*i << sh;
@@ -217,6 +218,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
 
     while (e2 < 0) {
         int sh = MIN(9, -e2);
+        e2 += sh;
         uint32_t shiftmask = (1ul << sh) - 1;
         uint32_t carry_out;
         uint32_t carry_in = 0;
