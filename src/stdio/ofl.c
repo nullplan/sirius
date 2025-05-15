@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <pthread.h>
 
 static FILE *head;
+static struct lock lock;
 
 static FILE *null = 0;
 weak_alias(__stdin_used, null);
@@ -23,12 +25,14 @@ hidden void __stdio_list_init(void)
 
 hidden FILE *__ofl_lock(void)
 {
+    __lock(&lock);
     return head;
 }
 
 hidden void __ofl_unlock(FILE *h)
 {
     head = h;
+    __unlock(&lock);
 }
 
 hidden void __stdio_exit(void)
