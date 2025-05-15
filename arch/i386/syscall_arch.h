@@ -1,7 +1,11 @@
 #define __SYSCALL_LL_E(x) (x), (x) >> 32
 #define __SYSCALL_LL_O(x) __SYSCALL_LL_E(x)
 
+#ifdef __STARTUP_CODE
 #define SYSCALL_INSTR   "int $0x80"
+#else
+#define SYSCALL_INSTR   "calll *%%gs:12"
+#endif
 
 static long __syscall0(long nr)
 {
