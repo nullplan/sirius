@@ -400,7 +400,7 @@ hidden long double __floatscan(FILE *f, int pseudo, int bits, int emin)
 
     if (i == 3) {
         if (c == '(') {
-            for (i = 0; c != ')' && c != EOF; i++, c = shgetc(f));
+            for (i = 1; c && c != ')' && c != EOF; i++, c = shgetc(f));
             if (c == ')') return sign * NAN;
             if (!pseudo) {
                 shlim(f, 0);
