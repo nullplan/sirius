@@ -73,7 +73,9 @@ _start:
     addi %r3, %r3, %r29
     bl do_relr
 
-    addi %r1, %r1, (AUX_NUM+DYN_NUM)*4-16
+    li %r0, 0
+    stwu %r0, (AUX_NUM+DYN_NUM)*4-16(%r1)
+    mtlr %r0
     mr %r3, %r31
     mr %r4, %r30
     mr %r5, %r29
@@ -128,9 +130,9 @@ do_rel:
     cmplwi %r5, R_PPC_RELATIVE
     bne 2f
     lwz %r5, 0(%r3)
-    lwzx %r6, %r3, %r29
+    lwzx %r6, %r5, %r29
     addi %r6, %r29, %r6
-    stwx %r6, %r3, %r29
+    stwx %r6, %r5, %r29
 2:
     addi %r3, %r3, 8
     bdnz 1b
@@ -148,7 +150,7 @@ do_rela:
     lwz %r5, 0(%r3)
     lwz %r6, 8(%r3)
     addi %r6, %r29, %r6
-    stwx %r6, %r3, %r29
+    stwx %r6, %r5, %r29
 2:
     addi %r3, %r3, 12
     addi. %r4, %r4, -12
@@ -157,7 +159,7 @@ do_rela:
 
 do_relr:
     /* %r3 - relr table, %r4 - relr sz (maybe 0) */
-    cmplwi %r4, 0
+    srwi. %r4, %r4, 2
     beqlr
     addi %r3, %r3, -4
     mtctr %r4
@@ -167,7 +169,7 @@ do_relr:
     andi. %r0, %r6, 1
     bne 2f
     /* base address */
-    addi %r5, %r6, %r29
+    add %r5, %r6, %r29
     lwz %r6, 0(%r5)
     add %r6, %r29, %r6
     stw %r6, 0(%r5)

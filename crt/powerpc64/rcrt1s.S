@@ -128,9 +128,9 @@ do_rel:
     cmplwi %r5, R_PPC64_RELATIVE
     bne 2f
     ld %r5, 0(%r3)
-    ldx %r6, %r3, %r29
+    ldx %r6, %r5, %r29
     addi %r6, %r29, %r6
-    stdx %r6, %r3, %r29
+    stdx %r6, %r5, %r29
 2:
     addi %r3, %r3, 16
     bdnz 1b
@@ -148,7 +148,7 @@ do_rela:
     ld %r5, 0(%r3)
     ld %r6, 16(%r3)
     addi %r6, %r29, %r6
-    stdx %r6, %r3, %r29
+    stdx %r6, %r5, %r29
 2:
     addi %r3, %r3, 24
     addi. %r4, %r4, -24
@@ -157,7 +157,7 @@ do_rela:
 
 do_relr:
     /* %r3 - relr table, %r4 - relr sz (maybe 0) */
-    cmpldi %r4, 0
+    srdi. %r4, %r4, 3
     beqlr
     addi %r3, %r3, -8
     mtctr %r4

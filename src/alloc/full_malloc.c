@@ -7,11 +7,6 @@
 #include "cpu.h"
 #include "libc.h"
 
-#ifdef SYS_mmap2
-#undef SYS_mmap
-#define SYS_mmap SYS_mmap2
-#endif
-
 struct chunk {
     size_t psize;
     size_t csize;
@@ -111,9 +106,9 @@ static struct chunk *split_chunk(struct chunk *c, size_t x)
 static struct chunk *expand_heap(size_t x)
 {
     size_t x_pa = (x + OVERHEAD + PAGE_SIZE - 1) & -PAGE_SIZE;
-    void *p = (void *)syscall(SYS_mmap, end_of_heap, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void *p = __mmap(end_of_heap, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (p == MAP_FAILED && end_of_heap)
-        p = (void *)syscall(SYS_mmap, 0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        p = __mmap(0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (p == MAP_FAILED) return 0;
     struct chunk *c, *n;
     if (p == end_of_heap)
@@ -139,7 +134,7 @@ hidden void *__libc_malloc(size_t x)
     }
     if (x >= MMAP_THRESH) {
         size_t x_pa = (x + OVERHEAD + PAGE_SIZE - 1) & -PAGE_SIZE;
-        void *p = (void *)syscall(SYS_mmap, 0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        void *p = __mmap(0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (p == MAP_FAILED) return 0;
         struct chunk *c = chunk_from_mem((char *)p + ALLOC_ALIGN);
         c->psize = OVERHEAD;
@@ -182,7 +177,7 @@ void free(void *p)
     struct chunk *c = chunk_from_mem(p);
     if (!(c->csize & C_INUSE)) {
         if ((c->csize + c->psize) & (PAGE_SIZE - 1)) a_crash();
-        __syscall(SYS_munmap, (char *)c - c->psize, c->csize + c->psize);
+        __munmap((char *)c - c->psize, c->csize + c->psize);
         return;
     }
     struct chunk *n = next_chunk(c);

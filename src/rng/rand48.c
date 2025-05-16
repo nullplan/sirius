@@ -42,7 +42,7 @@ void lcong48(unsigned short xs[7])
 
 static uint64_t rand48_step(uint64_t x)
 {
-    return a * x + c;
+    return (a * x + c) << 16 >> 16;
 }
 
 static uint64_t rand48_istep(void)
