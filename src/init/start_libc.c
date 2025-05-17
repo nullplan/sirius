@@ -33,6 +33,21 @@ weak_alias(_environ, __environ);
 
 hidden struct __localedef __global_locale;
 
+hidden size_t __hwcap;
+
+hidden struct __pthread *__init_tp(struct __pthread *tp)
+{
+    tp->self = tp->next = tp->prev = tp;
+    tp->sysinfo = __sysinfo;
+    tp->canary = __next_canary();
+    tp->hwcap = __hwcap;
+    tp->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
+    tp->locale = &__global_locale;
+    if (__set_thread_area(__tp_adjust(tp)))
+        a_crash();
+    return tp;
+}
+
 #define AUX_CNT 34
 hidden
 #ifdef __GNUC__
@@ -54,13 +69,9 @@ void __init_libc(char *pn, char **envp)
     if (aux[AT_SYSINFO])
         __sysinfo = aux[AT_SYSINFO];
     __page_size = aux[AT_PAGESZ];
-    struct __pthread *tp = __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]);
-    tp->sysinfo = __sysinfo;
     __init_canary((void *)aux[AT_RANDOM]);
-    tp->canary = __next_canary();
-    tp->hwcap = aux[AT_HWCAP];
-    tp->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
-    tp->locale = &__global_locale;
+    __hwcap = aux[AT_HWCAP];
+    __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]);
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     __global_locale = __c_locale;
     if ((aux[0] & 0x7800) == 0x7800 && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])

@@ -21,7 +21,7 @@ _start:
     xorl %ebp, %ebp
     movq %rsp, %r15
     andq $-16, %rsp
-    subq (AUX_NUM+DYN_NUM)*8, %rsp
+    subq $(AUX_NUM+DYN_NUM)*8, %rsp
     movq %rsp, %rdi
     xorl %eax, %eax
     movl $(AUX_NUM+DYN_NUM), %ecx
@@ -67,7 +67,7 @@ _start:
     addq %r13, %rdi
     call do_relr
 
-    addq (AUX_NUM+DYN_NUM)*8, %rsp
+    addq $(AUX_NUM+DYN_NUM)*8, %rsp
     movq %r15, %rdi
     movq %r14, %rsi
     movq %r13, %rdx

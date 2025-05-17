@@ -15,6 +15,22 @@
 #include <errno.h>
 #include "cpu.h"
 #include "libc.h"
+
+/* define unmatchable values for internal relocation types here.
+ * They get overwritten by reloc_arch.h
+ */
+enum {
+    REL_RELATIVE = -100,
+    REL_COPY,
+    REL_GOT,
+    REL_SYMBOLIC,
+    REL_PCREL32,
+    REL_PLT,
+    REL_DTPMOD,
+    REL_DTPOFF,
+    REL_TPOFF,
+    REL_TLSDESC,
+};
 #include "reloc_arch.h"
 
 #ifndef __SIXTY_FOUR
@@ -40,29 +56,39 @@ struct ldso {
     uintptr_t base;
     void *map;
     size_t map_len;
+    const Phdr *phdr;
+    size_t phnum;
+    size_t phent;
     const size_t *dynv;
     dev_t dev;
     ino_t ino;
     const char *name;
     const char *shortname;
     const uint32_t *hashtab;
-    const uint32_t *ghashtab; /* XXX: check type */
+    const uint32_t *ghashtab;
     const Sym *symtab;
     const char *strtab;
     int relocated;
     int kernel_mapped;
+    int tlsid;
+    size_t tlsoff;
     struct ldso *const *deps;
     struct ldso *next, *prev;
 };
 
 static struct ldso main, libc;
 static struct ldso *head, *tail;
-static const size_t *libc_original_addends;
+static size_t *libc_original_addends;
 static int ldd_mode;
 static int early_error;
 static int runtime;
 static struct ldso *const no_deps[] = {0};
 static struct ldso *builtin_deps[2];
+static int tls_cnt;
+static int static_tls_cnt;
+hidden unsigned long __default_stacksize = DEFAULT_STACK_SIZE;
+
+extern const char __tlsdesc_dynamic[], __tlsdesc_static[];
 
 static void print_error(const char *fmt, ...)
 {
@@ -74,6 +100,51 @@ static void print_error(const char *fmt, ...)
         early_error = 1;
     }
     va_end(ap);
+}
+
+static const Phdr *find_phdr_typed(const struct ldso *p, int t)
+{
+    size_t n = p->phnum;
+    for (const Phdr *ph = p->phdr; n; n--, ph = (void *)((char *)ph + p->phent))
+        if (ph->p_type == t)
+            return ph;
+    return 0;
+}
+
+static void enumerate_phdr(struct ldso *start)
+{
+    int cnt = 0;
+    for (struct ldso *p = start; p; p = p->next)
+    {
+        if (find_phdr_typed(p, PT_TLS))
+            cnt++;
+        const Phdr *ph_stack = find_phdr_typed(p, PT_GNU_STACK);
+        if (ph_stack)
+        {
+            if (ph_stack->p_memsz > __default_stacksize && ph_stack->p_memsz < MAX_DEFAULT_STACK_SIZE)
+                __default_stacksize = ph_stack->p_memsz;
+        }
+    }
+    if (!cnt) return;
+    struct tls_module *tls_mod = calloc(cnt, sizeof (struct tls_module));
+    if (!tls_mod)
+    {
+        print_error("Out of memory for tls module descriptions.");
+        return;
+    }
+
+    for (struct ldso *p = start; p; p = p->next) {
+        const Phdr *ph_tls = find_phdr_typed(p, PT_TLS);
+        if (!ph_tls) continue;
+        p->tlsid = ++tls_cnt;
+        tls_mod->size = ph_tls->p_memsz;
+        tls_mod->align = ph_tls->p_align;
+        tls_mod->len = ph_tls->p_filesz;
+        tls_mod->image = (void *)(p->base + ph_tls->p_vaddr);
+        __add_tls(tls_mod);
+        p->tlsoff = tls_mod->off;
+        tls_mod++;
+    }
 }
 
 static void process_dynv(struct ldso *dso)
@@ -132,6 +203,7 @@ static uint32_t sysv_hash(const char *name)
 static size_t lookup_gnu(const struct ldso *dso, const char *name, uint32_t gh)
 {
     /* have I mentioned the GNU hash table is a bit more difficult? */
+#define NBPW (8 * sizeof (size_t))
     size_t nbuckets = dso->ghashtab[0];
     size_t symoffset = dso->ghashtab[1];
     size_t bloom_size = dso->ghashtab[2];
@@ -140,12 +212,15 @@ static size_t lookup_gnu(const struct ldso *dso, const char *name, uint32_t gh)
     const uint32_t *buckets = (void *)(bloom + bloom_size);
     const uint32_t *chain = buckets + nbuckets;
 
-    size_t bloomword = bloom[(gh / (8 * sizeof (size_t))) % bloom_size];
-    size_t test = (1ul << (gh % (8 * sizeof (size_t)))) | (1ul << ((gh >> bloom_shift) % (8 * sizeof (size_t))));
+    size_t bloomword = bloom[(gh / NBPW) % bloom_size];
+    size_t test = (1ul << (gh % NBPW)) | (1ul << ((gh >> bloom_shift) % NBPW));
     if ((bloomword & test) != test) return 0;
 
+    size_t idx = buckets[gh % nbuckets];
+    if (!idx) return 0;
+    idx--;
     gh |= 1;
-    size_t idx = buckets[gh % nbuckets] - 1;
+
     do {
         idx++;
         if ((chain[idx - symoffset] | 1) == gh) {
@@ -177,7 +252,7 @@ struct symdef {
 
 #define OK_BINDS        (1ul << STB_GLOBAL | 1ul << STB_WEAK)
 #define OK_TYPES        (1ul << STT_NOTYPE  | 1ul << STT_OBJECT | 1ul << STT_FUNC | 1ul << STT_COMMON | 1ul << STT_TLS)
-static struct symdef find_sym(const char *name, struct ldso *ctx)
+static struct symdef find_sym(const char *name, struct ldso *ctx, int need_defined)
 {
     uint32_t gh = gnu_hash(name);
     uint32_t h = sysv_hash(name);
@@ -193,7 +268,10 @@ static struct symdef find_sym(const char *name, struct ldso *ctx)
         {
             const Sym *sym = ctx->symtab + i;
             if (((1ul << (sym->st_info >> 4)) & OK_BINDS)
-                    && ((1ul << (sym->st_info & 0xf)) & OK_TYPES))
+                    && ((1ul << (sym->st_info & 0xf)) & OK_TYPES)
+                    && (sym->st_shndx || (!need_defined && (sym->st_info & 0xf) != STT_TLS))
+                    && (sym->st_value || (sym->st_info & 0xf) == STT_TLS))
+
                 return (struct symdef){ctx, sym};
         }
     }
@@ -209,21 +287,27 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
     for (; relsz; relsz -= stride * sizeof (size_t), rel += stride)
     {
         int type = R_TYPE(rel[1]);
+        if (!type) continue;    /* why do NONE relocations even exist? */
         if (skip_rels && type == REL_RELATIVE)
             continue;
 
         size_t *rel_addr = (void *)(dso->base + rel[0]);
         size_t addend = stride == 3? rel[2] :
-            reuse_addends? libc_original_addends[addend_idx++] :
+            type == REL_GOT || type == REL_PLT || type == REL_COPY? 0 :
+            reuse_addends? (head == &libc? (libc_original_addends[addend_idx++] = *rel_addr) : libc_original_addends[addend_idx++]) :
             *rel_addr;
 
         size_t symval = 0;
+        size_t tlsval = 0;
         const Sym *usym = 0;
         struct symdef def = {0};
         if (R_SYM(rel[1])) {
             usym = dso->symtab + R_SYM(rel[1]);
-            def = usym->st_info >> 4 == STB_LOCAL? (struct symdef){dso, usym} : find_sym(dso->strtab + usym->st_name, type == REL_COPY? dso->next : head);
+            def = usym->st_info >> 4 == STB_LOCAL?
+                (struct symdef){dso, usym} :
+                find_sym(dso->strtab + usym->st_name, type == REL_COPY? head->next : head, type == REL_PLT);
             symval = def.sym? def.dso->base + def.sym->st_value : 0;
+            tlsval = def.sym? def.sym->st_value : 0;
             if (!def.sym && (usym->st_info >> 4) != STB_WEAK)
                 print_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name);
         }
@@ -232,12 +316,67 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
                 *rel_addr = dso->base + addend;
                 break;
 
+            case REL_SYMBOLIC:
+            case REL_PLT:
+            case REL_GOT:
+                *rel_addr = symval + addend;
+                break;
+
             case REL_COPY:
                 if (usym->st_size != def.sym->st_size)
                     print_error("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size);
                 else
                     memcpy(rel_addr, (void *)symval, usym->st_size);
                 break;
+
+            case REL_PCREL32:
+                *(uint32_t *)rel_addr = symval + addend - (size_t)rel_addr;
+                break;
+
+            case REL_DTPMOD:
+                *rel_addr = def.dso->tlsid;
+                break;
+
+            case REL_DTPOFF:
+                *rel_addr = tlsval + addend - DTV_OFFSET;
+                break;
+
+            case REL_TPOFF:
+                if (def.dso->tlsid > static_tls_cnt)
+                    print_error("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name);
+                else {
+#ifdef TLS_VARIANT_2
+                    *rel_addr = tlsval - def.dso->tlsoff + addend;
+#else
+                    *rel_addr = tlsval + def.dso->tlsoff - TP_OFFSET + addend;
+#endif
+                }
+                break;
+
+            case REL_TLSDESC:
+                if (stride < 3)
+                    addend = rel_addr[1];
+
+                if (def.dso->tlsid > static_tls_cnt) {
+                    size_t *desc = malloc(2 * sizeof (size_t));
+                    if (!desc)
+                        print_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname);
+                    else {
+                        rel_addr[0] = (size_t)__tlsdesc_dynamic;
+                        rel_addr[1] = (size_t)desc;
+                        desc[0] = def.dso->tlsid;
+                        desc[1] = tlsval + addend - DTV_OFFSET;
+                    }
+                } else {
+                    rel_addr[0] = (size_t)__tlsdesc_static;
+#ifdef TLS_VARIANT_2
+                    rel_addr[1] = tlsval - def.dso->tlsoff + addend;
+#else
+                    rel_addr[1] = tlsval + def.dso->tlsoff - TP_OFFSET + addend;
+#endif
+                }
+                break;
+
 
             default:
                 print_error("error relocating `%s': Unknown relocation type %d", dso->shortname, type);
@@ -321,13 +460,13 @@ static void *map_library(int fd, struct ldso *dso)
 
     Phdr *ph0, *ph;
     int elftype = buf.eh.e_type;
-    size_t phent = buf.eh.e_phentsize;
-    size_t phnum = buf.eh.e_phnum;
-    if (buf.eh.e_phoff + phnum * phent <= rd)
+    dso->phent = buf.eh.e_phentsize;
+    dso->phnum = buf.eh.e_phnum;
+    if (buf.eh.e_phoff + dso->phnum * dso->phent <= rd)
         ph0 = (void *)(buf.b + buf.eh.e_phoff);
     else {
-        rd = pread(fd, buf.b, phent * phnum, buf.eh.e_phoff);
-        if (rd != phent * phnum) {
+        rd = pread(fd, buf.b, dso->phent * dso->phnum, buf.eh.e_phoff);
+        if (rd != dso->phent * dso->phnum) {
             print_error("`%s: Failed to read program headers", dso->name);
             return 0;
         }
@@ -339,7 +478,7 @@ static void *map_library(int fd, struct ldso *dso)
     size_t min_offset = 0;
     int minflags = 0;
     ph = ph0;
-    for (size_t i = 0; i < phnum; i++, ph = (void *)((char *)ph + phent)) {
+    for (size_t i = 0; i < dso->phnum; i++, ph = (void *)((char *)ph + dso->phent)) {
         if (ph->p_type == PT_LOAD) {
             if (ph->p_vaddr < min_address) {
                 min_address = ph->p_vaddr;
@@ -366,9 +505,10 @@ static void *map_library(int fd, struct ldso *dso)
         goto out_unmap;
     }
     dso->base = (uintptr_t)map - min_address;
+    dso->phdr = (void *)((char *)map + buf.eh.e_phoff);
 
     ph = ph0;
-    for (size_t i = 0; i < phnum; i++, ph = (void *)((char *)ph + phent)) {
+    for (size_t i = 0; i < dso->phnum; i++, ph = (void *)((char *)ph + dso->phent)) {
         if (ph->p_type == PT_DYNAMIC) {
             dso->dynv = (void *)(dso->base + ph->p_vaddr);
         }
@@ -516,7 +656,7 @@ static struct ldso *load_library(const char *name, const char *search_path)
     close(fd);
     if (!map) return 0;
 
-    if (find_sym("stdin", &temp_dso).sym && find_sym("_Exit", &temp_dso).sym)
+    if (find_sym("stdin", &temp_dso, 1).sym && find_sym("_Exit", &temp_dso, 1).sym)
     {
         munmap(temp_dso.map, temp_dso.map_len);
         return load_libc(0);
@@ -637,10 +777,6 @@ _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
     if (relsymcnt > 4096) a_crash();
 
     size_t original_addends[relsymcnt? relsymcnt : 1];
-    for (size_t i = 0, left = relsz, j = 0; left; i++, left -= 2 * sizeof (size_t))
-        if (R_TYPE(rel[2*i+1]) != REL_RELATIVE)
-            original_addends[j++] = *(size_t *)(base + rel[2*i]);
-
     libc_original_addends = original_addends;
 
     head = &libc;
@@ -648,6 +784,10 @@ _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
     libc.dynv = dynv;
     libc.name = libc.shortname = "libc.so";
     libc.kernel_mapped = 1;
+    const Ehdr *eh = (void *)base;
+    libc.phdr = (void *)((char *)base + eh->e_phoff);
+    libc.phent = eh->e_phentsize;
+    libc.phnum = eh->e_phnum;
     process_dynv(&libc);
 
     relocate(&libc);
@@ -658,6 +798,11 @@ _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
     next_stage(sp, dynv);
     for (;;);
 }
+
+static union {
+    struct __pthread tp;
+    char size[sizeof (struct __pthread) + GAP_ABOVE_TP];
+} builtin_tls;
 
 #define AUX_CNT (AT_SYSINFO + 1)
 static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
@@ -674,10 +819,8 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     __page_size = aux[AT_PAGESZ];
     __elevated = (aux[0] & 0x7800) != 0x7800 || aux[AT_UID] != aux[AT_EUID] || aux[AT_GID] != aux[AT_EGID] || aux[AT_SECURE];
     if (aux[AT_SYSINFO]) __sysinfo = aux[AT_SYSINFO];
-    tp.sysinfo = aux[AT_SYSINFO];
-    tp.hwcap = aux[AT_HWCAP];
-    if (__set_thread_area(__tp_adjust(&tp)))
-        a_crash();
+    __hwcap = aux[AT_HWCAP];
+    __init_tp(__copy_tls(&builtin_tls));
 
     void (*next_stage)(long *sp, const size_t *dynv, size_t *aux) = load_run_remaining;
     __asm__ volatile("" : "+r"(next_stage) :: "memory");
@@ -703,8 +846,10 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
         main.kernel_mapped = 1;
         main.name = (void *)aux[AT_EXECFN];
         main.shortname = argv[0];
-        Phdr *ph0 = (void *)aux[AT_PHDR];
-        Phdr *ph = ph0;
+        main.phdr = (void *)aux[AT_PHDR];
+        main.phent = aux[AT_PHENT];
+        main.phnum = aux[AT_PHNUM];
+        const Phdr *ph = main.phdr;
         size_t interp_off = 0;
         size_t dyn_off = 0;
         for (size_t i = 0; i < aux[AT_PHNUM]; i++, ph = (void *)((char *)ph + aux[AT_PHENT])) {
@@ -741,7 +886,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
         argc -= optoff;
         argv += optoff;
         argv[-1] = (void *)(intptr_t)argc;
-        int fd = open(argv[0], O_RDONLY);
+        int fd = open(argv[0], O_RDONLY | O_CLOEXEC);
         if (fd == -1) {
             print_error("could not load `%s': %m", argv[0]);
             _Exit(1);
@@ -767,14 +912,35 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
     if (preload) load_preload(preload, lib_path);
     load_deps(head, lib_path);
 
+    /* must allocate memory before relocation, since we no longer have an allocator
+     * between allocation and starting the main program.
+     */
+    enumerate_phdr(head);
+    static_tls_cnt = tls_cnt;
+    char *tls = 0;
+    if (tls_cnt) {
+        struct tls_data data = __get_tls_data();
+        tls = aligned_alloc(data.align, data.size);
+        if (!tls) {
+            print_error("Out of memory allocating initial TLS\n");
+            a_crash();
+        }
+    }
+
     reloc_all(main.next);
     relocate(&main);
 
     if (early_error) _Exit(1);
     if (ldd_mode) _Exit(0);
 
+    if (tls_cnt) __init_tp(__copy_tls(tls));
+
     runtime = 1;
     a_stackjmp((void *)aux[AT_ENTRY], argv - 1);
     for (;;);
 }
 
+hidden void __init_from_phdrs(const void *ph, size_t num, size_t ent)
+{
+    /* nothing to do, everything was already done. */
+}

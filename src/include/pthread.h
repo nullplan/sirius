@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <locale.h>
 #include "pthread_arch.h"
+#include "tls.h"
 
 struct lock { volatile int l; };
 struct __pthread
@@ -12,7 +13,7 @@ struct __pthread
     struct __pthread *self;     /* i386, x32, x86_64 ABI: first word is pointer to self */
     struct __pthread *next, *prev;
     size_t sysinfo;             /* internal i386 ABI: fourth word is sysinfo pointer */
-    #ifdef TLS_VARIANT_1
+    #ifdef TLS_VARIANT_2
     size_t *dtv;                /* internal i386 ABI: fifth word is DTV pointer. */
     #ifdef CANARY_PAD
     size_t canary_pad;          /* x32 ABI: canary is the *seventh* word, for some reason. */
@@ -36,7 +37,7 @@ struct __pthread
     void *result;
     struct __ptcb *cb;
 
-    #ifndef TLS_VARIANT_1
+    #ifndef TLS_VARIANT_2
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
     size_t *dtv;
@@ -44,17 +45,6 @@ struct __pthread
 };
 
 enum {DT_JOINABLE, DT_DETACHED, DT_EXITING};
-
-struct tls_data {
-    size_t size;
-    size_t align;
-};
-hidden struct tls_data __get_tls_data(void);
-/* programming model: call __copy_tls() with zeroed out memory, with size and alignment given in the TLS data,
- * and it returns the TD placed correctly and TLS and DTV (and __pthread::dtv) filled out correctly
- * However, TSD is not part of this and might need to be allocated separately.
- */
-hidden struct __pthread *__copy_tls(void *);
 
 #ifndef TP_OFFSET
 #define TP_OFFSET 0
@@ -65,7 +55,7 @@ hidden struct __pthread *__copy_tls(void *);
 #ifndef DTV_OFFSET
 #define DTV_OFFSET 0
 #endif
-#ifdef TLS_VARIANT_1
+#ifdef TLS_VARIANT_2
 static inline uintptr_t __tp_adjust(struct __pthread *p) { return (uintptr_t)p; }
 static inline struct __pthread *__pthread_self(void) { return (struct __pthread *)__get_tp(); }
 #else

@@ -1,3 +1,12 @@
-#define REL_RELATIVE R_X86_64_RELATIVE
+#define REL_RELATIVE R_X86_64_RELATIVE  /* B + A */
 #define REL_COPY R_X86_64_COPY
+#define REL_GOT R_X86_64_GLOB_DAT       /* S */
+#define REL_SYMBOLIC R_X86_64_64        /* S + A */
+#define REL_PCREL32 R_X86_64_PC32       /* S + A - P (32-bit) */
+#define REL_PLT R_X86_64_JUMP_SLOT      /* S */
+#define REL_DTPMOD R_X86_64_DTPMOD64
+#define REL_DTPOFF R_X86_64_DTPOFF64
+#define REL_TPOFF R_X86_64_TPOFF64
+#define REL_TLSDESC R_X86_64_TLSDESC
+
 #define ELFMACH EM_X86_64
