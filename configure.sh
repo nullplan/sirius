@@ -166,7 +166,7 @@ rule ldr
     command = \$cc -r -o \$out \$in
 
 rule lds
-    command = \$cc -shared -Wl,-e,_start,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list -o \$out \$in
+    command = \$cc -shared -Wl,-e,_start,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list,--hash-style=both -o \$out \$in
 
 rule ar
     command = \$ar crs \$out \$in
