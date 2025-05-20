@@ -424,8 +424,6 @@ void *lfind(const void *, const void *, size_t *, size_t, int (*)(const void *, 
 void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, const void *));
 
 /* stdio.h */
-ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
-ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);
 FILE *open_memstream(char **, size_t *);
 FILE *popen(const char *, const char *);
 int pclose(FILE *);
