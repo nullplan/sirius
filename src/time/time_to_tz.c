@@ -217,7 +217,7 @@ static void do_tzset(void)
         infosize = 0;
     }
     if (!is_posix_form(tz)) {
-        if (*tz == ':') tz++;
+        if (*tz == ':') tz++, tzlen--;
         if (is_tz_acceptable(tz)) {
             int fd = -1;
             if (tz[0] == '/')
