@@ -13,8 +13,8 @@ static int push_char(struct dynstr *ds, char **ps, size_t *pn, int c, int islast
     if (ds->len == ds->capacity)
     {
         size_t attempt = islast? ds->capacity + 1 :
-            ds->capacity < 8? 16 :
-            2 * ds->capacity;
+            ds->capacity < 11? 16 :
+            ds->capacity + ds->capacity / 2;
         char *alloc = realloc(ds->buf, attempt);
         if (!alloc) {
             errno = ENOMEM;
