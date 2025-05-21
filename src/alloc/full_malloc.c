@@ -208,6 +208,10 @@ void *realloc(void *p, size_t new)
         errno = EINVAL;
         return 0;
     }
+    if (new >= PTRDIFF_MAX - OVERHEAD) {
+        errno = ENOMEM;
+        return 0;
+    }
     struct chunk *c = chunk_from_mem(p);
     new = (new + OVERHEAD + ALLOC_ALIGN - 1) & -ALLOC_ALIGN;
     /* possible situations:
@@ -260,12 +264,12 @@ void *aligned_alloc(size_t a, size_t sz)
         uintptr_t start = (uintptr_t)ac - ac->psize;
         uintptr_t end = (uintptr_t)ac + ac->csize;
         if (ac->psize >= PAGE_SIZE) {
-            __syscall(SYS_munmap, start, (uintptr_t)ac & -PAGE_SIZE);
+            __munmap((void *)start, (uintptr_t)ac & -PAGE_SIZE);
             ac->psize = (uintptr_t)ac & (PAGE_SIZE - 1);
         }
         if (ac->csize - OVERHEAD - sz >= PAGE_SIZE) {
             uintptr_t pagebrk = ((uintptr_t)ac + OVERHEAD + sz + PAGE_SIZE - 1) & -PAGE_SIZE;
-            __syscall(SYS_munmap, pagebrk, end - pagebrk);
+            __munmap((void *)pagebrk, end - pagebrk);
             ac->csize = pagebrk - (uintptr_t)ac;
         }
         return ap;
