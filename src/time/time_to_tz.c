@@ -138,7 +138,7 @@ static int is_posix_form(const char *tz)
 
 static int is_tz_acceptable(const char *tz)
 {
-    return !__elevated || strcmp(tz, "/etc/localtime") == 0 || (memchr(tz, 0, NAME_MAX) && !strstr(tz, "../"));
+    return !__elevated || strcmp(tz, "/etc/localtime") == 0 || (tz[0] != '/' && memchr(tz, 0, NAME_MAX) && !strstr(tz, "../"));
 }
 
 static int parse_posix_form(const char *s)
