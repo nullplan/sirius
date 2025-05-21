@@ -22,7 +22,7 @@ hidden void __add_rm_env_map(char *add, char *rm)
                 envmap[i] = add;
                 return;
             }
-        size_t attempt = mapc + mapc/2 + 1;
+        size_t attempt = mapc < 11? 16 : mapc + mapc/2;
         char **p = realloc(envmap, attempt * sizeof (char *));
         if (!p) return;
         envmap = p;

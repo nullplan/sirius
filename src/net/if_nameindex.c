@@ -32,7 +32,7 @@ static int handle(const struct nlmsghdr *nlh, void *c)
             if (rta->rta_len > IF_NAMESIZE)
                 return 0;
             if (hash->n == hash->capa) {
-                size_t attempt = hash->capa * 2 + 1;
+                size_t attempt = hash->capa < 11? 16 : hash->capa + hash->capa / 2;
                 void *p = realloc(hash->index, attempt * sizeof (struct if_nameindex));
                 if (!p) {
                     errno = ENOBUFS;
