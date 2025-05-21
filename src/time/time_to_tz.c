@@ -221,7 +221,7 @@ static void do_tzset(void)
         if (is_tz_acceptable(tz)) {
             int fd = -1;
             if (tz[0] == '/')
-                fd = __sys_open(tz, O_RDONLY);
+                fd = __sys_open(tz, O_RDONLY | O_CLOEXEC);
             else {
                 static const char *const searchpath[] = { "/usr/share/zoneinfo/", "/share/zoneinfo/", "/etc/zoneinfo/" };
                 for (size_t i = 0; fd == -1 && i < sizeof searchpath / sizeof *searchpath; i++)
@@ -230,12 +230,15 @@ static void do_tzset(void)
                     char pathbuf[spl + tzlen + 1];
                     memcpy(pathbuf, searchpath[i], spl);
                     memcpy(pathbuf + spl, tz, tzlen + 1);
-                    fd = __sys_open(pathbuf, O_RDONLY);
+                    fd = __sys_open(pathbuf, O_RDONLY | O_CLOEXEC);
                 }
             }
             struct stat st;
             char magic[4];
             const unsigned char *p;
+            if (fd != -1)
+                __syscall(SYS_fcntl, fd, F_SETFD, FD_CLOEXEC);
+
             if (fd != -1
                     && __syscall(SYS_read, fd, magic, 4) == 4
                     && !memcmp(magic, "TZif", 4)
