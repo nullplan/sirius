@@ -118,7 +118,16 @@ static struct chunk *expand_heap(size_t x)
         c->psize = C_INUSE;
     }
     n = chunk_from_mem((char *)p + x_pa);
-    c->csize = n->psize = ((char *)n - (char *)c) | C_INUSE;
+    c->csize = ((char *)n - (char *)c) | C_INUSE;
+    if (p == end_of_heap) {
+        while (!(c->psize & C_INUSE)) {
+            struct chunk *p = prev_chunk(c);
+            unbin_chunk(p, bin_index(p->csize));
+            p->csize += c->csize - C_INUSE;
+            c = p;
+        }
+    }
+    n->psize = c->csize;
     n->csize = C_INUSE;
     end_of_heap = mem_from_chunk(n);
     return c;
