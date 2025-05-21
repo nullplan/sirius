@@ -19,21 +19,21 @@ int accept4(int sk, struct sockaddr *restrict sa, socklen_t *restrict slen, int 
     int rv;
     #ifdef SYS_accept
     if (!flg)
-        rv = __syscall(SYS_accept, sk, sa, slen);
+        rv = __syscall_cp(SYS_accept, sk, sa, slen);
     else
     #endif
-        rv = __syscall(SYS_accept4, sk, sa, slen, flg);
+        rv = __syscall_cp(SYS_accept4, sk, sa, slen, flg);
     #if defined SYS_accept || defined SYS_socketcall
     if (rv == -ENOSYS) {
         if (flg & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
             rv = -EINVAL;
         #ifdef SYS_accept
         if (rv == -ENOSYS && flg)
-            rv = __syscall(SYS_accept, sk, sa, slen);
+            rv = __syscall_cp(SYS_accept, sk, sa, slen);
         #endif
         #ifdef SYS_socketcall
         if (rv == -ENOSYS)
-            rv = __syscall(SYS_socketcall, SYS_ACCEPT, ((long[]){sk, (long)sa, (long)slen}));
+            rv = __syscall_cp(SYS_socketcall, SYS_ACCEPT, ((long[]){sk, (long)sa, (long)slen}));
         #endif
         if (rv >= 0) {
             if (flg & SOCK_CLOEXEC) __syscall(SYS_fcntl, rv, F_SETFD, FD_CLOEXEC);

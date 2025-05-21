@@ -9,7 +9,7 @@ int ppoll(struct pollfd pfd[], nfds_t nfd, const struct timespec *restrict ts, c
     if (!ss && (!ts || (ts->tv_sec < INT_MAX / 1000 && ts->tv_nsec < 1000000000ul))) {
         int to = -1;
         if (ts) to = ts->tv_sec * 1000 + (ts->tv_nsec + 999999) / 1000000;
-        return syscall(SYS_poll, pfd, nfd, to);
+        return syscall_cp(SYS_poll, pfd, nfd, to);
     }
     #endif
     int rv;
@@ -24,7 +24,7 @@ int ppoll(struct pollfd pfd[], nfds_t nfd, const struct timespec *restrict ts, c
             #endif
             ts = &lts;
         }
-        rv = __syscall(SYS_ppoll, pfd, nfd, ts, ss, _NSIG/8);
+        rv = __syscall_cp(SYS_ppoll, pfd, nfd, ts, ss, _NSIG/8);
     }
     return __syscall_ret(rv);
 }

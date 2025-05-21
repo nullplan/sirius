@@ -3,5 +3,5 @@
 
 int nanosleep(const struct timespec *ts, struct timespec *rem)
 {
-    return syscall(SYS_nanosleep, ts, rem);
+    return syscall_cp(SYS_nanosleep, ts, rem);
 }

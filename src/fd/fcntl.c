@@ -52,6 +52,8 @@ int fcntl(int fd, int cmd, ...)
         rv = __syscall(SYS_fcntl, fd, F_GETFD);
         if (rv >= 0)
             return __syscall(SYS_fcntl, fd, F_GETOWN);
+    } else if (cmd == F_SETLKW || cmd == F_OFD_SETLKW) {
+        rv = __syscall_cp(SYS_fcntl, fd, cmd, arg);
     } else {
         rv = __syscall(SYS_fcntl, fd, cmd, arg);
     }
