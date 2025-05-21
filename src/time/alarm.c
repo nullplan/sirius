@@ -14,7 +14,7 @@ unsigned alarm(unsigned t)
      * return non-zero. And we should probably do some rounding
      * otherwise.
      */
-    if (old.it_value.tv_sec == 0 && old.it_value.tv_nsec > 0
+    if ((old.it_value.tv_sec == 0 && old.it_value.tv_nsec > 0)
             || old.it_value.tv_nsec >= 500000000)
         old.it_value.tv_sec++;
     return old.it_value.tv_sec;
