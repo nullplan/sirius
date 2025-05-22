@@ -508,10 +508,6 @@ int utimes(const char *, const struct timeval [2]);
 /* sys/times.h */
 clock_t times(struct tms *);
 
-/* sys/wait.h */
-pid_t wait(int *);
-int waitid(idtype_t , id_t, siginfo_t *, int);
-
 /* syslog.h */
 void closelog(void);
 void openlog(const char *, int, int);
