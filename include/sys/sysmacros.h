@@ -13,7 +13,7 @@
  * Which allows for a 32-bit major and a 32-bit minor and is backwards compatible to everything older.
  */
 
-#define major(d)    ((((d) >> 8) & 0xfff) | (((d) >> 32) & 0xfffff000))
+#define major(d)    ((((d) >> 8) & 0xfff) | ((((d) + 0ull) >> 32) & 0xfffff000))
 #define minor(d)    (((d) & 0xff) | (((d) >> 12) & 0xffffff00))
 #define makedev(maj,min)    (((min) & 0xff) | ((maj) & 0xfff) << 8 | ((min) & 0xffffff00ull) << 12 | ((maj) & 0xfffff000ull) << 32)
 #endif
