@@ -8,6 +8,7 @@
 #define FUTEX_LOCK_PI       6
 #define FUTEX_UNLOCK_PI     7
 #define FUTEX_TRYLOCK_PI    8
+#define FUTEX_LOCK_PI2      13
 #define FUTEX_PRIVATE_FLAG  128
 
 struct timespec;

@@ -10,7 +10,10 @@
 static int futex_pi(volatile int *fut, int priv, int op)
 {
     if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
-    return __syscall(SYS_futex, fut, op);
+    int rv;
+    do rv = __syscall(SYS_futex, fut, op);
+    while (rv == -EINTR || rv == -EAGAIN);
+    return rv;
 }
 
 int pthread_mutex_trylock(pthread_mutex_t *m)
