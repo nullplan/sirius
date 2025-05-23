@@ -396,13 +396,6 @@ nl_catd catopen(const char *, int);
 int pthread_barrier_init(pthread_barrier_t *__restrict, const pthread_barrierattr_t *__restrict, unsigned);
 int pthread_barrier_wait(pthread_barrier_t *);
 int pthread_barrier_destroy(pthread_barrier_t *);
-int pthread_cond_init(pthread_cond_t *__restrict, const pthread_condattr_t *__restrict);
-int pthread_cond_broadcast(pthread_cond_t *);
-int pthread_cond_clockwait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict, clockid_t, const struct timespec *__restrict);
-int pthread_cond_signal(pthread_cond_t *);
-int pthread_cond_timedwait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict, const struct timespec *__restrict);
-int pthread_cond_wait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict);
-int pthread_cond_destroy(pthread_cond_t *);
 
 /* pwd.h */
 struct passwd *getpwnam(const char *);

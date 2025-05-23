@@ -89,7 +89,7 @@ TYPEDEF int nlink_t;
 TYPEDEF long long off_t;
 TYPEDEF struct { volatile int __ctrl; } once_flag;
 TYPEDEF struct { volatile int __ctrl; } pthread_once_t;
-STRUCT __cnd { int __foo; };
+STRUCT __cnd { volatile int __serial; volatile int __waiters; int __clk; int __ps; };
 STRUCT __mtx { struct __mtx *__next; struct __mtx *__prev; volatile int __lock; int __flg; unsigned __ctr; int __waiters; };
 TYPEDEF struct __cnd pthread_cond_t;
 TYPEDEF struct __mtx pthread_mutex_t;
