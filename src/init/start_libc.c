@@ -94,8 +94,12 @@ void __init_libc(char *pn, char **envp)
         pfd[i].fd = i;
         pfd[i].events = 0;
     }
-    int rv = __syscall(SYS_ppoll, pfd, 3, 0, 0, _NSIG/8);
-    if (rv == -1) a_crash();
+    #ifdef SYS_poll
+    int rv = __syscall(SYS_poll, pfd, 3, 0);
+    #else
+    int rv = __syscall(SYS_ppoll, pfd, 3, ((long long[]){0, 0}), 0, _NSIG/8);
+    #endif
+    if (rv < 0) a_crash();
     for (int i = 0; i < 3; i++)
         if ((pfd[i].revents & POLLNVAL) && __sys_open("/dev/null", O_RDWR) != i)
             a_crash();
