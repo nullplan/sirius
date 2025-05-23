@@ -75,7 +75,7 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
         } else {
             sp = (void *)(((uintptr_t)a->__addr + a->__ss) & -16);
             alloc = tls_data.size + __pthread_tsd_size;
-            guardsize = DEFAULT_GUARD_SIZE;
+            guardsize = 0;
         }
     } else {
         alloc = (a? a->__ss : __default_stacksize) + tls_data.size + __pthread_tsd_size;
