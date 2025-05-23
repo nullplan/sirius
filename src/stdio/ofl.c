@@ -4,7 +4,7 @@
 static FILE *head;
 static struct lock lock;
 
-static FILE *null = 0;
+static FILE *const null = 0;
 weak_alias(__stdin_used, null);
 weak_alias(__stdout_used, null);
 weak_alias(__stderr_used, null);
