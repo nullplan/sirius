@@ -71,13 +71,18 @@ struct ldso {
     int relocated;
     int kernel_mapped;
     int tlsid;
+    int mark;
+    int initialized;
     size_t tlsoff;
     struct ldso *const *deps;
     struct ldso *next, *prev;
+    struct ldso *fini_next;
+    pthread_t initializing_thread;
 };
 
 static struct ldso main, libc;
 static struct ldso *head, *tail;
+static struct ldso *fini_head;
 static size_t *libc_original_addends;
 static int ldd_mode;
 static int early_error;
@@ -86,6 +91,11 @@ static struct ldso *const no_deps[] = {0};
 static struct ldso *builtin_deps[2];
 static int tls_cnt;
 static int static_tls_cnt;
+static struct ldso **main_init_queue;
+static pthread_mutex_t init_fini_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t lib_initialized = PTHREAD_COND_INITIALIZER;
+static int malloc_replaced;
+static int shutting_down;
 hidden unsigned long __default_stacksize = DEFAULT_STACK_SIZE;
 
 extern const char __tlsdesc_dynamic[], __tlsdesc_static[];
@@ -746,6 +756,56 @@ static void load_deps(struct ldso *dso, const char *search_path)
         load_direct_deps(dso, search_path);
 }
 
+static struct ldso **queue_initializers(struct ldso *start)
+{
+    size_t cnt = 1;
+    /* upper bound for both queue and stack is number of indirect dependencies.
+     * Which I don't currently have available, so for now I am just using the module count.
+     */
+    for (struct ldso *p = head; p; p = p->next) cnt++;
+    /* result queue and intermediate stack share an array.
+     * Stack takes the end.
+     */
+    struct ldso **queue = malloc(cnt * sizeof (struct ldso *));
+    int *deps_queued = calloc(cnt, sizeof (int));
+    if (!queue || !deps_queued)
+    {
+        print_error("Out of memory for initializer queue.");
+        free(queue);
+        free(deps_queued);
+        return 0;
+    }
+
+    struct ldso **qtail = queue;
+    size_t sp = cnt;
+    queue[--sp] = start;
+    start->mark = 1;
+
+    while (sp < cnt) {
+        struct ldso *p = queue[sp];
+        if (deps_queued[sp]) {
+            *qtail++ = p;
+            sp++;
+        } else {
+            deps_queued[sp] = 1;
+            for (struct ldso *const *d = p->deps; *d; d++) {
+                if (!(*d)->mark) {
+                    (*d)->mark = 1;
+                    queue[--sp] = *d;
+                    deps_queued[sp] = 0;
+                }
+            }
+        }
+    }
+
+    for (struct ldso *p = head; p; p = p->next)
+        p->mark = 0;
+
+    free(deps_queued);
+    *qtail = 0;
+    return queue;
+}
+
 static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv);
 static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *aux);
 
@@ -877,10 +937,14 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
                 lib_path = argv[++optoff];
             else if (!strcmp(argv[optoff], "--preload") && optoff < argc - 1)
                 preload = argv[++optoff];
+            else if (!strcmp(argv[optoff], "--")) {
+                optoff++;
+                break;
+            }
             else break;
         }
         if (optoff == argc) {
-            print_error("sirius loader (v0.0.1)");
+            dprintf(1, "sirius loader (v0.0.1)\n");
             _Exit(0);
         }
         argc -= optoff;
@@ -913,7 +977,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
     load_deps(head, lib_path);
 
     /* must allocate memory before relocation, since we no longer have an allocator
-     * between allocation and starting the main program.
+     * between relocation and starting the main program.
      */
     enumerate_phdr(head);
     static_tls_cnt = tls_cnt;
@@ -926,6 +990,8 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
             a_crash();
         }
     }
+    /* also queue up initializers at this point for the same reason. */
+    main_init_queue = queue_initializers(head);
 
     reloc_all(main.next);
     relocate(&main);
@@ -935,6 +1001,9 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
 
     if (tls_cnt) __init_tp(__copy_tls(tls));
 
+    if (find_sym("malloc", head, 1).dso != &libc)
+        malloc_replaced = 1;
+
     runtime = 1;
     a_stackjmp((void *)aux[AT_ENTRY], argv - 1);
     for (;;);
@@ -943,4 +1012,70 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
 hidden void __init_from_phdrs(const void *ph, size_t num, size_t ent)
 {
     /* nothing to do, everything was already done. */
+}
+
+static void run_init_array(void (**arr)(void), size_t sz)
+{
+    for (; sz; arr++, sz -= sizeof (void (*)(void)))
+        (*arr)();
+}
+
+static void process_init_queue(struct ldso **queue) {
+    pthread_t self = __pthread_self();
+    for (; *queue; queue++) {
+        struct ldso *p = *queue;
+        while (shutting_down || (p->initializing_thread && p->initializing_thread != self && !p->initialized))
+            pthread_cond_wait(&lib_initialized, &init_fini_lock);
+        if (p->initializing_thread || p->initialized)
+            continue;
+        p->initializing_thread = self;
+        pthread_mutex_unlock(&init_fini_lock);
+
+        size_t dyn[DT_INIT_ARRAYSZ + 1] = {0};
+        decode_vec(dyn, p->dynv, DT_INIT_ARRAYSZ + 1);
+        size_t ia_off = dyn[DT_INIT_ARRAY];
+        size_t ia_sz = dyn[DT_INIT_ARRAYSZ];
+        if (ia_off && ia_sz)
+            run_init_array((void *)(p->base + ia_off), ia_sz);
+
+        pthread_mutex_lock(&init_fini_lock);
+        p->initializing_thread = 0;
+        p->initialized = 1;
+        if (dyn[0] & (1 << DT_FINI_ARRAY)) {
+            p->fini_next = fini_head;
+            fini_head = p;
+        }
+        pthread_cond_broadcast(&lib_initialized);
+    }
+}
+hidden void __run_constructors(void)
+{
+    pthread_mutex_lock(&init_fini_lock);
+    size_t pia_off = scan_vec(main.dynv, DT_PREINIT_ARRAY);
+    size_t pia_sz = scan_vec(main.dynv, DT_PREINIT_ARRAYSZ);
+    if (pia_off && pia_sz)
+        run_init_array((void *)(main.base + pia_off), pia_sz);
+    process_init_queue(main_init_queue);
+    if (!malloc_replaced)
+        free(main_init_queue);
+    main_init_queue = 0;
+    pthread_mutex_unlock(&init_fini_lock);
+}
+
+hidden void __run_destructors(void)
+{
+    pthread_mutex_lock(&init_fini_lock);
+    shutting_down = 1;
+    for (struct ldso *p = fini_head; p; p = p->fini_next)
+    {
+        pthread_mutex_unlock(&init_fini_lock);
+        size_t fa_off = scan_vec(p->dynv, DT_FINI_ARRAY);
+        size_t fa_sz = scan_vec(p->dynv, DT_FINI_ARRAYSZ);
+        void (**fini_array)(void) = (void *)(p->base + fa_off);
+        size_t n = fa_sz / sizeof (void (*)(void));
+        while (n--)
+            fini_array[n]();
+        pthread_mutex_lock(&init_fini_lock);
+    }
+    pthread_mutex_unlock(&init_fini_lock);
 }
