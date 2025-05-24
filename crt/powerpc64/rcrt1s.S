@@ -77,6 +77,7 @@ _start:
     mr %r3, %r31
     mr %r4, %r30
     mr %r5, %r29
+.hidden _start_c
     b _start_c
 .size _start, . - _start
 

@@ -809,7 +809,7 @@ static struct ldso **queue_initializers(struct ldso *start)
 static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv);
 static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *aux);
 
-_Noreturn void _start_c(long *sp, const size_t *dynv, long base)
+hidden _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
 {
     /* first stage (rcrt1s.S) already processed relative relocs.
      * Therefore we can already use local functions and data.

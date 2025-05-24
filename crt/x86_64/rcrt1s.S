@@ -71,6 +71,7 @@ _start:
     movq %r15, %rdi
     movq %r14, %rsi
     movq %r13, %rdx
+.hidden _start_c
     call _start_c
     ud2
 

@@ -82,6 +82,7 @@ _start:
     mov x0, x30
     mov x1, x29
     mov x2, x28
+.hidden _start_c
     b _start_c
 .size _start, . - _start
 

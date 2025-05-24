@@ -83,6 +83,7 @@ _start:
     movl %ebp, (%esp)
     movl %edi, 4(%esp)
     movl %ebx, 8(%esp)
+.hidden _start_c
     call _start_c
     ud2
 .size _start, . - _start
