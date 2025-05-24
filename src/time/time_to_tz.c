@@ -12,9 +12,9 @@
 
 static struct lock lock;
 static char tzbuf[2][TZNAME_MAX + 1];
-static char *__tzname[2];
-static int __daylight;
-static long __timezone;
+char *__tzname[2];
+int __daylight;
+long __timezone;
 static long dstzone;
 static const char utc[] = "UTC";
 static const void *infofile;

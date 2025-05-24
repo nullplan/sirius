@@ -31,7 +31,7 @@ hidden int __robust_list_works;
 hidden int __pi_futex_works;
 hidden int __private_futex_works;
 
-hidden char **__environ;
+char **__environ;
 weak_alias(environ, __environ);
 weak_alias(_environ, __environ);
 

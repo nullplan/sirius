@@ -9,6 +9,9 @@ in6addr_any;
 timezone;
 daylight;
 tzname;
+__timezone;
+__daylight;
+__tzname;
 
 stderr;
 stdout;
