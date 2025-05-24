@@ -168,7 +168,7 @@ rule ldr
     command = \$cc -r -o \$out \$in
 
 rule lds
-    command = \$cc -nostdlib -shared -Wl,-e,_start,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list,--hash-style=both,--gc-sections -o \$out \$in $LIBGCC
+    command = \$cc -nostdlib -shared -Wl,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list,--hash-style=both,--gc-sections -o \$out \$in $LIBGCC
 
 rule ar
     command = \$ar crs \$out \$in
