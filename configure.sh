@@ -83,7 +83,7 @@ esac
 printf "%s\n" "$flavor"
 
 pic_default=
-if trycpp "if PIC is default" "defined __PIC__ && !defined __PIE__"
+if trycpp "if PIC is default" "__PIC__"
 then
     pic_default=yes
 fi
@@ -142,6 +142,7 @@ DIRS=$(echo "$DIRS" | sort -u)
 
 if [ "$pic_default" ]; then
     CRT1PIC=obj/crt1c.o
+    CFLAGS="$CFLAGS -fPIC"
 else
     CRT1PIC=obj/crt1c.lo
 fi
