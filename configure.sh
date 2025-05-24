@@ -147,6 +147,7 @@ else
     CRT1PIC=obj/crt1c.lo
 fi
 
+LIBGCC=$($CC -print-libgcc-file-name)
 cat >build.ninja <<EOF
 cc = $CC
 ar = $AR
@@ -167,7 +168,7 @@ rule ldr
     command = \$cc -r -o \$out \$in
 
 rule lds
-    command = \$cc -shared -Wl,-e,_start,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list,--hash-style=both,--gc-sections -o \$out \$in
+    command = \$cc -nostdlib -shared -Wl,-e,_start,-z,defs,--exclude-libs,ALL,--dynamic-list=$srcdir/dynamic.list,--hash-style=both,--gc-sections -o \$out \$in $LIBGCC
 
 rule ar
     command = \$ar crs \$out \$in
