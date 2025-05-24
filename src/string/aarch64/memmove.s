@@ -8,8 +8,8 @@ memmove:
     add x0, x0, x2
     add x1, x1, x2
 1:
-    ldrb w3, [x1, #-1]!
-    strb w3, [x0, #-1]!
+    ldrb w3, [x1, -1]!
+    strb w3, [x0, -1]!
     adds x2, x2, -1
     b.ne 1b
 2:

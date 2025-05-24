@@ -26,8 +26,8 @@ _start:
     mov x1, sp
     mov x2, AUX_NUM+DYN_NUM
 1:
-    str x0, [x1], #8
-    subs x2, x2, #1
+    str x0, [x1], 8
+    subs x2, x2, 1
     b.ne 1b
     .hidden _DYNAMIC
     adrp x29, _DYNAMIC

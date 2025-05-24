@@ -10,7 +10,7 @@ __cp_begin:
     ldr w8, [x7]
     cbnz w8, __cp_cancel
     mov x8, x6
-    svc #0
+    svc 0
 .global __cp_end
 .hidden __cp_end
 __cp_end:
