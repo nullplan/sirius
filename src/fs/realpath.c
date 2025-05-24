@@ -42,8 +42,6 @@ char *realpath(const char *restrict path, char *restrict result)
             break;
         len = __stridx(to_be_resolved, '/');
         char *end = to_be_resolved + len;
-        len = end - to_be_resolved;
-        assert(end > to_be_resolved);
         if (len == 1 && *to_be_resolved == '.') {
             if (known_dir) {
                 to_be_resolved = end;

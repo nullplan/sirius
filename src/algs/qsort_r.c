@@ -80,6 +80,21 @@ static int ctz(const size_t p[static 2])
     return a_ctz(p[0]);
 }
 
+static int test(const size_t p[static 2], size_t x)
+{
+    return p[x / (8 * sizeof (size_t))] & (1ul << (x % (8 * sizeof (size_t))));
+}
+
+static void set(size_t p[static 2], size_t x)
+{
+    p[x / (8 * sizeof (size_t))] |= (1ul << (x % (8 * sizeof (size_t))));
+}
+
+static void clear(size_t p[static 2], size_t x)
+{
+    p[x / (8 * sizeof (size_t))] &= ~(1ul << (x % (8 * sizeof (size_t))));
+}
+
 static void order_roots(char *head, const size_t p[static 2], size_t order, const size_t *leo, int (*cmp)(const void *, const void *, void *), void *ctx, int known_heap)
 {
     void *a[6 * sizeof (size_t) + 1];
@@ -96,28 +111,13 @@ static void order_roots(char *head, const size_t p[static 2], size_t order, cons
         }
         known_heap = 0;
         a[n++] = head = next;
-        l[order / (8 * sizeof (size_t))] &= (1ul << (order % (8 * sizeof (size_t))));
-        order = ctz(p);
+        clear(l, order);
+        order = ctz(l);
     }
     if (!known_heap) {
         cycle(a, n, leo[0]);
         heapify(head, order, leo, cmp, ctx);
     }
-}
-
-static int test(const size_t p[static 2], size_t x)
-{
-    return p[x / (8 * sizeof (size_t))] & (1ul << (x % (8 * sizeof (size_t))));
-}
-
-static void set(size_t p[static 2], size_t x)
-{
-    p[x / (8 * sizeof (size_t))] |= (1ul << (x % (8 * sizeof (size_t))));
-}
-
-static void clear(size_t p[static 2], size_t x)
-{
-    p[x / (8 * sizeof (size_t))] &= ~(1ul << (x % (8 * sizeof (size_t))));
 }
 
 hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, const void *, void *), void *ctx)
@@ -151,7 +151,7 @@ hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, 
             set(p, order + 2);
             order += 2;
         } else {
-            if (end - head > leo[order - 1])
+            if (end - head - leo[0] > leo[order - 1])
                 heapify(head, order, leo, cmp, ctx);
             else
                 order_roots(head, p, order, leo, cmp, ctx, 0);

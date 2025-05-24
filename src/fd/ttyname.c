@@ -4,5 +4,10 @@
 char *ttyname(int fd)
 {
     static char buf[TTY_NAME_MAX];
-    return ttyname_r(fd, buf, sizeof buf)? 0 : buf;
+    int rv = ttyname_r(fd, buf, sizeof buf);
+    if (rv) {
+        errno = rv;
+        return 0;
+    }
+    return buf;
 }

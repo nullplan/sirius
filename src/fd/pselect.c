@@ -8,5 +8,5 @@ int pselect(int width, fd_set *restrict rfd, fd_set *restrict wfd, fd_set *restr
         lts = *ts;
         ts = &lts;
     }
-    return syscall(SYS_pselect6, width, rfd, wfd, xfd, ts, ((long[]){(long)ss, _NSIG/8}));
+    return syscall_cp(SYS_pselect6, width, rfd, wfd, xfd, ts, ((long[]){(long)ss, _NSIG/8}));
 }

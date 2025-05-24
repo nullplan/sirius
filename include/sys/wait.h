@@ -35,8 +35,8 @@ extern "C" {
 #define WTERMSIG(s)     ((s) & 0x7f)
 #define WCOREDUMP(s)    ((s) & 0x80)
 #define WIFEXITED(s)    (WTERMSIG(s) == 0)
-#define WIFSIGNALED(s)  (!WEXITSTATUS(s) && WTERMSIG(s))
-#define WIFSTOPPED(s)   (WTERMSIG(s) == 0x7f && WEXITSTATUS(s) - 1u < 0xfeu)
+#define WIFSIGNALED(s)  ((s) - 1u < 0xffu)
+#define WIFSTOPPED(s)   (((((s) * 0x10001) >> 8) & 0x7fff) - 0x7f01u < 0xfeu)
 #define WSTOPSIG(s)     WEXITSTATUS(s)
 
 #define WNOHANG         0x00000001

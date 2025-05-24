@@ -15,6 +15,8 @@ __cp_begin:
 .global __cp_end
 .hidden __cp_end
 __cp_end:
+    bnslr
+    neg %r3, %r3
     blr
 .size __syscall_cp_asm, . - __syscall_cp_asm
 

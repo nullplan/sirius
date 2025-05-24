@@ -19,6 +19,24 @@ static _Noreturn void unmapself(void)
 static void dummy(void) {}
 weak_alias(__pthread_tsd_destroy, dummy);
 
+static void unlock_mutex(struct __mtx *p, int tid)
+{
+    if (p->__flg & PTHREAD_PRIO_INHERIT) {
+        p->__waiters = 1;
+        if (a_cas(&p->__lock, tid, 0) != tid) {
+            int priv = !(p->__flg & PTHREAD_PROCESS_SHARED);
+            int cmd = FUTEX_UNLOCK_PI;
+            if (priv)
+                cmd |= FUTEX_PRIVATE_FLAG;
+            if (__syscall(SYS_futex, &p->__lock, cmd) == -ENOSYS && priv)
+                __syscall(SYS_futex, &p->__lock, FUTEX_UNLOCK_PI);
+        }
+    } else {
+        a_swap(&p->__lock, FUTEX_OWNER_DIED);
+        __futex_wake(&p->__lock, !(p->__flg & PTHREAD_PROCESS_SHARED), 1);
+    }
+}
+
 _Noreturn void pthread_exit(void *result)
 {
     pthread_t self = __pthread_self();
@@ -66,6 +84,7 @@ _Noreturn void pthread_exit(void *result)
     }
 
     __lock(&self->killlock);
+    int tid = self->tid;
     self->tid = 0;
     __unlock(&self->killlock);
 
@@ -73,7 +92,21 @@ _Noreturn void pthread_exit(void *result)
     for (FILE *f = self->locked_files; f; f = f->lnext)
         f->lock = FUTEX_OWNER_DIED;
 
-    /* XXX: Once the robust list becomes a thing, we may want to process it here! */
+    /* process robust list synchronously.
+     * If we are detached, the kernel cannot process the list, because it will be unmapped.
+     */
+    if (self->robust.off) {
+        if (self->robust.pending) {
+            struct __mtx *p = self->robust.pending;
+            if ((p->__lock & FUTEX_TID_MASK) == tid)
+                unlock_mutex(p, tid);
+        }
+
+        for (struct __mtx *p = self->robust.head; p != (void *)&self->robust.head; p = p->__next) {
+            unlock_mutex(p, tid);
+        }
+        __syscall(SYS_set_robust_list, 0, 0);
+    }
 
     /* if we are detached, we have to clean up ourselves.
      * Except C really needs a stack to function, and after the munmap() call,

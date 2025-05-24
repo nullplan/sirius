@@ -10,6 +10,18 @@ extern "C" {
 #include <bits/ioctls.h>
 #include <termios.h>
 
+struct serial_iso7816 {
+    unsigned    flags;                  /* ISO7816 feature flags */
+#define SER_ISO7816_ENABLED             1
+#define SER_ISO7816_T_PARAM             0xf0
+#define SER_ISO7816_T(t)                (((t) & 0x0f) << 4)
+    unsigned    tg;
+    unsigned    sc_fi;
+    unsigned    sc_di;
+    unsigned    clk;
+    unsigned    reserved[5];
+};
+
 #define SIOCINQ         FIONREAD
 #define SIOCOUTQ        TIOCOUTQ        /* output queue size (not sent + not acked) */
 #define SOCK_IOC_TYPE   0x89

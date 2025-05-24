@@ -17,7 +17,7 @@ hidden int __shgetc(FILE *f)
     int rv = __underflow(f);
     if (rv != EOF) {
         f->shcnt = cnt;
-        f->shend = f->shlim && f->end - f->pos <= f->shlim? f->pos + f->shlim : f->end;
+        f->shend = f->shlim && f->end - f->pos <= f->shlim - cnt? f->pos + (f->shlim - cnt): f->end;
     }
     return rv;
 }

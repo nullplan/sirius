@@ -32,8 +32,8 @@ _start:
     .hidden _DYNAMIC
     adrp x29, _DYNAMIC
     add x29, x29, #:lower12:_DYNAMIC
-    ldr x1, [sp]
-    add x1, sp, x1, lsl #3
+    ldr x1, [x30]
+    add x1, x30, x1, lsl #3
     add x1, x1, #16
 1:
     ldr x0, [x1], #8
@@ -48,7 +48,7 @@ _start:
     bl decode_vec
 
     ldr x0, [sp, AT_BASE*8]
-    cbnz 1f
+    cbnz x0, 1f
     ldr x0, [sp, AT_PHDR*8]
     ldr x1, [sp, AT_PHNUM*8]
     ldr x2, [sp, AT_PHENT*8]
@@ -78,6 +78,7 @@ _start:
 1:
 
     add sp, sp, (AUX_NUM+DYN_NUM)*8
+    mov fp, 0
     mov x0, x30
     mov x1, x29
     mov x2, x28

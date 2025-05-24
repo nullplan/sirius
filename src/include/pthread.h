@@ -36,6 +36,11 @@ struct __pthread
     void **tsd;
     void *result;
     struct __ptcb *cb;
+    struct {
+        struct __mtx *head;
+        long off;
+        struct __mtx *pending;
+    } robust;
 
     #ifndef TLS_VARIANT_2
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
@@ -86,6 +91,7 @@ extern hidden int __clone(int (*)(void *), void *, int, void *, int *, uintptr_t
 #define DEFAULT_GUARD_SIZE          (4 << 10)
 
 #define FUTEX_TID_MASK              0x3fffffff
+#define FUTEX_NR_TID_MASK           0x7fffffff
 #define FUTEX_OWNER_DIED            0x40000000
 #define FUTEX_WAITERS               0x80000000U
 

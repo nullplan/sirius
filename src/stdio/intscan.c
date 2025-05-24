@@ -91,7 +91,7 @@ hidden uintmax_t __intscan(FILE *f, int base, uintmax_t limit)
          * 111  5
          */
         static const unsigned char tab[8] = {0, 1, 2, 4, 7, 3, 6, 5};
-        const int sh = tab[(base * 0x17) >> 5];
+        const int sh = tab[((base * 0x17) >> 5) & 7];
         for (int d = digval[c + 1]; d < base && rv < (UINTMAX_MAX >> sh); c = shgetc(f), d = digval[c+1])
         {
             seen_digits = 1;
@@ -125,7 +125,7 @@ hidden uintmax_t __intscan(FILE *f, int base, uintmax_t limit)
         /* signed case */
         if (negate) {
             rv = -rv;
-            if (overflow || rv > limit) {
+            if (overflow || rv < limit) {
                 rv = limit;
                 errno = ERANGE;
             }

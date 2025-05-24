@@ -4,7 +4,7 @@
 int poll(struct pollfd pfd[], nfds_t nfd, int to)
 {
     #ifdef SYS_poll
-    return syscall(SYS_poll, pfd, nfd, to);
+    return syscall_cp(SYS_poll, pfd, nfd, to);
     #else
     struct timespec ts, *pts = 0;
     if (to >= 0) {
@@ -14,6 +14,6 @@ int poll(struct pollfd pfd[], nfds_t nfd, int to)
         };
         pts = &ts;
     }
-    return syscall(SYS_ppoll, pfd, nfd, pts, 0);
+    return syscall_cp(SYS_ppoll, pfd, nfd, pts, 0);
     #endif
 }

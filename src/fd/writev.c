@@ -3,5 +3,5 @@
 
 ssize_t writev(int fd, const struct iovec *iov, int iovlen)
 {
-    return syscall(SYS_writev, fd, iov, iovlen);
+    return syscall_cp(SYS_writev, fd, iov, iovlen);
 }

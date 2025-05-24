@@ -38,6 +38,7 @@ static struct getint_data getint(FILE *f, int pseudo)
                 e2 = 10 * e2 - (s - '0');
             else
                 e2 = INT_MIN;
+            s = shgetc(f);
         }
         if (s != EOF)
             shungetc(f);
@@ -215,6 +216,7 @@ static long double decfloat(FILE *f, int pseudo, int bits, int emin, int sign, i
             gotrad = 1;
             radix = digitcount;
         } else if (digitcount < 9 * MASK) {
+            gotdig = 1;
             int d = c - '0';
             if (!k) big[z] = d;
             else big[z] = 10 * big[z] + d;
@@ -253,7 +255,7 @@ static long double decfloat(FILE *f, int pseudo, int bits, int emin, int sign, i
         shungetc(f);
 
     /* optimize small integers and take care of 0*/
-    if (lastnonzero <= 9 && radix == lastnonzero)
+    if (digitcount <= 9 && radix == digitcount)
         return sign * 1.0L * big[0];
 
     /* take care of hard overflow */
@@ -386,6 +388,7 @@ hidden long double __floatscan(FILE *f, int pseudo, int bits, int emin)
         if (i - 4u < 4u) {
             for (; i > 3; i--, shungetc(f));
         }
+        if (i == 3) shungetc(f);
         return sign * INFINITY;
     } else if (i) {
         shlim(f, 0);
@@ -397,7 +400,7 @@ hidden long double __floatscan(FILE *f, int pseudo, int bits, int emin)
 
     if (i == 3) {
         if (c == '(') {
-            for (i = 0; c != ')' && c != EOF; i++, c = shgetc(f));
+            for (i = 1; c && c != ')' && c != EOF; i++, c = shgetc(f));
             if (c == ')') return sign * NAN;
             if (!pseudo) {
                 shlim(f, 0);
@@ -405,6 +408,7 @@ hidden long double __floatscan(FILE *f, int pseudo, int bits, int emin)
             }
             for (; i > 0; i--, shungetc(f));
         }
+        else if (c != EOF) shungetc(f);
         return sign * NAN;
     } else if (i) {
         shlim(f, 0);

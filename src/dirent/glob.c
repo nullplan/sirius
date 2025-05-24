@@ -55,7 +55,7 @@ struct pathlist {
 static int push_back_path(struct pathlist *pl, char *path)
 {
     if (pl->n == pl->capacity) {
-        size_t attempt = MIN(16, pl->n + pl->n/2);
+        size_t attempt = MAX(16, pl->n + pl->n/2);
         char **p = realloc(pl->paths, attempt * sizeof (char *));
         if (!p) return -1;
         pl->capacity = attempt;
@@ -83,14 +83,14 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
         out->paths = malloc(candidates->n * sizeof (char *));
         if (!out->paths) return GLOB_NOSPACE;
         out->capacity = candidates->n;
-        out->n = 0;
         for (size_t i = 0; i < candidates->n; i++) {
             size_t cl = strlen(candidates->paths[i]);
             out->paths[out->n] = malloc(cl + len + 3); /* one is extra for GLOB_MARK */
             if (!out->paths[out->n]) return GLOB_NOSPACE;
             if (cl) {
                 memcpy(out->paths[out->n], candidates->paths[i], cl);
-                out->paths[out->n][cl++] = '/';
+                if (out->paths[out->n][cl - 1] != '/')
+                    out->paths[out->n][cl++] = '/';
             }
             memcpy(out->paths[out->n] + cl, unescaped, len);
             out->paths[out->n][cl + len] = 0;
@@ -98,7 +98,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
         }
     } else {
         for (size_t i = 0; i < candidates->n; i++) {
-            DIR *d = opendir(candidates->paths[i]);
+            DIR *d = opendir(candidates->paths[i][0]? candidates->paths[i] : ".");
             if (!d) {
                 int rv = errfunc(candidates->paths[i], errno);
                 if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
@@ -122,7 +122,8 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                         }
                         if (cl) {
                             memcpy(path, candidates->paths[i], cl);
-                            path[cl++] = '/';
+                            if (path[cl - 1] != '/')
+                                path[cl++] = '/';
                         }
                         memcpy(path + cl, de->d_name, nl + 1);
                         if (push_back_path(out, path)) {
@@ -222,6 +223,7 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
                     freelist(result);
                 return GLOB_ABORTED;
             }
+            if (result != &noalloc) free(result->paths[i]);
             result->paths[i] = result->paths[--(result->n)];
         } else {
             if ((flags & GLOB_MARK) && S_ISDIR(st.st_mode)) {
@@ -265,7 +267,7 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     if (!(flags & GLOB_NOSORT) && result->n > 1)
         qsort(result->paths, result->n, sizeof (char *), pathcmp);
 
-    char **final = realloc(g->gl_pathv, off + g->gl_pathc + result->n + 1);
+    char **final = realloc(g->gl_pathv, (off + g->gl_pathc + result->n + 1) * sizeof (char *));
     if (!final) {
         return GLOB_NOSPACE;
     }
@@ -274,5 +276,6 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     memcpy(g->gl_pathv + off + g->gl_pathc, result->paths, result->n * sizeof (char *));
     g->gl_pathv[off + g->gl_pathc + result->n] = 0;
     g->gl_pathc += result->n;
+    free(result->paths);
     return 0;
 }

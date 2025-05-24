@@ -3,5 +3,5 @@
 
 int sigsuspend(const sigset_t *ss)
 {
-    return syscall(SYS_rt_sigsuspend, ss, _NSIG/8);
+    return syscall_cp(SYS_rt_sigsuspend, ss, _NSIG/8);
 }

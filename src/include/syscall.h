@@ -13,7 +13,7 @@ static inline long __syscall_ret(long rv)
     return rv;
 }
 #define __SYSCALL_NARGS2(nr, a, b, c, d, e, f, n, ...) n
-#define __SYSCALL_NARGS(...) __SYSCALL_NARGS2(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0, 0)
+#define __SYSCALL_NARGS(...) __SYSCALL_NARGS2(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0, )
 #define __SYSCALL_CONCAT2(a, b) a##b
 #define __SYSCALL_CONCAT(a, b) __SYSCALL_CONCAT2(a, b)
 #define __syscall(...)  __SYSCALL_CONCAT(__syscall, __SYSCALL_NARGS(__VA_ARGS__))(__VA_ARGS__)
@@ -47,13 +47,16 @@ extern hidden long __syscall_cp_c(syscall_arg_t, syscall_arg_t, syscall_arg_t, s
 #define __syscall_cp2(nr, a, b)                 (__syscall_cp)(__scc(a), __scc(b), 0, 0, 0, 0, (nr))
 #define __syscall_cp3(nr, a, b, c)              (__syscall_cp)(__scc(a), __scc(b), __scc(c), 0, 0, 0, (nr))
 #define __syscall_cp4(nr, a, b, c, d)           (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), 0, 0, (nr))
-#define __syscall_cp5(nr, a, b, c, d, f)        (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), __scc(e), 0, (nr))
+#define __syscall_cp5(nr, a, b, c, d, e)        (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), __scc(e), 0, (nr))
 #define __syscall_cp6(nr, a, b, c, d, e, f)     (__syscall_cp)(__scc(a), __scc(b), __scc(c), __scc(d), __scc(e), __scc(f), (nr))
 #ifdef SYS_open
-#define __sys_open(nm, ...) __syscall(SYS_open, (nm), O_LARGEFILE | __VA_ARGS__)
+#define __sys_open2(nm, flg)    __syscall(SYS_open, (nm), O_LARGEFILE | (flg))
+#define __sys_open3(nm, flg, m) __syscall(SYS_open, (nm), O_LARGEFILE | (flg), (m))
 #else
-#define __sys_open(nm, ...) __syscall(SYS_openat, -100, (nm), O_LARGEFILE | __VA_ARGS__)
+#define __sys_open2(nm, flg)    __syscall(SYS_openat, -100, (nm), O_LARGEFILE | (flg))
+#define __sys_open3(nm, flg, m) __syscall(SYS_openat, -100, (nm), O_LARGEFILE | (flg), (m))
 #endif
+#define __sys_open(...) __SYSCALL_CONCAT(__sys_open, __SYSCALL_NARGS(dummy, __VA_ARGS__))(__VA_ARGS__)
 
 /* socket call constants */
 #define SYS_SOCKET              1

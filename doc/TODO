@@ -396,42 +396,6 @@ nl_catd catopen(const char *, int);
 int pthread_barrier_init(pthread_barrier_t *__restrict, const pthread_barrierattr_t *__restrict, unsigned);
 int pthread_barrier_wait(pthread_barrier_t *);
 int pthread_barrier_destroy(pthread_barrier_t *);
-int pthread_condattr_init(pthread_condattr_t *);
-int pthread_condattr_getclock(const pthread_condattr_t *__restrict, clockid_t *__restrict);
-int pthread_condattr_getpshared(const pthread_condattr_t *__restrict, int *__restrict);
-int pthread_condattr_setclock(pthread_condattr_t *, clockid_t);
-int pthread_condattr_setpshared(pthread_condattr_t *, int);
-int pthread_condattr_destroy(pthread_condattr_t *);
-int pthread_cond_init(pthread_cond_t *__restrict, const pthread_condattr_t *__restrict);
-int pthread_cond_broadcast(pthread_cond_t *);
-int pthread_cond_clockwait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict, clockid_t, const struct timespec *__restrict);
-int pthread_cond_signal(pthread_cond_t *);
-int pthread_cond_timedwait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict, const struct timespec *__restrict);
-int pthread_cond_wait(pthread_cond_t *__restrict, pthread_mutex_t *__restrict);
-int pthread_cond_destroy(pthread_cond_t *);
-int pthread_getcpuclockid(pthread_t, clockid_t *);
-int pthread_getschedparam(pthread_t, int *__restrict, struct sched_param *__restrict);
-int pthread_setschedparam(pthread_t, int, const struct sched_param *);
-int pthread_setschedprio(pthread_t, int);
-int pthread_mutexattr_init(pthread_mutexattr_t *);
-int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *__restrict, int *__restrict);
-int pthread_mutexattr_getpshared(const pthread_mutexattr_t *__restrict, int *__restrict);
-int pthread_mutexattr_getrobust(const pthread_mutexattr_t *__restrict, int *__restrict);
-int pthread_mutexattr_gettype(const pthread_mutexattr_t *__restrict, int *__restrict);
-int pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
-int pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
-int pthread_mutexattr_setrobust(pthread_mutexattr_t *, int);
-int pthread_mutexattr_settype(pthread_mutexattr_t *, int);
-int pthread_mutexattr_destroy(pthread_mutexattr_t *);
-int pthread_mutex_init(pthread_mutex_t *__restrict, const pthread_mutexattr_t *__restrict);
-int pthread_mutex_clocklock(pthread_mutex_t *__restrict, clockid_t, const struct timespec *__restrict);
-int pthread_mutex_consistent(pthread_mutex_t *);
-int pthread_mutex_lock(pthread_mutex_t *);
-int pthread_mutex_timedlock(pthread_mutex_t *__restrict, const struct timespec *__restrict);
-int pthread_mutex_trylock(pthread_mutex_t *);
-int pthread_mutex_unlock(pthread_mutex_t *);
-int pthread_mutex_destroy(pthread_mutex_t *);
-int pthread_once(pthread_once_t *, void (*)(void));
 
 /* pwd.h */
 struct passwd *getpwnam(const char *);
@@ -453,8 +417,6 @@ void *lfind(const void *, const void *, size_t *, size_t, int (*)(const void *, 
 void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, const void *));
 
 /* stdio.h */
-ssize_t getline(char **__restrict, size_t *__restrict, FILE *__restrict);
-ssize_t getdelim(char **__restrict, size_t *__restrict, int, FILE *__restrict);
 FILE *open_memstream(char **, size_t *);
 FILE *popen(const char *, const char *);
 int pclose(FILE *);
@@ -539,30 +501,11 @@ int utimes(const char *, const struct timeval [2]);
 /* sys/times.h */
 clock_t times(struct tms *);
 
-/* sys/wait.h */
-pid_t wait(int *);
-int waitid(idtype_t , id_t, siginfo_t *, int);
-
 /* syslog.h */
 void closelog(void);
 void openlog(const char *, int, int);
 int setlogmask(int);
 void syslog(int, const char *, ...);
-
-/* termios.h */
-speed_t cfgetispeed(const struct termios *);
-speed_t cfgetospeed(const struct termios *);
-int cfsetispeed(struct termios *, speed_t);
-int cfsetospeed(struct termios *, speed_t);
-int tcdrain(int);
-int tcflow(int, int);
-int tcflush(int, int);
-pid_t tcgetsid(int);
-int tcsendbreak(int, int);
-int tcgetattr(int, struct termios *);
-int tcsetattr(int, int, struct termios *);
-int tcgetwinsize(int, struct winsize *);
-int tcsetwinsize(int, const struct winsize *);
 
 /* threads.h */
 int cnd_broadcast(cnd_t *);

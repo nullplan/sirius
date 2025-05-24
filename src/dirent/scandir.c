@@ -20,7 +20,7 @@ int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struc
             goto error;
         }
         if (buflen == capacity) {
-            capacity += capacity/2 + 1;
+            capacity = capacity < 11? 16 : capacity + capacity/2;
             void *p = realloc(buffer, capacity * sizeof (struct dirent *));
             if (!p) goto error;
             buffer = p;

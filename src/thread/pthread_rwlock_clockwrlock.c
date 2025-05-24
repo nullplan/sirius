@@ -8,8 +8,11 @@ int pthread_rwlock_clockwrlock(pthread_rwlock_t *restrict rw, clockid_t clk, con
     for (;;)
     {
         int val = rw->__lock;
-        if (!val && !a_cas(&rw->__lock, 0, -1)) return 0;
-        int rv = __timedwait(&rw->__lock, &rw->__waiters, val, to, clk);
-        if (rv == -ETIMEDOUT) return ETIMEDOUT;
+        if (!val) {
+            if (!a_cas(&rw->__lock, 0, -1)) return 0;
+        } else {
+            int rv = __timedwait(&rw->__lock, &rw->__waiters, val, !rw->__ps, to, clk);
+            if (rv == -ETIMEDOUT) return ETIMEDOUT;
+        }
     }
 }

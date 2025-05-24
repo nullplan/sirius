@@ -7,11 +7,6 @@
 #include "cpu.h"
 #include "libc.h"
 
-#ifdef SYS_mmap2
-#undef SYS_mmap
-#define SYS_mmap SYS_mmap2
-#endif
-
 struct chunk {
     size_t psize;
     size_t csize;
@@ -111,9 +106,9 @@ static struct chunk *split_chunk(struct chunk *c, size_t x)
 static struct chunk *expand_heap(size_t x)
 {
     size_t x_pa = (x + OVERHEAD + PAGE_SIZE - 1) & -PAGE_SIZE;
-    void *p = (void *)syscall(SYS_mmap, end_of_heap, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void *p = __mmap(end_of_heap, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (p == MAP_FAILED && end_of_heap)
-        p = (void *)syscall(SYS_mmap, 0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        p = __mmap(0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (p == MAP_FAILED) return 0;
     struct chunk *c, *n;
     if (p == end_of_heap)
@@ -123,7 +118,16 @@ static struct chunk *expand_heap(size_t x)
         c->psize = C_INUSE;
     }
     n = chunk_from_mem((char *)p + x_pa);
-    c->csize = n->psize = ((char *)n - (char *)c) | C_INUSE;
+    c->csize = ((char *)n - (char *)c) | C_INUSE;
+    if (p == end_of_heap) {
+        while (!(c->psize & C_INUSE)) {
+            struct chunk *p = prev_chunk(c);
+            unbin_chunk(p, bin_index(p->csize));
+            p->csize += c->csize - C_INUSE;
+            c = p;
+        }
+    }
+    n->psize = c->csize;
     n->csize = C_INUSE;
     end_of_heap = mem_from_chunk(n);
     return c;
@@ -139,7 +143,7 @@ hidden void *__libc_malloc(size_t x)
     }
     if (x >= MMAP_THRESH) {
         size_t x_pa = (x + OVERHEAD + PAGE_SIZE - 1) & -PAGE_SIZE;
-        void *p = (void *)syscall(SYS_mmap, 0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        void *p = __mmap(0, x_pa, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (p == MAP_FAILED) return 0;
         struct chunk *c = chunk_from_mem((char *)p + ALLOC_ALIGN);
         c->psize = OVERHEAD;
@@ -182,7 +186,7 @@ void free(void *p)
     struct chunk *c = chunk_from_mem(p);
     if (!(c->csize & C_INUSE)) {
         if ((c->csize + c->psize) & (PAGE_SIZE - 1)) a_crash();
-        __syscall(SYS_munmap, (char *)c - c->psize, c->csize + c->psize);
+        __munmap((char *)c - c->psize, c->csize + c->psize);
         return;
     }
     struct chunk *n = next_chunk(c);
@@ -211,6 +215,10 @@ void *realloc(void *p, size_t new)
     if (!p) return malloc(new);
     if (!new) {
         errno = EINVAL;
+        return 0;
+    }
+    if (new >= PTRDIFF_MAX - OVERHEAD) {
+        errno = ENOMEM;
         return 0;
     }
     struct chunk *c = chunk_from_mem(p);
@@ -265,12 +273,12 @@ void *aligned_alloc(size_t a, size_t sz)
         uintptr_t start = (uintptr_t)ac - ac->psize;
         uintptr_t end = (uintptr_t)ac + ac->csize;
         if (ac->psize >= PAGE_SIZE) {
-            __syscall(SYS_munmap, start, (uintptr_t)ac & -PAGE_SIZE);
+            __munmap((void *)start, (uintptr_t)ac & -PAGE_SIZE);
             ac->psize = (uintptr_t)ac & (PAGE_SIZE - 1);
         }
         if (ac->csize - OVERHEAD - sz >= PAGE_SIZE) {
             uintptr_t pagebrk = ((uintptr_t)ac + OVERHEAD + sz + PAGE_SIZE - 1) & -PAGE_SIZE;
-            __syscall(SYS_munmap, pagebrk, end - pagebrk);
+            __munmap((void *)pagebrk, end - pagebrk);
             ac->csize = pagebrk - (uintptr_t)ac;
         }
         return ap;

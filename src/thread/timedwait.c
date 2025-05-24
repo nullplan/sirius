@@ -10,11 +10,11 @@ static void cleanup(void *p)
     a_dec((volatile int *)p);
 }
 
-hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, const struct timespec *absto, int clockid)
+hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, int priv, const struct timespec *absto, int clockid)
 {
     int rv;
     do {
-        struct timespec relto, *to = 0;
+        struct timespec relto = {0}, *to = 0;
         if (absto) {
             if (absto->tv_nsec >= 1000000000ull) return -EINVAL;
             struct timespec now;
@@ -27,24 +27,23 @@ hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, con
                 relto.tv_sec--;
             }
             if (relto.tv_sec < 0) return -ETIMEDOUT;
-#ifndef __SIXTY_FOUR
-            relto.__pad = 0;
-#endif
             to = &relto;
         }
         a_inc(waiters);
         pthread_cleanup_push(cleanup, (void *)waiters);
-        rv = __syscall_cp(SYS_futex, fut, FUTEX_WAIT, val, to);
+        int op = FUTEX_WAIT;
+        if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
+        rv = __syscall_cp(SYS_futex, fut, op, val, to);
         pthread_cleanup_pop(1);
     } while (rv == -ETIMEDOUT || (rv == -EINTR && !__eintr_valid));
     return rv;
 }
 
-hidden int __timedwait(volatile int *fut, volatile int *waiters, int val, const struct timespec *absto, int clockid)
+hidden int __timedwait(volatile int *fut, volatile int *waiters, int val, int priv, const struct timespec *absto, int clockid)
 {
     int cs;
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
-    int rv = __timedwait_cp(fut, waiters, val, absto, clockid);
+    int rv = __timedwait_cp(fut, waiters, val, priv, absto, clockid);
     pthread_setcancelstate(cs, 0);
     return rv;
 }

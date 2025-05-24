@@ -12,6 +12,7 @@ static int fflush_single(FILE *f)
         f->write(f, 0, 0);
         if (f->flags & F_ERR) res = -1;
     }
+    f->dir = 0;
     __FUNLOCK(f);
     return res;
 }

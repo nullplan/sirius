@@ -9,8 +9,9 @@
 
 static sem_t *open_existing(const char *fullname)
 {
-    int fd = __syscall_ret(__sys_open(fullname, O_RDWR));
+    int fd = __syscall_ret(__sys_open(fullname, O_RDWR | O_CLOEXEC));
     if (fd == -1) return 0;
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
 
     sem_t *p = mmap(0, sizeof (sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     __syscall(SYS_close, fd);
@@ -25,12 +26,13 @@ static sem_t *create_new(const char *fullname, sem_t *init, mode_t m)
     for (int spins = 0; fd < 0 && spins < 100; spins++)
     {
         __randname(tmpname + sizeof tmpname - 7);
-        fd = __sys_open(tmpname, O_RDWR | O_CREAT | O_EXCL, m);
+        fd = __sys_open(tmpname, O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, m);
     }
     if (fd < 0) {
         errno = EAGAIN;
         return 0;
     }
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
     if (write(fd, init, sizeof (sem_t)) != sizeof (sem_t))
         goto out_close;
 

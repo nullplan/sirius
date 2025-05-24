@@ -68,10 +68,5 @@ int pthread_cancel(pthread_t t)
         a_swap(&done, 1);
     }
     a_swap(&t->cancel, 1);
-    int rv = 0;
-    if (t != __pthread_self())
-    {
-        rv = pthread_kill(t, SIGCANCEL);
-    }
-    return rv;
+    return pthread_kill(t, SIGCANCEL);
 }
