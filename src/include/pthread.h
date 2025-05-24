@@ -45,7 +45,7 @@ struct __pthread
     #ifndef TLS_VARIANT_2
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
-    size_t *dtv;
+    size_t *dtv;                /* Aarch64 internal ABI: dtv is last word of thread descriptor. */
     #endif
 };
 
