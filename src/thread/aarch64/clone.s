@@ -27,7 +27,7 @@ __clone:
     mov fp, 0
     ldr x0, [sp, 8]
     ldr x1, [sp]
-    brl x1
+    blr x1
 1:
     mov x8, 93
     svc 0

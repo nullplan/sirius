@@ -24,7 +24,7 @@ union ldshape {
         uint16_t se;
     } i;
 };
-#define mantzero(x) (!((x).mantlo | (x).mantmid | (x).manthi))
+#define mantzero(x) (!((x).i.mantlo | (x).i.mantmid | (x).i.manthi))
 #endif
 
 #define __double_from_bits(x) ((union {uint64_t __i; double __d;}){(x)}.__d)

@@ -7,28 +7,28 @@ static void a_barrier(void)
 static inline int a_ll(volatile int *p)
 {
     int r;
-    __asm__ volatile("ldaxr %0, %1" : "=r"(r) : "m"(p));
+    __asm__ volatile("ldaxr %0, [%1]" : "=r"(r) : "r"(p), "m"(*p));
     return r;
 }
 
 static inline int a_sc(volatile int *p, int v)
 {
     int r;
-    __asm__("stlxr %0,%2,%1" : "=r"(r), "=Q"(*p) : "r"(v));
+    __asm__("stlxr %w0,%2,%1" : "=&r"(r), "=Q"(*p) : "r"(v));
     return r;
 }
 
 static inline void *a_ll_p(void *volatile *p)
 {
     void *r;
-    __asm__ volatile("ldaxr %0, %1" : "=r"(r) : "m"(p));
+    __asm__ volatile("ldaxr %0, [%1]" : "=r"(r) : "r"(p), "m"(*p));
     return r;
 }
 
 static inline int a_sc_p(void *volatile *p, void *v)
 {
     int r;
-    __asm__("stlxr %0,%2,%1" : "=r"(r), "=Q"(*p) : "r"(v));
+    __asm__("stlxr %w0,%2,%1" : "=&r"(r), "=Q"(*p) : "r"(v));
     return r;
 }
 

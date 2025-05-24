@@ -1,7 +1,7 @@
 #include <fenv.h>
-#include "fenv-ppc.h"
+#include "fenv-aarch64.h"
 
 int fetestexcept(int x)
 {
-    return __fpsr() & x & (FE_ALL_EXCEPT | FE_ALL_INVALID);
+    return __fpsr() & x & FE_ALL_EXCEPT;
 }
