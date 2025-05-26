@@ -52,6 +52,7 @@ typedef Elf64_Phdr Phdr;
 #define ST_TYPE ELF64_ST_TYPE
 #define ST_BIND ELF64_ST_BIND
 #endif
+
 struct ldso {
     uintptr_t base;
     void *map;
@@ -78,6 +79,8 @@ struct ldso {
     struct ldso *next, *prev;
     struct ldso *fini_next;
     pthread_t initializing_thread;
+    const char *relro_start;
+    const char *relro_end;
 };
 
 static struct ldso main, libc;
@@ -133,6 +136,12 @@ static void enumerate_phdr(struct ldso *start)
         {
             if (ph_stack->p_memsz > __default_stacksize && ph_stack->p_memsz < MAX_DEFAULT_STACK_SIZE)
                 __default_stacksize = ph_stack->p_memsz;
+        }
+
+        const Phdr *ph_relro = find_phdr_typed(p, PT_GNU_RELRO);
+        if (ph_relro) {
+            p->relro_start = (void *)((p->base + ph_relro->p_vaddr) & -PAGE_SIZE);
+            p->relro_end = (void *)((p->base + ph_relro->p_vaddr + ph_relro->p_memsz) & -PAGE_SIZE);
         }
     }
     if (!cnt) return;
@@ -426,6 +435,13 @@ static void relocate(struct ldso *dso)
     /* relr table is all relative, so we skip it for libc, since it has already been processed. */
     if (dso != &libc)
         process_relr(dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ]);
+    dso->relocated = 1;
+    if (dso->relro_start != dso->relro_end
+            && mprotect((void *)dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ)
+            && errno != ENOSYS)
+    {
+        print_error("Error relocation `%s': RELRO protection failed: %m", dso->name);
+    }
 }
 
 static void reloc_all(struct ldso *dso)
