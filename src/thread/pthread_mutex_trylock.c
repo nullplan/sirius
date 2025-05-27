@@ -22,7 +22,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
         int v;
         for (;;) {
             v = m->__lock;
-            if ((v & FUTEX_NR_TID_MASK) || a_cas(&m->__lock, v, v | EBUSY))
+            if ((v & FUTEX_NR_TID_MASK) || !a_cas(&m->__lock, v, v | EBUSY))
                 break;
         }
         return v & FUTEX_NR_TID_MASK;
