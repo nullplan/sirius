@@ -96,7 +96,7 @@ static size_t fmt_hexfloat(FILE *f, long double x, int width, int prec, int flag
     }
     do {
         *z = x;
-        x = 0x1p32 * (*z++ - x);
+        x = 0x1p32 * (x - *z++);
     } while (x);
 
     if (prec < 0) prec = (LDBL_MANT_DIG + 3) / 4;
@@ -106,7 +106,7 @@ static size_t fmt_hexfloat(FILE *f, long double x, int width, int prec, int flag
         uint32_t away = *r & mask;
         *r -= away;
         long double large = 1/LDBL_EPSILON;
-        if ((*r & (mask << 1)) || (mask == UINT32_MAX && (r[-1] & 1)))
+        if ((*r & (mask << 1)) || (mask == UINT32_MAX && r > a && (r[-1] & 1)))
             large += 1.0;
         long double small;
         if (away == 0 && z == r + 1)
@@ -206,8 +206,8 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
     while (e2 > 0) {
         int sh = MIN(29, e2);
         e2 -= sh;
-        uint32_t carry = 0;
-        for (uint32_t *i = z; i-- > z;) {
+        uint64_t carry = 0;
+        for (uint32_t *i = z; i-- > a;) {
             carry |= (uint64_t)*i << sh;
             *i = carry % BILLION;
             carry /= BILLION;
@@ -292,7 +292,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
     int e10;
     if ((c|32) != 'f') {
         int num_dig_in_lead = *a? countdig(*a) : 0;
-        e10 = (rp - a) * 9 + num_dig_in_lead;
+        e10 = (rp - a) * 9 + num_dig_in_lead - 1;
     }
     int trim_zeroes = 0;
     if ((c|32) == 'g') {
@@ -313,7 +313,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         if (z <= rp) z = rp + 1;
         if (trim_zeroes) {
             if (prec > (z - rp) * 9) prec = (z - rp) * 9;
-            while (prec > 0 && (rp[1 + (prec-1)/9] / pow10(9 - (prec - 1) % 9) % 10) == 0)
+            while (prec > 0 && (rp[1 + prec/9] / pow10(9 - prec % 9) % 10) == 0)
                 prec--;
         }
         char digbuf[9];
@@ -345,7 +345,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
             while (da > digbuf) *--da = '0';
             out(f, da, MIN(prec, 9));
         }
-        pad(f, '0', 0, prec, 0);
+        pad(f, '0', prec, 0, 0);
         pad(f, ' ', width, outlen, flags ^ FLG_LEFT);
         return MAX(width, outlen);
     } else {
@@ -365,10 +365,10 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         if (trim_zeroes) {
             if (prec > 9 * (z - a - 1) + num_dig_in_lead - 1)
                 prec = 9 * (z - a - 1) + num_dig_in_lead - 1;
-            while (prec >= num_dig_in_lead && a[1 + (prec - num_dig_in_lead - 1)/9] / pow10(9 - (prec - num_dig_in_lead - 1) % 9) % 10 == 0)
+            while (prec >= num_dig_in_lead && a[1 + (prec - num_dig_in_lead)/9] / pow10(9 - (prec - num_dig_in_lead) % 9) % 10 == 0)
                 prec--;
             if (prec < num_dig_in_lead) {
-                while (prec > 0 && da[1+prec] == '0') prec--;
+                while (prec > 0 && da[prec] == '0') prec--;
             }
         }
         /* total output length:
@@ -385,7 +385,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         out(f, da, 1);
         if (prec > 0 || (flags & FLG_ALT))
             out(f, ".", 1);
-        out(f, da + 1, dz - da - 1);
+        out(f, da + 1, MIN(dz - da - 1, prec));
         prec -= num_dig_in_lead - 1;
         for (const uint32_t *i = a + 1; i < z && prec > 0; i++, prec -= 9)
         {
@@ -393,7 +393,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
             while (da > digbuf) *--da = '0';
             out(f, da, MIN(9, prec));
         }
-        pad(f, '0', 0, prec, 0);
+        pad(f, '0', prec, 0, 0);
         out(f, ea, ez - ea);
         pad(f, ' ', width, outlen, flags ^ FLG_LEFT);
         return MAX(width, outlen);
@@ -717,6 +717,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             if (st > END) break;
             c = *fmt++;
         }
+        if (st < END) goto inval;
 
         union arg arg;
         if (st != NOTHING) {
@@ -842,7 +843,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                 break;
 
             case 'n':
-                switch (c) {
+                switch (st) {
                     case PSCHAR:    *(signed char *)arg.p = rv; break;
                     case PSHORT:    *(short *)arg.p = rv; break;
                     case PINT:      *(int *)arg.p = rv; break;
