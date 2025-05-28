@@ -7,12 +7,13 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <wchar.h>
 
 static void *nth_ptr(va_list ap, int n)
 {
     va_list ap2;
     va_copy(ap2, ap);
-    while (n) va_arg(ap2, void *);
+    while (n--) va_arg(ap2, void *);
     void *rv = va_arg(ap2, void *);
     va_end(ap2);
     return rv;
@@ -20,54 +21,48 @@ static void *nth_ptr(va_list ap, int n)
 
 enum lengthmod { BARE, HPRE, HHPRE, LPRE, LLPRE, JPRE, ZTPRE, CLPRE, W8, W16, W32, W64, WF8, WF16, WF32, WF64 };
 static const uintmax_t signed_limit[] = {
-           INT_MIN,
-          SHRT_MIN,
-         SCHAR_MIN,
-          LONG_MIN,
-         LLONG_MIN,
-        INTMAX_MIN,
-       PTRDIFF_MIN,
-    0,
-          INT8_MIN,
-         INT16_MIN,
-         INT32_MIN,
-         INT64_MIN,
-     INT_FAST8_MIN,
-    INT_FAST16_MIN,
-    INT_FAST32_MIN,
-    INT_FAST64_MIN
+    [BARE] =           INT_MIN,
+    [HPRE] =          SHRT_MIN,
+    [HHPRE] =        SCHAR_MIN,
+    [LPRE] =          LONG_MIN,
+    [LLPRE] =        LLONG_MIN,
+    [JPRE] =        INTMAX_MIN,
+    [ZTPRE] =      PTRDIFF_MIN,
+    [W8] =            INT8_MIN,
+    [W16] =          INT16_MIN,
+    [W32] =          INT32_MIN,
+    [W64] =          INT64_MIN,
+    [WF8] =      INT_FAST8_MIN,
+    [WF16] =    INT_FAST16_MIN,
+    [WF32] =    INT_FAST32_MIN,
+    [WF64] =    INT_FAST64_MIN
 };
 static const uintmax_t unsigned_limit[] = {
-    UINT_MAX,
-    USHRT_MAX,
-    UCHAR_MAX,
-    ULONG_MAX,
-    ULLONG_MAX,
-    UINTMAX_MAX,
-    SIZE_MAX,
-    0,
-    UINT8_MAX,
-    UINT16_MAX,
-    UINT32_MAX,
-    UINT64_MAX,
-    UINT_FAST8_MAX,
-    UINT_FAST16_MAX,
-    UINT_FAST32_MAX,
-    UINT_FAST64_MAX
+    [BARE] =      UINT_MAX,
+    [HPRE] =      USHRT_MAX,
+    [HHPRE] =     UCHAR_MAX,
+    [LPRE] =      ULONG_MAX,
+    [LLPRE] =     ULLONG_MAX,
+    [JPRE] =      UINTMAX_MAX,
+    [ZTPRE] =     SIZE_MAX,
+    [W8] =        UINT8_MAX,
+    [W16] =       UINT16_MAX,
+    [W32] =       UINT32_MAX,
+    [W64] =       UINT64_MAX,
+    [WF8] =       UINT_FAST8_MAX,
+    [WF16] =      UINT_FAST16_MAX,
+    [WF32] =      UINT_FAST32_MAX,
+    [WF64] =      UINT_FAST64_MAX
 };
 static const int float_bits[] = {
-    FLT_MANT_DIG,
-    0, 0,
-    DBL_MANT_DIG,
-    0, 0, 0,
-    LDBL_MANT_DIG
+    [BARE] = FLT_MANT_DIG,
+    [LPRE] = DBL_MANT_DIG,
+    [CLPRE] = LDBL_MANT_DIG,
 };
 static const int float_emin[] = {
-    FLT_MIN_EXP,
-    0, 0,
-    DBL_MIN_EXP,
-    0, 0, 0,
-    LDBL_MIN_EXP
+    [BARE] =  FLT_MIN_EXP,
+    [LPRE] =  DBL_MIN_EXP,
+    [CLPRE] = LDBL_MIN_EXP
 };
 
 static void set_int_ptr(void *p, enum lengthmod len, intmax_t val)
@@ -160,6 +155,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 {
     int conversions = 0;
     off_t consumed = 0;
+    unsigned char scanset[257];
 
     __FLOCK(f);
     shlim(f, 0);
@@ -174,6 +170,9 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
             fmt++;
         } else if (*fmt != '%' || fmt[1] == '%') {
             int c = shgetc(f);
+            if (*fmt == '%')
+                while (isspace(c))
+                    c = shgetc(f);
             if (c != *fmt) {
                 if (c != EOF) shungetc(f);
                 break;
@@ -218,6 +217,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
             int base;
             uintmax_t limit;
             void *p = 0;
+            mbstate_t mbs = {0};
             if (!suppress) {
                 if (argpos != -1)
                     p = nth_ptr(ap, argpos);
@@ -257,6 +257,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
                             len = LPRE;
                             /* fall through */
                         case 'x':
+                        case 'X':
                             base = 16;
                             limit = unsigned_limit[len];
                             break;
@@ -272,6 +273,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
                     }
                     break;
                 case 'a': case 'e': case 'f': case 'g':
+                case 'A': case 'E': case 'F': case 'G':
                     {
                         long double val = __floatscan(f, 0, float_bits[len], float_emin[len]);
                         if (!shcnt(f)) goto quit;
@@ -280,13 +282,118 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
                     }
                     break;
                 case 'C':
-                case 'S':
                     len = LPRE;
                     /* fall through */
                 case 'c':
+                    if (!width) {
+                        shlim(f, 1);
+                        width = 1;
+                    }
+                    if (len == LPRE)
+                    {
+                        wchar_t *str;
+                        if (allocate) {
+                            str = malloc(width * sizeof (wchar_t));
+                            if (!str) goto quit;
+                            *(wchar_t **)p = str;
+                        } else
+                            str = p;
+                        int c = shgetc(f);
+                        while (c != EOF) {
+                            char b = c;
+                            size_t len = mbrtowc(str, &b, 1, &mbs);
+                            if (len == -1) {
+                                if (allocate) free(*(wchar_t **)p);
+                                goto quit;
+                            }
+                            if (len != -2)
+                                str++;
+                            c = shgetc(f);
+                        }
+                        if (!mbsinit(&mbs)) {
+                            if (allocate) free(*(wchar_t **)p);
+                            goto quit;
+                        }
+                        conversions++;
+                        break;
+                    }
+                    {
+                        char *str;
+                        if (allocate) {
+                            str = malloc(width + 1);
+                            if (!str) goto quit;
+                            *(char **)p = str;
+                        } else
+                            str = p;
+                        int c = shgetc(f);
+                        size_t i = 0;
+                        while (c != EOF) {
+                            *str++ = c;
+                            c = shgetc(f);
+                            i++;
+                        }
+                        if (i < width) {
+                            if (allocate) free(*(char **)p);
+                            goto quit;
+                        }
+                        conversions++;
+                    }
+                    break;
+
+                case 'S':
+                    len = LPRE;
+                    /* fall through */
                 case 's':
+                    memset(scanset + 1, 1, 256);
+                    for (int i = 0; i < 256; i++)
+                        if (isspace(i))
+                            scanset[i+1] = 0;
+
+                    if (0) {
                 case '[':
-                    /* XXX */
+                        int invert = 0;
+                        fmt++;
+                        if (*fmt == '^') {
+                            fmt++;
+                            memset(scanset + 1, 1, 256);
+                            invert = 1;
+                        } else {
+                            memset(scanset + 1, 0, 256);
+                        }
+                        do scanset[(unsigned char)*fmt++ + 1] = !invert;
+                        while (*fmt != ']');
+                    }
+                    {
+                        char *str = 0;
+                        size_t capa = 0;
+                        size_t len = 0;
+                        if (allocate) {
+                            str = malloc(16);
+                            if (!str) goto quit;
+                            *(char **)p = str;
+                            capa = 16;
+                        } else
+                            str = p;
+                        int c = shgetc(f);
+                        while (scanset[c+1]) {
+                            if (allocate && capa == len + 1) {
+                                size_t attempt = capa + capa / 2;
+                                char *new = realloc(str, attempt);
+                                if (!new) {
+                                    free(str);
+                                    goto quit;
+                                }
+                                str = new;
+                                capa = attempt;
+                            }
+                            str[len++] = c;
+                            c = shgetc(f);
+                        }
+                        if (c != EOF)
+                            shungetc(f);
+                        str[len] = 0;
+                        conversions++;
+                    }
                     break;
                 case 'n':
                     if (p) set_uint_ptr(p, len, consumed);
