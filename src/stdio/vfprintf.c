@@ -414,11 +414,9 @@ static size_t fmt_fp(FILE *f, long double x, int width, int prec, int flags, int
         prefix++, preflen = 0;
 
     if (!isfinite(x)) {
-        const char *s;
-        if (isinf(x))
-            s = c & 32? "INF" : "inf";
-        else
-            s = c & 32? "NAN" : "nan";
+        const char *s = "INFinfNANnan";
+        if (isnan(x)) s += 6;
+        if (c & 32) s += 3;
         pad(f, ' ', width, 3+preflen, flags & ~FLG_ZERO);
         out(f, prefix, preflen);
         out(f, s, 3);
@@ -769,9 +767,8 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                 a = arg.p? arg.p : "(null)";
                 if (prec < 0) z = a + strlen(a);
                 else {
-                    const char *ptr = memchr(a, 0, prec);
-                    if (ptr) z = ptr;
-                    else z = a + prec;
+                    z = memchr(a, 0, prec);
+                    if (!z) z = a + prec;
                 }
                 prec = 0;
                 break;
@@ -829,7 +826,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             case 'p':
                 arg.u = (uintptr_t)arg.p;
                 flags |= FLG_ALT;
-                if (prec < 2 * sizeof (long)) prec = 2 * sizeof (long);
+                if (prec < 2 * (int)sizeof (long)) prec = 2 * sizeof (long);
                 /* fall through */
             case 'x':
             case 'X':
