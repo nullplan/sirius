@@ -1000,10 +1000,15 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
     char *tls = 0;
     if (tls_cnt) {
         struct tls_data data = __get_tls_data();
-        tls = aligned_alloc(data.align, data.size);
-        if (!tls) {
-            print_error("Out of memory allocating initial TLS\n");
-            a_crash();
+        char *p = (char *)(((uintptr_t)builtin_tls + data.align - 1) & -data.align);
+        if ((char *)&builtin_tls + sizeof builtin_tls - p <= data.size)
+            tls = p;
+        else {
+            tls = aligned_alloc(data.align, data.size);
+            if (!tls) {
+                print_error("Out of memory allocating initial TLS\n");
+                a_crash();
+            }
         }
     }
     /* also queue up initializers at this point for the same reason. */
@@ -1015,7 +1020,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
     if (early_error) _Exit(1);
     if (ldd_mode) _Exit(0);
 
-    if (tls_cnt) __init_tp(__copy_tls(tls));
+    if (tls) __init_tp(__copy_tls(tls));
 
     if (find_sym("malloc", head, 1).dso != &libc)
         malloc_replaced = 1;
