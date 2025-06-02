@@ -1000,7 +1000,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
     char *tls = 0;
     if (tls_cnt) {
         struct tls_data data = __get_tls_data();
-        char *p = (char *)(((uintptr_t)builtin_tls + data.align - 1) & -data.align);
+        char *p = (char *)(((uintptr_t)&builtin_tls + data.align - 1) & -data.align);
         if ((char *)&builtin_tls + sizeof builtin_tls - p <= data.size)
             tls = p;
         else {
