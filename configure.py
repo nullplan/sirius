@@ -124,15 +124,17 @@ if __name__ == "__main__":
 
     src = find_src(srcdir + "/src/*", arch)
     obj = [map_obj_file(i) for i in src]
-    dirs = list(dict.fromkeys(map(os.path.dirname, obj)))
-    if pic_default: libobj = obj
-    else: libobj = [map_lib_obj_file(i) for i in src]
+    libsrc = find_src(srcdir + "/ldso", arch)
+    if pic_default: libobj = [map_obj_file(i) for i in libsrc + src]
+    else: libobj = [map_lib_obj_file(i) for i in libsrc + src]
+    dirs = list(dict.fromkeys(map(os.path.dirname, obj + libobj)))
 
     if pic_default:
         crt1pic = "obj/crt1c.o"
         cflags += [ "-fPIC" ]
     else:
         crt1pic = "obj/crt1c.lo"
+
     libgcc = subprocess.check_output([cc, "-print-libgcc-file-name"], encoding="utf-8").strip()
     with open("build.ninja", mode="w") as f:
         f.write(f'''cc = {cc}
@@ -184,15 +186,13 @@ build lib/rcrt1.o: ldr {crt1pic} obj/rcrt1s.o || lib
         if do_shared:
             f.write(f"build lib/Scrt1.o: ldr {crt1pic} obj/crt1s.o || lib\n")
             if pic_default:
-                f.write(f"build lib/libc.so: lds obj/rcrt1s.o obj/ldso.o {' '.join(libobj)} || lib\n")
-                f.write(f"build obj/ldso.o: cc {srcdir}/ldso/ldso.c | obj/include/alltypes.h || obj\n")
+                f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
             else:
                 f.write(f'''rule ccpic
     command = $cc $cflags -MD -MF $out.d -c -fPIC $in -i $out
     depfile = $out.d
 
-build lib/libc.so: lds obj/rcrt1s.o obj/ldso.lo {' '.join(libobj)} || lib
-build obj/ldso.lo: ccpic {srcdir}/ldso/ldso.c | obj/include/alltypes.h || obj
+build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib
 ''')
         if os.path.exists(f"{srcdir}/crt/{arch}/crt1s.S"):
             f.write(f"build obj/crt1s.o: ccas {srcdir}/crt/{arch}/crt1s.S || obj\n")
@@ -207,5 +207,13 @@ build obj/ldso.lo: ccpic {srcdir}/ldso/ldso.c | obj/include/alltypes.h || obj
                 f.write(f"build {o}: cc {i} | obj/include/alltypes.h || {d}\n")
                 if do_shared and not pic_default:
                     f.write(f"build {o[:-2]}.lo: ccpic {i} | obj/include/alltypes.h || {d}\n")
+            elif i.endswith(".S"): f.write(f"build {o}: ccas {i} || {d}\n")
+            elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")
+
+        for i in libsrc:
+            o = map_obj_file(i) if pic_default else map_lib_obj_file(i)
+            d = os.path.dirname(o)
+            if i.endswith(".c"):
+                f.write(f"build {o}: {'cc' if pic_default else 'ccpic'} {i} | obj/include/alltypes.h || {d}\n")
             elif i.endswith(".S"): f.write(f"build {o}: ccas {i} || {d}\n")
             elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")
