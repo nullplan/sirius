@@ -1045,7 +1045,7 @@ static void process_init_queue(struct ldso **queue) {
     pthread_t self = __pthread_self();
     for (; *queue; queue++) {
         struct ldso *p = *queue;
-        while (shutting_down || (p->initializing_thread && p->initializing_thread != self && !p->initialized))
+        while (p->initializing_thread && p->initializing_thread != self && !p->initialized)
             pthread_cond_wait(&lib_initialized, &init_fini_lock);
         if (p->initializing_thread || p->initialized)
             continue;
@@ -1083,10 +1083,22 @@ hidden void __run_constructors(void)
     pthread_mutex_unlock(&init_fini_lock);
 }
 
+static int no_library_inconsistent(void)
+{
+    pthread_t self = __pthread_self();
+    for (struct ldso *p = head; p; p = p->next)
+        if (p->initializing_thread && p->initializing_thread != self)
+            return 0;
+    return 1;
+}
+
 hidden void __run_destructors(void)
 {
     pthread_mutex_lock(&init_fini_lock);
     shutting_down = 1;
+    while (!no_library_inconsistent())
+        pthread_cond_wait(&lib_initialized, &init_fini_lock);
+
     for (struct ldso *p = fini_head; p; p = p->fini_next)
     {
         pthread_mutex_unlock(&init_fini_lock);
@@ -1098,5 +1110,4 @@ hidden void __run_destructors(void)
             fini_array[n]();
         pthread_mutex_lock(&init_fini_lock);
     }
-    pthread_mutex_unlock(&init_fini_lock);
 }
