@@ -447,12 +447,6 @@ int posix_openpt(int);
 char *ptsname(int);
 int ptsname_r(int, char *, size_t);
 
-/* strings.h */
-int strcasecmp(const char *, const char *);
-int strcasecmp_l(const char *, const char *, locale_t);
-int strncasecmp(const char *, const char *, size_t);
-int strncasecmp_l(const char *, const char *, size_t, locale_t);
-
 /* sys/ipc.h */
 key_t ftok(const char *, int);
 
