@@ -555,7 +555,6 @@ long fpathconf(int, int);
 int getopt(int, char *const [], const char *);
 long pathconf(const char *, int);
 long sysconf(int);
-char *crypt(const char *, const char *);
 int nice(int);
 
 /* utmpx.h */
