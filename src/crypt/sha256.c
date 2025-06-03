@@ -240,29 +240,33 @@ static char *sha256crypt(const char *pass, const char *salt, char *buf)
     buf += saltlen;
     *buf++ = '$';
 
-
     unsigned tmp;
+    static const unsigned char permute[] = {
+         0, 10, 20,
+        21,  1, 11,
+        12, 22,  2,
+         3, 13, 23,
+        24,  4, 14,
+        15, 25,  5,
+         6, 16, 26,
+        27,  7, 17,
+        18, 28,  8,
+         9, 19, 29,
+    };
 
-    #define OUT(b2, b1, b0, trunc) do { \
-        tmp = (b2) << 16 | (b1) << 8 | (b0); \
-        *buf++ = alphabet[tmp & 63]; tmp >>= 6; \
-        *buf++ = alphabet[tmp & 63]; tmp >>= 6; \
-        *buf++ = alphabet[tmp & 63]; tmp >>= 6; \
-        if (!trunc) \
-            *buf++ = alphabet[tmp & 63]; \
-    } while (0)
+    for (int i = 0; i < sizeof permute; i += 3)
+    {
+        tmp = hashbuf[permute[i]] << 16 | hashbuf[permute[i+1]] << 8 | hashbuf[permute[i+2]];
+        *buf++ = alphabet[tmp & 63];
+        *buf++ = alphabet[(tmp >> 6) & 63];
+        *buf++ = alphabet[(tmp >> 12) & 63];
+        *buf++ = alphabet[(tmp >> 18) & 63];
+    }
 
-    OUT(hashbuf[0], hashbuf[10], hashbuf[20], 0);
-    OUT(hashbuf[21], hashbuf[1], hashbuf[11], 0);
-    OUT(hashbuf[12], hashbuf[22], hashbuf[2], 0);
-    OUT(hashbuf[3], hashbuf[13], hashbuf[23], 0);
-    OUT(hashbuf[24], hashbuf[4], hashbuf[14], 0);
-    OUT(hashbuf[15], hashbuf[25], hashbuf[5], 0);
-    OUT(hashbuf[6], hashbuf[16], hashbuf[26], 0);
-    OUT(hashbuf[27], hashbuf[7], hashbuf[17], 0);
-    OUT(hashbuf[18], hashbuf[28], hashbuf[8], 0);
-    OUT(hashbuf[9], hashbuf[19], hashbuf[29], 0);
-    OUT(0, hashbuf[31], hashbuf[30], 1);
+    tmp = hashbuf[31] << 8 | hashbuf[30];
+    *buf++ = alphabet[tmp & 63];
+    *buf++ = alphabet[(tmp >> 6) & 63];
+    *buf++ = alphabet[(tmp >> 12) & 63];
     *buf = 0;
     return rv;
 }

@@ -6,8 +6,8 @@ static const struct hashfunc {
     char *(*func)(const char *, const char *, char *);
 } functions[] = {
     {"$5$", __sha256crypt},
-    #if 0
     {"$6$", __sha512crypt},
+    #if 0
     {"$1$", __md5crypt},
     {"$y$", __yescrypt},
     {"$gy$", __gyescrypt},
