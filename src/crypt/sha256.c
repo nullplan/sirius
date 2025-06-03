@@ -133,14 +133,14 @@ static void sha256_finalize(struct sha256_ctx *ctx, unsigned char *digest)
     }
     memset(ctx->buf + pos, 0, 56 - pos);
     uint64_t bits = (uint64_t)(ctx->total) << 3;
-    ctx->buf[pos + 0] = bits >> 56;
-    ctx->buf[pos + 1] = bits >> 48;
-    ctx->buf[pos + 2] = bits >> 40;
-    ctx->buf[pos + 3] = bits >> 32;
-    ctx->buf[pos + 4] = bits >> 24;
-    ctx->buf[pos + 5] = bits >> 16;
-    ctx->buf[pos + 6] = bits >> 8;
-    ctx->buf[pos + 7] = bits;
+    ctx->buf[56] = bits >> 56;
+    ctx->buf[57] = bits >> 48;
+    ctx->buf[58] = bits >> 40;
+    ctx->buf[59] = bits >> 32;
+    ctx->buf[60] = bits >> 24;
+    ctx->buf[61] = bits >> 16;
+    ctx->buf[62] = bits >> 8;
+    ctx->buf[63] = bits;
     sha256_process_block(ctx->buf, ctx);
     for (int i = 0; i < 8; i++)
     {
@@ -236,6 +236,11 @@ static char *sha256crypt(const char *pass, const char *salt, char *buf)
     buf += 3;
     if (rounds_given)
         buf += sprintf(buf, "rounds=%d$", rounds);
+    memcpy(buf, salt, saltlen);
+    buf += saltlen;
+    *buf++ = '$';
+
+
     unsigned tmp;
 
     #define OUT(b2, b1, b0, trunc) do { \
