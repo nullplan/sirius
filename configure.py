@@ -54,6 +54,7 @@ def find_src(base, arch):
 
 
 if __name__ == "__main__":
+    os.environ['LC_ALL'] = 'C'
     cc = os.getenv("CC", default="").split()
     ar = os.getenv("AR")
     arch = os.getenv("ARCH")
@@ -187,19 +188,18 @@ build lib/libc.a: ar {' '.join(obj)} || lib
 build lib/crt1.o: ldr obj/crt1c.o obj/crt1s.o || lib
 build lib/rcrt1.o: ldr {crt1pic} obj/rcrt1s.o || lib
 ''')
-        if not pic_default: f.write(f"build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n")
+        if not pic_default: f.write(f'''rule ccpic
+    command = $cc $cflags -MD -MF $out.d -c -fPIC $in -o $out
+    depfile = $out.d
+
+build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
         if do_static or pic_default: f.write(f"build obj/crt1c.o: cc {srcdir}/crt/crt1c.c || obj\n")
         if do_shared:
             f.write(f"build lib/Scrt1.o: ldr {crt1pic} obj/crt1s.o || lib\n")
             if pic_default:
                 f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
             else:
-                f.write(f'''rule ccpic
-    command = $cc $cflags -MD -MF $out.d -c -fPIC $in -i $out
-    depfile = $out.d
-
-build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib
-''')
+                f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
         if os.path.exists(f"{srcdir}/crt/{arch}/crt1s.S"):
             f.write(f"build obj/crt1s.o: ccas {srcdir}/crt/{arch}/crt1s.S || obj\n")
         else:
