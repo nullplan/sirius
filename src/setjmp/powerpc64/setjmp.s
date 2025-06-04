@@ -80,4 +80,4 @@ setjmp:
 1:
     li %r3, 0
     blr
-.size longjmp, . - longjmp
+.size setjmp, . - setjmp

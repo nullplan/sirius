@@ -60,17 +60,17 @@ _start:
     mr %r29, %r3
     ld %r3, (AUX_NUM+DT_REL)*8(%r1)
     ld %r4, (AUX_NUM+DT_RELSZ)*8(%r1)
-    addi %r3, %r3, %r29
+    add %r3, %r3, %r29
     bl do_rel
 
     ld %r3, (AUX_NUM+DT_RELA)*8(%r1)
     ld %r4, (AUX_NUM+DT_RELASZ)*8(%r1)
-    addi %r3, %r3, %r29
+    add %r3, %r3, %r29
     bl do_rela
 
     ld %r3, (AUX_NUM+DT_RELR)*8(%r1)
     ld %r4, (AUX_NUM+DT_RELRSZ)*8(%r1)
-    addi %r3, %r3, %r29
+    add %r3, %r3, %r29
     bl do_relr
 
     addi %r1, %r1, (AUX_NUM+DYN_NUM)*8-32
@@ -104,13 +104,13 @@ decode_vec:
 
 find_base:
     /* %r3 - phdrs, %r4 - phnum (not 0), %r5 - phent */
+    mtctr %r4
 1:
     ld %r6, 0(%r3)
     cmplwi %r6, PT_DYNAMIC
     beq 2f
     add %r3, %r5, %r3
-    addi. %r4, %r4, -1
-    bne 1b
+    bdnz 1b
     .long 0
 2:
     /* base = _DYNAMIC - pt->p_vaddr */
@@ -130,7 +130,7 @@ do_rel:
     bne 2f
     ld %r5, 0(%r3)
     ldx %r6, %r5, %r29
-    addi %r6, %r29, %r6
+    add %r6, %r29, %r6
     stdx %r6, %r5, %r29
 2:
     addi %r3, %r3, 16
@@ -148,11 +148,11 @@ do_rela:
     bne 2f
     ld %r5, 0(%r3)
     ld %r6, 16(%r3)
-    addi %r6, %r29, %r6
+    add %r6, %r29, %r6
     stdx %r6, %r5, %r29
 2:
     addi %r3, %r3, 24
-    addi. %r4, %r4, -24
+    addic. %r4, %r4, -24
     bne 1b
     blr
 
@@ -168,7 +168,7 @@ do_relr:
     andi. %r0, %r6, 1
     bne 2f
     /* base address */
-    addi %r5, %r6, %r29
+    add %r5, %r6, %r29
     ld %r6, 0(%r5)
     add %r6, %r29, %r6
     std %r6, 0(%r5)

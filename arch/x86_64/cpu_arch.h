@@ -33,7 +33,7 @@ static inline void a_dec(volatile int *p)
 
 static inline void a_crash(void) {
     __asm__("ud2" ::: "memory");
-    __builtin_unreachable();
+    for (;;);
 }
 
 #define a_ctz a_ctz
@@ -54,14 +54,13 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 static inline void a_stackjmp(void *func, void *stack)
 {
     __asm__("movq %1, %%rsp; jmpq *%0" :: "r"(func), "r"(stack));
-    __builtin_unreachable();
+    for (;;);
 }
 
 static inline void a_stackinvoke(void (*func)(void), void *stack)
 {
-    stack = (void *)((uintptr_t)stack & -16ul);
-    __asm__("movq %1, %%rsp; callq *%0" :: "r"(func), "r"(stack));
-    __builtin_unreachable();
+    stack = (void *)(((uintptr_t)stack & -16ul) - 8);
+    a_stackjmp(func, stack);
 }
 
 #define a_pause a_pause

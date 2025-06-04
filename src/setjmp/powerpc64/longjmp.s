@@ -73,7 +73,7 @@ longjmp:
     mtctr %r5
     mtcrf 255, %r6
     std %r2, 24(%r1)
-    cntlwz %r3, %r4
+    cntlzw %r3, %r4
     srwi %r3, %r3, 5
     or %r3, %r3, %r4
     bctr
