@@ -9,7 +9,6 @@
 extern hidden unsigned char __sigrestore[], __rt_sigrestore[];
 #endif
 
-hidden int __eintr_valid;
 static unsigned long handler_set[_NSIG/8/sizeof(long)];
 static void set_handler_bit(int sig)
 {
