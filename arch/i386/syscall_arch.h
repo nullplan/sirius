@@ -7,7 +7,7 @@
 #define SYSCALL_INSTR   "calll *%%gs:12"
 #endif
 
-static long __syscall0(long nr)
+static inline long __syscall0(long nr)
 {
     register long eax __asm__("eax") = nr;
 
@@ -15,7 +15,7 @@ static long __syscall0(long nr)
     return eax;
 }
 
-static long __syscall1(long nr, long a)
+static inline long __syscall1(long nr, long a)
 {
     register long eax __asm__("eax") = nr;
     register long ebx __asm__("ebx") = a;
@@ -24,7 +24,7 @@ static long __syscall1(long nr, long a)
     return eax;
 }
 
-static long __syscall2(long nr, long a, long b)
+static inline long __syscall2(long nr, long a, long b)
 {
     register long eax __asm__("eax") = nr;
     register long ebx __asm__("ebx") = a;
@@ -34,7 +34,7 @@ static long __syscall2(long nr, long a, long b)
     return eax;
 }
 
-static long __syscall3(long nr, long a, long b, long c)
+static inline long __syscall3(long nr, long a, long b, long c)
 {
     register long eax __asm__("eax") = nr;
     register long ebx __asm__("ebx") = a;
@@ -45,7 +45,7 @@ static long __syscall3(long nr, long a, long b, long c)
     return eax;
 }
 
-static long __syscall4(long nr, long a, long b, long c, long d)
+static inline long __syscall4(long nr, long a, long b, long c, long d)
 {
     register long eax __asm__("eax") = nr;
     register long ebx __asm__("ebx") = a;
@@ -57,7 +57,7 @@ static long __syscall4(long nr, long a, long b, long c, long d)
     return eax;
 }
 
-static long __syscall5(long nr, long a, long b, long c, long d, long e)
+static inline long __syscall5(long nr, long a, long b, long c, long d, long e)
 {
     register long eax __asm__("eax") = nr;
     register long ebx __asm__("ebx") = a;
@@ -70,7 +70,7 @@ static long __syscall5(long nr, long a, long b, long c, long d, long e)
     return eax;
 }
 
-static long __syscall6(long nr, long a, long b, long c, long d, long e, long f)
+static inline long __syscall6(long nr, long a, long b, long c, long d, long e, long f)
 {
     register long eax __asm__("eax") = nr;
     register long ebx __asm__("ebx") = a;
@@ -78,9 +78,14 @@ static long __syscall6(long nr, long a, long b, long c, long d, long e, long f)
     register long edx __asm__("edx") = c;
     register long esi __asm__("esi") = d;
     register long edi __asm__("edi") = e;
+    #ifdef BROKEN_EBP_ASM
+    __asm__ volatile("pushl %6; xchgl %%ebp, (%%esp); " SYSCALL_INSTR "; popl %%ebp" :
+            "+r"(eax) : "r"(ebx), "r"(ecx), "r"(edx), "r"(esi), "r"(edi), "g"(f) : "memory");
+    #else
     register long ebp __asm__("ebp") = f;
 
     __asm__ volatile(SYSCALL_INSTR : "+r"(eax) : "r"(ebx), "r"(ecx), "r"(edx), "r"(esi), "r"(edi), "r"(ebp) : "memory");
+    #endif
     return eax;
 }
 

@@ -31,6 +31,17 @@ def trycpp(text, condition):
         print("no")
         return False
 
+def trycc(text, source):
+    print("Testing %s... " % text, end='')
+    with open(tmpc, mode='w') as f:
+        print(source, file=f)
+    if subprocess.run(cc + cflags + ["-c", tmpc, "-o", "/dev/null"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+        print("yes")
+        return True
+    else:
+        print("no")
+        return False
+
 def map_obj_file(name):
     name = name.removeprefix(srcdir + "/")
     name = name.removeprefix("src/")
@@ -113,6 +124,10 @@ if __name__ == "__main__":
 
     if arch == "powerpc64" or arch == "powerpc":
         if trycpp("if unsupported long double representation is used", "__LDBL_MANT_DIG__==106"): sys.exit(1)
+
+    if arch == "i386":
+        if not trycc("if bp can be used in asm", 'int foo(int x) { register int y __asm__("ebp") = x; __asm__ ("" :: "r"(y)); }'):
+            cflags += ["-DBROKEN_EBP_ASM"]
 
 
     flavor = "unknown"
