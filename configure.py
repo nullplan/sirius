@@ -11,7 +11,7 @@ import glob
 import signal
 
 tmpc = ""
-cc = ""
+cc = []
 cflags = []
 srcdir = ""
 
@@ -24,7 +24,7 @@ def trycpp(text, condition):
     print("Testing %s... " % text, end='')
     with open(tmpc, mode='w') as f:
         print("#if !(%s)\n#error fail\n#endif" % condition, file=f)
-    if subprocess.run([cc] + cflags + ["-c", tmpc, "-o", "/dev/null"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+    if subprocess.run(cc + cflags + ["-c", tmpc, "-o", "/dev/null"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
         print("yes")
         return True
     else:
@@ -54,21 +54,21 @@ def find_src(base, arch):
 
 
 if __name__ == "__main__":
-    cc = os.getenv("CC")
+    cc = os.getenv("CC", default="").split()
     ar = os.getenv("AR")
     arch = os.getenv("ARCH")
     cflags = os.getenv("CFLAGS", default="").split()
     do_static = True
     do_shared = True
 
-    if cc == None: cc = "cc"
+    if cc == []: cc = ["cc"]
     if ar == None: ar = "ar"
 
     srcdir = os.path.dirname(sys.argv[0])
     if srcdir == "": srcdir="."
     for i in range(1, len(sys.argv)):
         arg = sys.argv[i]
-        if arg[:3] == "CC=": cc = arg[3:]
+        if arg[:3] == "CC=": cc = arg[3:].split()
         elif arg[:3] == "AR=": ar = arg[3:]
         elif arg[:5] == "ARCH=": arch = arg[5:]
         elif arg[:7] == "CFLAGS=": cflags = arg[7:].split()
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if arch == None or len(arch) == 0:
-        machine = subprocess.check_output([cc, "-dumpmachine"], encoding="utf-8")
+        machine = subprocess.check_output(cc + ["-dumpmachine"], encoding="utf-8")
         if fnmatch.fnmatch(machine, "i?86-*"): arch = "i386"
         elif fnmatch.fnmatch(machine, "x32-*"): arch = "x32"
         elif fnmatch.fnmatch(machine, "x86_64-*"): arch = "x86_64"
@@ -107,10 +107,16 @@ if __name__ == "__main__":
 
     if cflags == []: cflags = ["-O3"]
     if arch == "x86_64" and trycpp("if we are actually ILP32", "__ILP32__"): arch = "x32"
+    if arch == "powerpc64":
+        if not trycpp("if correct ABI is in use", "_CALL_ELF==2"): sys.exit(1)
+
+    if arch == "powerpc64" or arch == "powerpc":
+        if trycpp("if unsupported long double representation is used", "__LDBL_MANT_DIG__==106"): sys.exit(1)
+
 
     flavor = "unknown"
     print("Trying to determine compiler flavor... ", end = '')
-    version = subprocess.check_output([cc, "-v"], stderr=subprocess.STDOUT, encoding="utf-8")
+    version = subprocess.check_output(cc + ["-v"], stderr=subprocess.STDOUT, encoding="utf-8")
     if "gcc version" in version: flavor = "gcc"
     elif "clang version" in version: flavor = "clang"
     print(flavor)
@@ -135,9 +141,9 @@ if __name__ == "__main__":
     else:
         crt1pic = "obj/crt1c.lo"
 
-    libgcc = subprocess.check_output([cc, "-print-libgcc-file-name"], encoding="utf-8").strip()
+    libgcc = subprocess.check_output(cc + ["-print-libgcc-file-name"], encoding="utf-8").strip()
     with open("build.ninja", mode="w") as f:
-        f.write(f'''cc = {cc}
+        f.write(f'''cc = {' '.join(cc)}
 ar = {ar}
 cflags = {' '.join(cflags)}
 
