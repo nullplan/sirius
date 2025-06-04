@@ -131,9 +131,12 @@ if __name__ == "__main__":
 
     src = find_src(srcdir + "/src/*", arch)
     obj = [map_obj_file(i) for i in src]
-    libsrc = find_src(srcdir + "/ldso", arch)
-    if pic_default: libobj = [map_obj_file(i) for i in libsrc + src]
-    else: libobj = [map_lib_obj_file(i) for i in libsrc + src]
+    libsrc = []
+    libobj = []
+    if do_shared:
+        libsrc = find_src(srcdir + "/ldso", arch)
+        if pic_default: libobj = [map_obj_file(i) for i in libsrc + src]
+        else: libobj = [map_lib_obj_file(i) for i in libsrc + src]
     dirs = list(dict.fromkeys(map(os.path.dirname, obj + libobj)))
 
     if pic_default:
