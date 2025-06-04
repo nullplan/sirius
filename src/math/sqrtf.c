@@ -28,7 +28,7 @@ float sqrtf(float x)
     if (!isfinite(x) || x == 0.0) return x;
     int e2;
     x = frexpf(x, &e2);
-    uint32_t ix = __float_from_bits(x) & ((1ul << 23) - 1);
+    uint32_t ix = __float_bits(x) & ((1ul << 23) - 1);
     ix |= 1ul << 23; 
     ix <<= 7;
     if (e2 & 1) {

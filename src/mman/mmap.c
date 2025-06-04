@@ -26,7 +26,7 @@ hidden void *__mmap(void *b, size_t len, int prot, int flags, int fd, off_t off)
         errno = EINVAL;
         return MAP_FAILED;
     }
-    void *p = (void *)syscall(SYS_mmap2, b, len, prot, flags, fd, off >> ARCH_MMAP2_UNIT_BITS);
+    void *p = (void *)syscall(SYS_mmap2, b, len, prot, flags, fd, off / ARCH_MMAP2_UNIT);
     #else
     void *p = (void *)syscall(SYS_mmap, b, len, prot, flags, fd, off);
     #endif

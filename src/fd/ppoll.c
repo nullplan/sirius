@@ -20,7 +20,7 @@ int ppoll(struct pollfd pfd[], nfds_t nfd, const struct timespec *restrict ts, c
         if (ts) {
             lts = *ts;
             #ifndef __SIXTY_FOUR
-            lts->__pad = 0;
+            lts.__pad = 0;
             #endif
             ts = &lts;
         }

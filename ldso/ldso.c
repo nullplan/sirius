@@ -24,6 +24,7 @@ enum {
     REL_COPY,
     REL_GOT,
     REL_SYMBOLIC,
+    REL_USYMBOLIC,
     REL_PCREL32,
     REL_PLT,
     REL_DTPMOD,
@@ -339,6 +340,11 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
             case REL_PLT:
             case REL_GOT:
                 *rel_addr = symval + addend;
+                break;
+
+            case REL_USYMBOLIC:
+                /* like SYMBOLIC, but possibly misaligned, so: */
+                memcpy(rel_addr, &(size_t){symval + addend}, sizeof (size_t));
                 break;
 
             case REL_COPY:

@@ -60,17 +60,17 @@ _start:
     mr %r29, %r3
     lwz %r3, (AUX_NUM+DT_REL)*4(%r1)
     lwz %r4, (AUX_NUM+DT_RELSZ)*4(%r1)
-    addi %r3, %r3, %r29
+    add %r3, %r3, %r29
     bl do_rel
 
     lwz %r3, (AUX_NUM+DT_RELA)*4(%r1)
     lwz %r4, (AUX_NUM+DT_RELASZ)*4(%r1)
-    addi %r3, %r3, %r29
+    add %r3, %r3, %r29
     bl do_rela
 
     lwz %r3, (AUX_NUM+DT_RELR)*4(%r1)
     lwz %r4, (AUX_NUM+DT_RELRSZ)*4(%r1)
-    addi %r3, %r3, %r29
+    add %r3, %r3, %r29
     bl do_relr
 
     li %r0, 0
@@ -89,7 +89,7 @@ decode_vec:
  * %r5 - limit
  */
     lwz %r6, 0(%r4)
-    cmplwi %r5, 0
+    cmplwi %r6, 0
     beq- 3f
 1:
     cmplw %r6, %r5
@@ -106,13 +106,13 @@ decode_vec:
 
 find_base:
     /* %r3 - phdrs, %r4 - phnum (not 0), %r5 - phent */
+    mtctr %r4
 1:
     lwz %r6, 0(%r3)
     cmplwi %r6, PT_DYNAMIC
     beq 2f
     add %r3, %r5, %r3
-    addi. %r4, %r4, -1
-    bne 1b
+    bdnz 1b
     .long 0
 2:
     /* base = _DYNAMIC - pt->p_vaddr */
@@ -127,12 +127,12 @@ do_rel:
     mtctr %r4
 1:
     lwz %r5, 4(%r3)
-    andi %r5, %r5, 0xff
+    andi. %r5, %r5, 0xff
     cmplwi %r5, R_PPC_RELATIVE
     bne 2f
     lwz %r5, 0(%r3)
     lwzx %r6, %r5, %r29
-    addi %r6, %r29, %r6
+    add %r6, %r29, %r6
     stwx %r6, %r5, %r29
 2:
     addi %r3, %r3, 8
@@ -145,16 +145,16 @@ do_rela:
     beqlr
 1:
     lwz %r5, 4(%r3)
-    andi %r5, %r5, 0xff
+    andi. %r5, %r5, 0xff
     cmplwi %r5, R_PPC_RELATIVE
     bne 2f
     lwz %r5, 0(%r3)
     lwz %r6, 8(%r3)
-    addi %r6, %r29, %r6
+    add %r6, %r29, %r6
     stwx %r6, %r5, %r29
 2:
     addi %r3, %r3, 12
-    addi. %r4, %r4, -12
+    addic. %r4, %r4, -12
     bne 1b
     blr
 

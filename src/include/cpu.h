@@ -51,7 +51,7 @@ static inline void *a_cas_p(void *volatile *p, void *e, void *n)
 _Static_assert(sizeof (int) == sizeof (void *), "");
 static inline void *a_cas_p(void *volatile *p, void *e, void *n)
 {
-    return (void *)a_cas((volatine int *)p, (int)e, (int)n);
+    return (void *)a_cas((volatile int *)p, (int)e, (int)n);
 }
 #endif
 #endif
@@ -89,6 +89,10 @@ static inline void a_dec(volatile int *p) {
 #endif
 
 #ifndef a_or_l
+#ifndef a_ll_p
+#define a_ll_p(x) a_ll((volatile int *)(x))
+#define a_sc_p(p, v) a_sc((volatile int *)(p), (int)(v))
+#endif
 static inline void a_or_l(volatile unsigned long *p, unsigned long m)
 {
     unsigned long v;
@@ -197,7 +201,7 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     uint64_t mid1 = a_hi * b_lo;
     uint64_t mid = mid1 + a_lo * b_hi;
     res.lo += mid << 32;
-    res.hi += mid >> 32 + (res.lo < (mid << 32)) + ((0ull + (mid < mid1)) << 32);
+    res.hi += (mid >> 32) + (res.lo < (mid << 32)) + ((0ull + (mid < mid1)) << 32);
     return res;
 }
 #endif

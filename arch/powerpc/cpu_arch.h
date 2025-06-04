@@ -46,7 +46,7 @@ static int a_ctz(size_t x) {
 
 static inline void a_stackjmp(void *func, void *stack)
 {
-    __asm__("mr %%r1, %1; mtctr %%0; bctr" :: "r"(func), "r"(stack));
+    __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(func), "r"(stack));
     __builtin_unreachable();
 }
 
