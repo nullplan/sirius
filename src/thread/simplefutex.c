@@ -16,9 +16,9 @@ hidden int __futex_wait_cp(volatile int *f, int priv, int val)
 hidden int __futex_wait(volatile int *f, int priv, int val)
 {
     int cs;
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+    __pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
     int rv = __futex_wait_cp(f, priv, val);
-    pthread_setcancelstate(cs, 0);
+    __pthread_setcancelstate(cs, 0);
     return rv;
 }
 

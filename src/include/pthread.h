@@ -114,4 +114,5 @@ extern hidden void __synccall(void (*)(void *), void *);
 
 /* arg == -1 for preparations, arg == 0 for parent handlers, arg == 1 for child handlers. */
 extern hidden void __atfork_run(int);
+extern hidden int __pthread_setcancelstate(int, int *);
 #endif
