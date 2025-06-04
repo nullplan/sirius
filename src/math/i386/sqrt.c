@@ -4,7 +4,7 @@ double sqrt(double x)
 {
     union ldshape lds;
     uint16_t sw;
-    __asm__("fsqrt; fstsw %1" : "=t"(lds.f), "am"(sw) : "0"(x) : "memory");
+    __asm__("fsqrt; fstsw %1" : "=t"(lds.f), "=am"(sw) : "0"(x) : "memory");
     /* fix double rounding issue.
      * fsqrt rounds once from the infinitely-precise result to
      * long double. Then this function again rounds to double.

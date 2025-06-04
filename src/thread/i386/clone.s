@@ -54,6 +54,6 @@ __clone:
     calll *4(%esp)
     movl %eax, %ebx
 1:
-    movl $1, $eax
+    movl $1, %eax
     int $0x80
     jmp 1b
