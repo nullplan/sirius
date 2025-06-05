@@ -37,5 +37,5 @@ int system(const char *cmd)
     pthread_sigmask(SIG_SETMASK, &restore, 0);
     sigaction(SIGQUIT, &oldquit, 0);
     sigaction(SIGINT, &oldint, 0);
-    return 0;
+    return stat;
 }
