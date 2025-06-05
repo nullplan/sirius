@@ -6,8 +6,15 @@
 int sem_trywait(sem_t *sem)
 {
     int val = sem->__ctr;
-    if ((val & INT_MAX) && a_cas(&sem->__ctr, val, val - 1) == val)
-        return 0;
-    errno = EAGAIN;
-    return -1;
+    int n;
+    for (;;)
+    {
+        if (!(val & INT_MAX)) {
+            errno = EAGAIN;
+            return -1;
+        }
+        n = a_cas(&sem->__ctr, val, val - 1);
+        if (val == n) return 0;
+        val = n;
+    }
 }

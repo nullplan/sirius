@@ -1,9 +1,9 @@
 #include <semaphore.h>
+#include <limits.h>
 
 int sem_getvalue(sem_t *restrict sem, int *restrict pval)
 {
     int val = sem->__ctr;
-    if (val < 0) val = 0;
-    *pval = val;
+    *pval = val & INT_MAX;
     return 0;
 }

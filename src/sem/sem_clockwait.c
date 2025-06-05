@@ -15,19 +15,21 @@ int sem_clockwait(sem_t *restrict sem, clockid_t clk,
             n = a_cas(&sem->__ctr, val, n);
             if (n == val) return 0;
             val = n;
+            continue;
         }
-        if (val >= 0) {
-            int n = a_cas(&sem->__ctr, val, INT_MIN + val);
-            if (n != val) {
+        if (val == 0) {
+            int n = a_cas(&sem->__ctr, 0, INT_MIN);
+            if (n) {
                 val = n;
                 continue;
             }
-            val += INT_MIN;
         }
-        int rv = __timedwait(&sem->__ctr, &sem->__waiters, val, !sem->__pshared, to, clk);
+        int rv = __timedwait(&sem->__ctr, &sem->__waiters, INT_MIN,
+                !sem->__pshared, to, clk);
         if (rv == -EINTR || rv == -ETIMEDOUT) {
             errno = -rv;
             return -1;
         }
+        val = sem->__ctr;
     }
 }
