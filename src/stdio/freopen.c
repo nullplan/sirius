@@ -14,10 +14,10 @@ FILE *freopen(const char *restrict name, const char *restrict mode, FILE *restri
         if (name) {
             FILE *new = fopen(name, mode);
             if (new) {
+                int rv = __syscall(SYS_dup3, new->fd, oldf->fd, newflags & O_CLOEXEC);
                 #ifdef SYS_dup2
-                __syscall(SYS_dup2, new->fd, oldf->fd);
-                #else
-                __syscall(SYS_dup3, new->fd, oldf->fd, newflags & O_CLOEXEC);
+                if (rv == -ENOSYS)
+                    __syscall(SYS_dup2, new->fd, oldf->fd);
                 #endif
                 if (newflags & O_CLOEXEC)
                     __syscall(SYS_fcntl, oldf->fd, F_SETFD, FD_CLOEXEC);
