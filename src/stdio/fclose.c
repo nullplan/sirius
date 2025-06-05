@@ -3,7 +3,8 @@
 
 int fclose(FILE *f)
 {
-    __flockfile(f);
+    if (f->lock != -1)
+        __flockfile(f);
     int r = fflush(f);
     r |= f->close(f);
 
