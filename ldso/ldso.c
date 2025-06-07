@@ -799,12 +799,9 @@ static struct ldso **queue_initializers(struct ldso *start)
      * Stack takes the end.
      */
     struct ldso **queue = malloc(cnt * sizeof (struct ldso *));
-    int *deps_queued = calloc(cnt, sizeof (int));
-    if (!queue || !deps_queued)
+    if (!queue)
     {
         print_error("Out of memory for initializer queue.");
-        free(queue);
-        free(deps_queued);
         return 0;
     }
 
@@ -815,16 +812,15 @@ static struct ldso **queue_initializers(struct ldso *start)
 
     while (sp < cnt) {
         struct ldso *p = queue[sp];
-        if (deps_queued[sp]) {
+        if (p->mark == 2) {
             *qtail++ = p;
             sp++;
         } else {
-            deps_queued[sp] = 1;
+            p->mark = 2;
             for (struct ldso *const *d = p->deps; *d; d++) {
                 if (!(*d)->mark) {
                     (*d)->mark = 1;
                     queue[--sp] = *d;
-                    deps_queued[sp] = 0;
                 }
             }
         }
@@ -833,7 +829,6 @@ static struct ldso **queue_initializers(struct ldso *start)
     for (struct ldso *p = head; p; p = p->next)
         p->mark = 0;
 
-    free(deps_queued);
     *qtail = 0;
     return queue;
 }
