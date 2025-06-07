@@ -565,7 +565,7 @@ static void *map_library(int fd, struct ldso *dso)
                 char *pagebrk = (char *)(((uintptr_t)eoi + PAGE_SIZE - 1) & -PAGE_SIZE);
                 memset(eoi, 0, pagebrk - eoi);
                 if (ph->p_memsz - ph->p_filesz > pagebrk - eoi
-                        && mmap(pagebrk, ph->p_memsz - (pagebrk - eoi), prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
+                        && mmap(pagebrk, (ph->p_memsz - ph->p_filesz - (pagebrk - eoi) + PAGE_SIZE - 1) & -PAGE_SIZE, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
                     print_error("Error loading `%s': %m", dso->name);
                     goto out_unmap;
                 }
