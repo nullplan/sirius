@@ -711,7 +711,11 @@ static struct ldso *load_library(const char *name, const char *search_path)
     dso->dev = st.st_dev;
     dso->ino = st.st_ino;
     strcpy((char *)dso->name, fullname);
-    if (fullname != name) dso->shortname = strrchr(dso->name, '/') + 1;
+    if (fullname != name) {
+        dso->shortname = strrchr(dso->name, '/');
+        if (dso->shortname) dso->shortname++;
+        else dso->shortname = dso->name;
+    }
     dso->prev = tail;
     tail->next = dso;
     tail = dso;
