@@ -275,15 +275,21 @@ struct symdef {
 static struct symdef find_sym(const char *name, struct ldso *ctx, int need_defined)
 {
     uint32_t gh = gnu_hash(name);
-    uint32_t h = sysv_hash(name);
+    int did_sysv = 0;
+    uint32_t h;
     size_t i;
     for (; ctx; ctx = ctx->next)
     {
         i = 0;
         if (ctx->ghashtab)
             i = lookup_gnu(ctx, name, gh);
-        else if (ctx->hashtab)
+        else if (ctx->hashtab) {
+            if (!did_sysv) {
+                h = sysv_hash(name);
+                did_sysv = 1;
+            }
             i = lookup_sysv(ctx, name, h);
+        }
         if (i)
         {
             const Sym *sym = ctx->symtab + i;
