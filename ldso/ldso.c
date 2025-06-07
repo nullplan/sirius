@@ -102,7 +102,7 @@ static int malloc_replaced;
 static int shutting_down;
 hidden unsigned long __default_stacksize = DEFAULT_STACK_SIZE;
 
-extern const char __tlsdesc_dynamic[], __tlsdesc_static[];
+extern hidden const char __tlsdesc_dynamic[], __tlsdesc_static[];
 
 static void print_error(const char *fmt, ...)
 {

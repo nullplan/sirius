@@ -1,14 +1,5 @@
-#include <pthread.h>
-#include "cpu.h"
-
+#include <features.h>
 /* dummy C implementations that aren't used. */
 
-hidden ptrdiff_t __tlsdesc_static(void *p)
-{
-    a_crash();
-}
-
-hidden ptrdiff_t __tlsdesc_dynamic(void *p)
-{
-    a_crash();
-}
+hidden const char __tlsdesc_dynamic[1];
+hidden const char __tlsdesc_static[1];
