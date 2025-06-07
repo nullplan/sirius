@@ -543,7 +543,7 @@ static void *map_library(int fd, struct ldso *dso)
         goto out_unmap;
     }
     dso->base = (uintptr_t)map - min_address;
-    dso->phdr = (void *)((char *)map + buf.eh.e_phoff);
+    dso->phdr = (void *)((char *)map + ((Ehdr*)map)->e_phoff);
 
     ph = ph0;
     for (size_t i = 0; i < dso->phnum; i++, ph = (void *)((char *)ph + dso->phent)) {
