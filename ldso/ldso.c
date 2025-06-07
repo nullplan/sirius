@@ -886,9 +886,9 @@ hidden _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
     for (;;);
 }
 
-static union {
+static struct {
     struct __pthread tp;
-    char size[sizeof (struct __pthread) + GAP_ABOVE_TP];
+    size_t space[20];
 } builtin_tls;
 
 #define AUX_CNT (AT_SYSINFO + 1)
