@@ -78,14 +78,8 @@ static inline long __syscall6(long nr, long a, long b, long c, long d, long e, l
     register long edx __asm__("edx") = c;
     register long esi __asm__("esi") = d;
     register long edi __asm__("edi") = e;
-    #ifdef BROKEN_EBP_ASM
     __asm__ volatile("pushl %6; xchgl %%ebp, (%%esp); " SYSCALL_INSTR "; popl %%ebp" :
             "+r"(eax) : "r"(ebx), "r"(ecx), "r"(edx), "r"(esi), "r"(edi), "g"(f) : "memory");
-    #else
-    register long ebp __asm__("ebp") = f;
-
-    __asm__ volatile(SYSCALL_INSTR : "+r"(eax) : "r"(ebx), "r"(ecx), "r"(edx), "r"(esi), "r"(edi), "r"(ebp) : "memory");
-    #endif
     return eax;
 }
 

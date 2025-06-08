@@ -125,11 +125,6 @@ if __name__ == "__main__":
     if arch == "powerpc64" or arch == "powerpc":
         if trycpp("if unsupported long double representation is used", "__LDBL_MANT_DIG__==106"): sys.exit(1)
 
-    if arch == "i386":
-        if not trycc("if bp can be used in asm", 'int foo(int x) { register int y __asm__("ebp") = x; __asm__ ("" :: "r"(y)); }'):
-            cflags += ["-DBROKEN_EBP_ASM"]
-
-
     flavor = "unknown"
     print("Trying to determine compiler flavor... ", end = '')
     version = subprocess.check_output(cc + ["-v"], stderr=subprocess.STDOUT, encoding="utf-8")
