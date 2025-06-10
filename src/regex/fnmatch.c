@@ -26,15 +26,15 @@
 static int match_bracket(const char *p, wchar_t s, wchar_t sfold, int flags)
 {
     int invert = 0;
-    wchar_t start;
+    wchar_t start = WCHAR_MAX;
     assert(*p == '[');
     p++;
     if (*p == '!') {
         invert = 1;
         p++;
     }
-    mbtowc(&start, p, MB_LEN_MAX);
     if (*p == ']' || *p == '-') {
+        start = *p;
         if (s == *p) return !invert;
         p++;
     }
@@ -70,8 +70,8 @@ static int match_bracket(const char *p, wchar_t s, wchar_t sfold, int flags)
             int clen = mbtowc(&end, p + 1, MB_LEN_MAX);
             if (clen > 0) {
                 p += clen;
-                if (s - start + 0ul <= end - start + 0ul
-                        || sfold - start + 0ul <= end - start + 0ul)
+                if ((s >= start && s <= end)
+                        || (sfold >= start && sfold <= end))
                     return !invert;
             }
         } else if (!(flags & FNM_NOESCAPE) && *p == '\\') {
