@@ -42,6 +42,32 @@ def trycc(text, source):
         print("no")
         return False
 
+ldflags_try=[]
+def tryldflag(flag, lst):
+    print("Testing if linker supports %s... " % flag, end='')
+    with open(tmpc, mode='w') as f:
+        print("typedef int foo;", file=f)
+    if subprocess.run(cc + ldflags_try + [flag] + ["-nostdlib","-shared","-o","/dev/null", tmpc], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+        print("yes")
+        lst += [flag]
+        return True
+    else:
+        print("no")
+        return False
+
+cflags_try=[]
+def tryccflag(flag, lst):
+    print("Testing if compiler supports %s... " % flag, end='')
+    with open(tmpc, mode='w') as f:
+        print("typedef int foo;", file=f)
+    if subprocess.run(cc + cflags_try + [flag] + ["-c","-o","/dev/null",tmpc], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+        print("yes")
+        lst += [flag]
+        return True
+    else:
+        print("no")
+        return False
+
 def map_obj_file(name):
     name = name.removeprefix(srcdir + "/")
     name = name.removeprefix("src/")
@@ -134,10 +160,64 @@ if __name__ == "__main__":
 
     pic_default = trycpp("if PIC is default", "__PIC__")
 
-    # XXX: Taylor warning flags to CC flavor sensibly
-    cflags += ["-Wall","-Wextra", "-Wno-sign-compare", "-Wno-unused-parameter", "-Wno-maybe-uninitialized", "-Wno-abi", "-Wno-unknown-pragmas", "-Wno-unused-but-set-variable"]
+    tryccflag("-Werror=unknown-warning-option", cflags_try)
+    tryccflag("-Werror=unused-command-line-argument", cflags_try)
 
-    cflags += ["-std=c11", "-ffreestanding", "-ffunction-sections", "-fdata-sections", "-D_XOPEN_SOURCE", "-nostdinc", "-isystem", f"{srcdir}/include", "-isystem", f"{srcdir}/arch/{arch}", "-isystem", "obj/include", "-I", f"{srcdir}/src/include"]
+    tryldflag("-Werror=unknown-warning-option", ldflags_try)
+    tryldflag("-Werror=unused-command-line-argument", ldflags_try)
+    ldflags = []
+    tryldflag("-Wl,--sort-section,alignment", ldflags)
+    tryldflag("-Wl,--sort-common", ldflags)
+    tryldflag("-Wl,--gc-section", ldflags)
+    tryldflag("-Wl,--hash-style=both", ldflags)
+    tryldflag("-Wl,-z,defs", ldflags)
+    tryldflag("-Wl,--exclude-libs,ALL", ldflags)
+    tryldflag(f"-Wl,--dynamic-list={srcdir}/dynamic.list", ldflags)
+    tryldflag("-Wl,-z,pack-relative-relocs", ldflags)
+
+    tryccflag("-std=c11", cflags)
+    tryccflag("-nostdinc", cflags)
+    if not tryccflag("-ffreestanding", cflags): tryccflag("-fno-builtin", cflags)
+    if not tryccflag("-fexcess-precision=standard", cflags) and arch == "i386":
+        tryccflag("-ffloat-store", cflags)
+    tryccflag("-fno-strict-aliasing", cflags)
+    tryccflag("-Wa,--noexecstack", cflags)
+    tryccflag("-pipe", cflags)
+    tryccflag("-fno-unwind-tables", cflags)
+    tryccflag("-fno-asynchronous-unwind-tables", cflags)
+    tryccflag("-ffunction-sections", cflags)
+    tryccflag("-fdata-sections", cflags)
+
+    if arch == "i386":
+        if not any(flg.startswith("-march=") for flg in cc + cflags):
+            tryldflag("-march=i486", cflags)
+        if not any(flg.startswith("-mtune=") for flg in cc + cflags):
+            tryldflag("-mtune=generic", cflags)
+    if flavor == "clang": tryccflag("-w", cflags)
+    tryccflag("-Wno-pointer-to-int-cast", cflags)
+    tryccflag("-Werror=implicit-function-declaration", cflags)
+    tryccflag("-Werror=implicit-int", cflags)
+    tryccflag("-Werror=pointer-sign", cflags)
+    tryccflag("-Werror=pointer-arith", cflags)
+    tryccflag("-Werror=int-conversion", cflags)
+    tryccflag("-Werror=incompatible-pointer-types", cflags)
+    tryccflag("-Werror=discarded-qualifiers", cflags)
+    tryccflag("-Werror=discarded-array-qualifiers", cflags)
+    if flavor == "clang": tryccflag("-Qunused-arguments", cflags)
+
+    tryccflag("-Waddress", cflags)
+    tryccflag("-Warray-bounds", cflags)
+    tryccflag("-Wchar-subscripts", cflags)
+    tryccflag("-Wduplicate-decl-specifier", cflags)
+    tryccflag("-Winit-self", cflags)
+    tryccflag("-Wreturn-type", cflags)
+    tryccflag("-Wsequence-point", cflags)
+    tryccflag("-Wstrict-aliasing", cflags)
+    tryccflag("-Wunused-function", cflags)
+    tryccflag("-Wunused-label", cflags)
+    tryccflag("-Wunused-variable", cflags)
+
+    cflags += ["-D_XOPEN_SOURCE", "-isystem", f"{srcdir}/include", "-isystem", f"{srcdir}/arch/{arch}", "-isystem", "obj/include", "-I", f"{srcdir}/src/include"]
 
     src = find_src(srcdir + "/src/*", arch)
     obj = [map_obj_file(i) for i in src]
@@ -155,7 +235,13 @@ if __name__ == "__main__":
     else:
         crt1pic = "obj/crt1c.lo"
 
-    libgcc = subprocess.check_output(cc + ["-print-libgcc-file-name"], encoding="utf-8").strip()
+    libgcc = []
+    if tryldflag("-lgcc", libgcc): tryldflag("-lgcc_eh", libgcc)
+    if not libgcc: tryldflag("-lcompiler_rt", libgcc)
+    if not libgcc:
+        libgcc_fn = subprocess.check_output(cc + ["-print-libgcc-file-name"], encoding="utf-8").strip()
+        tryldflag(libgcc_fn, libgcc)
+
     with open("build.ninja", mode="w") as f:
         f.write(f'''cc = {' '.join(cc)}
 ar = {ar}
@@ -176,7 +262,7 @@ rule ldr
     command = $cc -r -o $out $in
 
 rule lds
-    command = $cc -nostdlib -shared -Wl,-z,defs,--exclude-libs,ALL,--dynamic-list={srcdir}/dynamic.list,--hash-style=both,--gc-sections -o $out $in {libgcc}
+    command = $cc -nostdlib -shared {' '.join(ldflags)} -o $out $in {' '.join(libgcc)}
 
 rule ar
     command = $ar crs $out $in
