@@ -216,6 +216,7 @@ if __name__ == "__main__":
     tryccflag("-Wunused-function", cflags)
     tryccflag("-Wunused-label", cflags)
     tryccflag("-Wunused-variable", cflags)
+    tryccflag("-Wimplicit-fallthrough", cflags)
 
     cflags += ["-D_XOPEN_SOURCE", "-isystem", f"{srcdir}/include", "-isystem", f"{srcdir}/arch/{arch}", "-isystem", "obj/include", "-I", f"{srcdir}/src/include"]
 
