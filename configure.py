@@ -160,42 +160,88 @@ if __name__ == "__main__":
 
     pic_default = trycpp("if PIC is default", "__PIC__")
 
+# first: add options to trial flags to error for unknown flags
     tryccflag("-Werror=unknown-warning-option", cflags_try)
     tryccflag("-Werror=unused-command-line-argument", cflags_try)
-
+    tryccflag("-Werror=ignored-optimization-argument", cflags_try)
     tryldflag("-Werror=unknown-warning-option", ldflags_try)
     tryldflag("-Werror=unused-command-line-argument", ldflags_try)
+
+    # now probe LDFLAGS:
     ldflags = []
+    # sort input sections by alignment to reduce amount of padding
     tryldflag("-Wl,--sort-section,alignment", ldflags)
     tryldflag("-Wl,--sort-common", ldflags)
+
+    # remove unreferenced input sections. This also gets rid of some
+    # weak references we would otherwise have to deal with
     tryldflag("-Wl,--gc-section", ldflags)
+
+    # there are too many stories of tools needing a SysV hash table
     tryldflag("-Wl,--hash-style=both", ldflags)
+
+    # undefined references are normally allowed in shared libs, but
+    # won't work for libc
     tryldflag("-Wl,-z,defs", ldflags)
+
+    # we are not in the business of exporting compiler internals, so don't.
     tryldflag("-Wl,--exclude-libs,ALL", ldflags)
+
+    # Link every internal reference internally, except for the symbols on the
+    # list. Global data symbols must remain overridable to support copy relocs.
+    # I will later add malloc &c. to the list to allow malloc replacement libs
+    # to work.
     tryldflag(f"-Wl,--dynamic-list={srcdir}/dynamic.list", ldflags)
+
+    # I would also very much like to exercise the DT_RELR code, please. And
+    # this flag has the side effect of combining GOT relocations for the same
+    # symbol.
     tryldflag("-Wl,-z,pack-relative-relocs", ldflags)
 
+    # sirius is written in C11
     tryccflag("-std=c11", cflags)
+    # get rid of system includes
     tryccflag("-nostdinc", cflags)
+    # a libc must always be compiled in freestanding mode, else all the
+    # identifiers are reserved
     if not tryccflag("-ffreestanding", cflags): tryccflag("-fno-builtin", cflags)
+    # try to get sane excess precision behavior.
+    # i386 is the only platform with excess precision, anyway
     if not tryccflag("-fexcess-precision=standard", cflags) and arch == "i386":
         tryccflag("-ffloat-store", cflags)
+    # I want to insist my code conforms to strict aliasing rules. However,
+    # since the option is normally turned off, turning it on is not well tested,
+    # and there are likely nasty to track bugs present. So for the sake of sanity:
     tryccflag("-fno-strict-aliasing", cflags)
+    # Rather than clutter all the asm files with stack annotation sections, we
+    # can just add a command line option that has the same effect
     tryccflag("-Wa,--noexecstack", cflags)
+    # I would very much like to use -pipe always.
     tryccflag("-pipe", cflags)
+    # Unwinding through C code is not defined. Rather than waste processing
+    # power and space, better to not emit these tables at all
     tryccflag("-fno-unwind-tables", cflags)
     tryccflag("-fno-asynchronous-unwind-tables", cflags)
+    # These make --gc-sections work better. Also apparently may prevent
+    # compiler bugs from biting me.
     tryccflag("-ffunction-sections", cflags)
     tryccflag("-fdata-sections", cflags)
 
+    # on i386, set default -march to i486, because i36 doesn't have cmpxchg,
+    # and is therefore not supportable.
     if arch == "i386":
         if not any(flg.startswith("-march=") for flg in cc + cflags):
             tryldflag("-march=i486", cflags)
         if not any(flg.startswith("-mtune=") for flg in cc + cflags):
             tryldflag("-mtune=generic", cflags)
+
+    # warning options:
+    # on clang, some warnings are enabled by default, but -w rids me of them
+    # on GCC, -w disables all warnings forever.
     if flavor == "clang": tryccflag("-w", cflags)
+    # these are generally useful/necessary to have
     tryccflag("-Wno-pointer-to-int-cast", cflags)
-    tryccflag("-Werror=implicit-function-declaration", cflags)
+    tryccflag("-Werror=implicit-function-declaration", cflags) # especially this one
     tryccflag("-Werror=implicit-int", cflags)
     tryccflag("-Werror=pointer-sign", cflags)
     tryccflag("-Werror=pointer-arith", cflags)
@@ -203,8 +249,12 @@ if __name__ == "__main__":
     tryccflag("-Werror=incompatible-pointer-types", cflags)
     tryccflag("-Werror=discarded-qualifiers", cflags)
     tryccflag("-Werror=discarded-array-qualifiers", cflags)
+    # Clang warns about LDFLAGS in the compilation step.
+    # But user's CFLAGS may include linker flags, so this
+    # shuts up the compiler
     if flavor == "clang": tryccflag("-Qunused-arguments", cflags)
 
+    # these are the useful warnings I enable
     tryccflag("-Waddress", cflags)
     tryccflag("-Warray-bounds", cflags)
     tryccflag("-Wchar-subscripts", cflags)
@@ -236,12 +286,15 @@ if __name__ == "__main__":
     else:
         crt1pic = "obj/crt1c.lo"
 
+    # try to find the compiler support library
     libgcc = []
-    if tryldflag("-lgcc", libgcc): tryldflag("-lgcc_eh", libgcc)
-    if not libgcc: tryldflag("-lcompiler_rt", libgcc)
+    if tryldflag("-lgcc", libgcc): tryldflag("-lgcc_eh", libgcc)    # libgcc for GCC
+    if not libgcc: tryldflag("-lcompiler_rt", libgcc)               # compiler_rt for clang
     if not libgcc:
+        # if that didn't work, try again with -print-libgcc-file-name
         libgcc_fn = subprocess.check_output(cc + ["-print-libgcc-file-name"], encoding="utf-8").strip()
         tryldflag(libgcc_fn, libgcc)
+    # else we have to hope the compiler doesn't need any library
 
     with open("build.ninja", mode="w") as f:
         f.write(f'''cc = {' '.join(cc)}
