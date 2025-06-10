@@ -51,6 +51,7 @@ static const char *getname(const char *s, char *buf, size_t len)
         size_t spn = strspn(s, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
         if (spn >= 3 && spn < len) {
             memcpy(buf, s, spn);
+            buf[spn] = 0;
             return s + spn;
         }
     }
@@ -131,7 +132,7 @@ static int is_posix_form(const char *tz)
     if (*tz == ':') return 0;
     char dummy[TZNAME_MAX + 1];
     tz = getname(tz, dummy, sizeof dummy);
-    if (!tz || *tz == '-' || *tz == '+' || isdigit(*tz)) return 0;
+    if (!tz || (*tz != '-' && *tz != '+' && !isdigit(*tz))) return 0;
     return 1;
 
 }
@@ -195,7 +196,7 @@ static void do_tzset(void)
     const char *tz = getenv("TZ");
     if (!tz) tz = "/etc/localtime";
     if (!*tz) tz = utc;
-    if (!strcmp(tz, oldtz)) return;
+    if (oldtz && !strcmp(tz, oldtz)) return;
 
     size_t tzlen = strlen(tz);
     if (!oldtz || tzlen >= oldtzsize) {
