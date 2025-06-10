@@ -1,3 +1,4 @@
+E(0              , "No error")
 E(EPERM          , "Operation not permitted")
 E(ENOENT         , "No such file or directory")
 E(ESRCH          , "No such process")
