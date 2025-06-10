@@ -350,7 +350,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
                             scanset[i+1] = 0;
 
                     if (0) {
-                case '[':
+                case '[':;
                         int invert = 0;
                         fmt++;
                         if (*fmt == '^') {
