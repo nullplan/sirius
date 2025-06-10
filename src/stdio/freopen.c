@@ -14,9 +14,9 @@ FILE *freopen(const char *restrict name, const char *restrict mode, FILE *restri
         if (name) {
             FILE *new = fopen(name, mode);
             if (new) {
-                int rv = __syscall(SYS_dup3, new->fd, oldf->fd, newflags & O_CLOEXEC);
+                int ret = __syscall(SYS_dup3, new->fd, oldf->fd, newflags & O_CLOEXEC);
                 #ifdef SYS_dup2
-                if (rv == -ENOSYS)
+                if (ret == -ENOSYS)
                     __syscall(SYS_dup2, new->fd, oldf->fd);
                 #endif
                 if (newflags & O_CLOEXEC)
