@@ -102,7 +102,7 @@ static int malloc_replaced;
 static int shutting_down;
 hidden unsigned long __default_stacksize = DEFAULT_STACK_SIZE;
 
-extern const char __tlsdesc_dynamic[], __tlsdesc_static[];
+extern hidden const char __tlsdesc_dynamic[], __tlsdesc_static[];
 
 static void print_error(const char *fmt, ...)
 {
@@ -275,15 +275,21 @@ struct symdef {
 static struct symdef find_sym(const char *name, struct ldso *ctx, int need_defined)
 {
     uint32_t gh = gnu_hash(name);
-    uint32_t h = sysv_hash(name);
+    int did_sysv = 0;
+    uint32_t h;
     size_t i;
     for (; ctx; ctx = ctx->next)
     {
         i = 0;
         if (ctx->ghashtab)
             i = lookup_gnu(ctx, name, gh);
-        else if (ctx->hashtab)
+        else if (ctx->hashtab) {
+            if (!did_sysv) {
+                h = sysv_hash(name);
+                did_sysv = 1;
+            }
             i = lookup_sysv(ctx, name, h);
+        }
         if (i)
         {
             const Sym *sym = ctx->symtab + i;
@@ -537,7 +543,7 @@ static void *map_library(int fd, struct ldso *dso)
         goto out_unmap;
     }
     dso->base = (uintptr_t)map - min_address;
-    dso->phdr = (void *)((char *)map + buf.eh.e_phoff);
+    dso->phdr = (void *)((char *)map + ((Ehdr*)map)->e_phoff);
 
     ph = ph0;
     for (size_t i = 0; i < dso->phnum; i++, ph = (void *)((char *)ph + dso->phent)) {
@@ -559,7 +565,7 @@ static void *map_library(int fd, struct ldso *dso)
                 char *pagebrk = (char *)(((uintptr_t)eoi + PAGE_SIZE - 1) & -PAGE_SIZE);
                 memset(eoi, 0, pagebrk - eoi);
                 if (ph->p_memsz - ph->p_filesz > pagebrk - eoi
-                        && mmap(pagebrk, ph->p_memsz - (pagebrk - eoi), prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
+                        && mmap(pagebrk, (ph->p_memsz - ph->p_filesz - (pagebrk - eoi) + PAGE_SIZE - 1) & -PAGE_SIZE, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
                     print_error("Error loading `%s': %m", dso->name);
                     goto out_unmap;
                 }
@@ -705,7 +711,11 @@ static struct ldso *load_library(const char *name, const char *search_path)
     dso->dev = st.st_dev;
     dso->ino = st.st_ino;
     strcpy((char *)dso->name, fullname);
-    if (fullname != name) dso->shortname = strrchr(dso->name, '/') + 1;
+    if (fullname != name) {
+        dso->shortname = strrchr(dso->name, '/');
+        if (dso->shortname) dso->shortname++;
+        else dso->shortname = dso->name;
+    }
     dso->prev = tail;
     tail->next = dso;
     tail = dso;
@@ -789,12 +799,9 @@ static struct ldso **queue_initializers(struct ldso *start)
      * Stack takes the end.
      */
     struct ldso **queue = malloc(cnt * sizeof (struct ldso *));
-    int *deps_queued = calloc(cnt, sizeof (int));
-    if (!queue || !deps_queued)
+    if (!queue)
     {
         print_error("Out of memory for initializer queue.");
-        free(queue);
-        free(deps_queued);
         return 0;
     }
 
@@ -805,16 +812,15 @@ static struct ldso **queue_initializers(struct ldso *start)
 
     while (sp < cnt) {
         struct ldso *p = queue[sp];
-        if (deps_queued[sp]) {
+        if (p->mark == 2) {
             *qtail++ = p;
             sp++;
         } else {
-            deps_queued[sp] = 1;
+            p->mark = 2;
             for (struct ldso *const *d = p->deps; *d; d++) {
                 if (!(*d)->mark) {
                     (*d)->mark = 1;
                     queue[--sp] = *d;
-                    deps_queued[sp] = 0;
                 }
             }
         }
@@ -823,7 +829,6 @@ static struct ldso **queue_initializers(struct ldso *start)
     for (struct ldso *p = head; p; p = p->next)
         p->mark = 0;
 
-    free(deps_queued);
     *qtail = 0;
     return queue;
 }
@@ -881,9 +886,9 @@ hidden _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
     for (;;);
 }
 
-static union {
+static struct {
     struct __pthread tp;
-    char size[sizeof (struct __pthread) + GAP_ABOVE_TP];
+    size_t space[20];
 } builtin_tls;
 
 #define AUX_CNT (AT_SYSINFO + 1)

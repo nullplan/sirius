@@ -32,6 +32,9 @@ static inline int a_sc_p(void *volatile *p, void *v)
     return r;
 }
 
+#define a_pre_llsc()
+#define a_post_llsc()
+
 #define a_cas a_cas
 static inline int a_cas(volatile int *p, int e, int n)
 {

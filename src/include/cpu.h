@@ -165,7 +165,6 @@ static inline int a_ctz_64(uint64_t x) {
 
 static inline int a_ctz(size_t x) {
     if (sizeof (size_t) == 8) return a_ctz_64(x);
-    if (!(size_t)x) return 32 + a_ctz_32(x>>32);
     return a_ctz_32(x);
 }
 #endif
@@ -207,7 +206,7 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 #endif
 
 #ifndef a_pause
-#define a_pause a_barrier
+#define a_pause()
 #endif
 #endif
 
