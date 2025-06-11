@@ -318,10 +318,17 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
             continue;
 
         size_t *rel_addr = (void *)(dso->base + rel[0]);
-        size_t addend = stride == 3? rel[2] :
-            type == REL_GOT || type == REL_PLT || type == REL_COPY? 0 :
-            reuse_addends? (head == &libc? (libc_original_addends[addend_idx++] = *rel_addr) : libc_original_addends[addend_idx++]) :
-            *rel_addr;
+        size_t addend;
+        if (stride == 3)
+            addend = rel[2];
+        else if (type == REL_GOT || type == REL_PLT || type == REL_COPY)
+            addend = 0;
+        else if (reuse_addends) {
+            if (head == &libc)
+                libc_original_addends[addend_idx] = *rel_addr;
+            addend = libc_original_addends[addend_idx++];
+        } else
+            addend = *rel_addr;
 
         size_t symval = 0;
         size_t tlsval = 0;
@@ -332,8 +339,10 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
             def = usym->st_info >> 4 == STB_LOCAL?
                 (struct symdef){dso, usym} :
                 find_sym(dso->strtab + usym->st_name, type == REL_COPY? head->next : head, type == REL_PLT);
-            symval = def.sym? def.dso->base + def.sym->st_value : 0;
-            tlsval = def.sym? def.sym->st_value : 0;
+            if (def.sym) {
+                symval = def.dso->base + def.sym->st_value;
+                tlsval = def.sym->st_value;
+            }
             if (!def.sym && (usym->st_info >> 4) != STB_WEAK)
                 print_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name);
         }
@@ -419,7 +428,7 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
 static void process_relr(size_t base, const size_t *rel, size_t sz)
 {
     size_t *rel_addr = 0;
-    for (; sz; sz -= 8, rel++)
+    for (; sz; sz -= sizeof (size_t), rel++)
     {
         size_t w = *rel;
         if (!(w & 1)) {
@@ -449,8 +458,7 @@ static void relocate(struct ldso *dso)
         process_relr(dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ]);
     dso->relocated = 1;
     if (dso->relro_start != dso->relro_end
-            && mprotect((void *)dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ)
-            && errno != ENOSYS)
+            && mprotect((void *)dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
     {
         print_error("Error relocation `%s': RELRO protection failed: %m", dso->name);
     }
@@ -704,6 +712,7 @@ static struct ldso *load_library(const char *name, const char *search_path)
     if (!dso) {
         print_error("Error loading `%s': Out of memory", name);
         munmap(temp_dso.map, temp_dso.map_len);
+        return 0;
     }
 
     *dso = temp_dso;
@@ -720,8 +729,8 @@ static struct ldso *load_library(const char *name, const char *search_path)
     tail->next = dso;
     tail = dso;
 
-    if (ldd_mode) dprintf(1, "\t%s%s%s (0x%0*tx)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, 2 * sizeof (size_t), dso->base);
-    return 0;
+    if (ldd_mode) dprintf(1, "\t%s%s%s (0x%0*tx)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, 2 * (int)sizeof (size_t), dso->base);
+    return dso;
 }
 
 static void load_preload(char *preload, const char *search_path)
