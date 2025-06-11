@@ -316,7 +316,7 @@ rule ldr
     command = $cc -r -o $out $in
 
 rule lds
-    command = $cc -nostdlib -shared {' '.join(ldflags)} -o $out $in {' '.join(libgcc)}
+    command = $cc $cflags -nostdlib -shared {' '.join(ldflags)} -o $out $in {' '.join(libgcc)}
 
 rule ar
     command = $ar crs $out $in
