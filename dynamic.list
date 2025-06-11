@@ -18,4 +18,10 @@ stdout;
 stdin;
 
 __stack_chk_guard;
+
+malloc;
+calloc;
+realloc;
+free;
+aligned_alloc;
 };
