@@ -198,6 +198,11 @@ if __name__ == "__main__":
     # symbol.
     tryldflag("-Wl,-z,pack-relative-relocs", ldflags)
 
+    # sirius does not support lazy linking, so make the linker take
+    # advantage
+    tryldflag("-Wl,-z,now", ldflags)
+    tryldflag("-Wl,-z,relro", ldflags)
+
     # sirius is written in C11
     tryccflag("-std=c11", cflags)
     # get rid of system includes
