@@ -8,7 +8,8 @@ size_t mbrtowc(wchar_t *restrict wc, const char *restrict s, size_t len,
 {
     static mbstate_t internal_state;
     if (!state) state = &internal_state;
-    unsigned v = state->__st; state->__st = 0;
+    unsigned v = state->__st;
+    state->__st = 0;
     size_t n = 0;
 
     if (!s) {

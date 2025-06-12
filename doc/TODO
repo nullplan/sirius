@@ -425,10 +425,6 @@ int pclose(FILE *);
 int strfromd(char *__restrict, size_t, const char *__restrict, double);
 int strfromf(char *__restrict, size_t, const char *__restrict, float);
 int strfroml(char *__restrict, size_t, const char *__restrict, long double);
-int mblen(const char *, size_t);
-int wctomb(char *, wchar_t);
-size_t mbstowcs(wchar_t *__restrict, const char *__restrict, size_t);
-size_t wcstombs(char *__restrict, const wchar_t *__restrict, size_t);
 size_t memalignment(const void *);
 int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
 char *mkdtemp(char *);
@@ -538,14 +534,6 @@ int timer_settime(timer_t, int, const struct itimerspec *__restrict, struct itim
 int __getdate_err(void);
 struct tm *getdate(const char *);
 char *strptime(const char *__restrict, const char *__restrict, struct tm *__restrict);
-
-/* uchar.h */
-size_t mbrtoc8(char8_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
-size_t c8rtomb(char *__restrict, char8_t, mbstate_t *__restrict);
-size_t mbrtoc16(char16_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
-size_t c16rtomb(char *__restrict, char16_t, mbstate_t *__restrict);
-size_t mbrtoc32(char32_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
-size_t c32rtomb(char *__restrict, char32_t, mbstate_t *__restrict);
 
 /* unistd.h */
 extern char *optarg;
