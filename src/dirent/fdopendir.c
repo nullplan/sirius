@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
+#include <string.h>
 
 DIR *fdopendir(int fd)
 {
@@ -20,8 +22,9 @@ DIR *fdopendir(int fd)
         return 0;
     }
 
-    DIR *d = calloc(1, sizeof (struct __dirstream) + DIRBUFSIZ);
+    DIR *d = malloc(sizeof (struct __dirstream) + DIRBUFSIZ);
     if (d) {
+        memset(d, 0, sizeof (struct __dirstream));
         d->fd = fd;
         d->pos = d->end = d->buf;
     }

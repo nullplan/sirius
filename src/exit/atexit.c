@@ -34,7 +34,7 @@ int atexit(void (*f)(void))
 {
     __lock(&lock);
     if (n == 32) {
-        struct block *p = malloc(sizeof *p);
+        struct block *p = __libc_malloc(sizeof *p);
         if (!p) {
             __unlock(&lock);
             return -1;

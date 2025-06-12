@@ -8,6 +8,10 @@
 
 hidden void *__libc_malloc(size_t);
 hidden void *__libc_calloc(size_t, size_t);
+hidden void __libc_free(void *);
+hidden void *__libc_realloc(void *, size_t);
+hidden void *__libc_malloc_impl(size_t);
+hidden void *__libc_calloc_impl(size_t, size_t);
 hidden char **__lookup_env(const char *, size_t);
 extern char **__environ;
 hidden int __reallocenv(size_t);

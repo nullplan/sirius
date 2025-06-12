@@ -33,15 +33,15 @@ static void *bump_malloc(size_t x)
     __unlock(&bump_lock);
     return r;
 }
-weak_alias(__libc_malloc, bump_malloc);
+weak_alias(__libc_malloc_impl, bump_malloc);
 
 static void *bump_calloc(size_t a, size_t b)
 {
     return bump_malloc(a * b);
 }
-weak_alias(__libc_calloc, bump_calloc);
+weak_alias(__libc_calloc_impl, bump_calloc);
 
-void *malloc(size_t x)
+void *__libc_malloc(size_t x)
 {
     if (!x) {
         errno = EINVAL;
@@ -51,10 +51,10 @@ void *malloc(size_t x)
         errno = ENOMEM;
         return 0;
     }
-    return __libc_malloc(x);
+    return __libc_malloc_impl(x);
 }
 
-void *calloc(size_t a, size_t b)
+void *__libc_calloc(size_t a, size_t b)
 {
     if (a > PTRDIFF_MAX/b) {
         errno = ENOMEM;
@@ -64,5 +64,5 @@ void *calloc(size_t a, size_t b)
         errno = EINVAL;
         return 0;
     }
-    return __libc_calloc(a, b);
+    return __libc_calloc_impl(a, b);
 }

@@ -207,7 +207,7 @@ static void do_tzset(void)
          */
         size_t l = oldtzsize;
         while (l <= tzlen) l *= 2;
-        oldtz = malloc(l);
+        oldtz = __libc_malloc(l);
         oldtzsize = l;
     }
     if (oldtz) memcpy(oldtz, tz, tzlen + 1);

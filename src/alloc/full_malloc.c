@@ -133,7 +133,7 @@ static struct chunk *expand_heap(size_t x)
     return c;
 }
 
-hidden void *__libc_malloc(size_t x)
+hidden void *__libc_malloc_impl(size_t x)
 {
     /* assumption: x == 0 and x > PTRDIFF_MAX already filtered */
     x = (x + OVERHEAD + ALLOC_ALIGN - 1) & -ALLOC_ALIGN;
@@ -169,7 +169,7 @@ hidden void *__libc_malloc(size_t x)
     return c? mem_from_chunk(c) : 0;
 }
 
-hidden void *__libc_calloc(size_t a, size_t b)
+hidden void *__libc_calloc_impl(size_t a, size_t b)
 {
     a *= b;
     void *p = __libc_malloc(a);
@@ -180,7 +180,7 @@ hidden void *__libc_calloc(size_t a, size_t b)
     return p;
 }
 
-void free(void *p)
+void __libc_free(void *p)
 {
     if (!p) return;
     struct chunk *c = chunk_from_mem(p);
@@ -210,7 +210,7 @@ void free(void *p)
 
 #define MREMAP_MAYMOVE  1
 
-void *realloc(void *p, size_t new)
+void *__libc_realloc(void *p, size_t new)
 {
     if (!p) return malloc(new);
     if (!new) {
@@ -247,10 +247,10 @@ void *realloc(void *p, size_t new)
         __unlock(&malloc_lock);
         return p;
     }
-    void *np = malloc(new - OVERHEAD);
+    void *np = __libc_malloc(new - OVERHEAD);
     if (!np) return 0;
     memcpy(np, p, MIN(new, c->csize & ~C_INUSE) - OVERHEAD);
-    free(p);
+    __libc_free(p);
     return np;
 }
 
@@ -260,9 +260,9 @@ void *aligned_alloc(size_t a, size_t sz)
         errno = EINVAL;
         return 0;
     }
-    if (a <= ALLOC_ALIGN) return malloc(sz);
+    if (a <= ALLOC_ALIGN) return __libc_malloc(sz);
     size_t asz = sz + a - 1;
-    void *p = malloc(asz);
+    void *p = __libc_malloc(asz);
     if (!p) return 0;
     struct chunk *c = chunk_from_mem(p);
     void *ap = (void *)(((uintptr_t)p + a - 1) & -a);

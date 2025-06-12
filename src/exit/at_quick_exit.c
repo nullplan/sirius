@@ -42,7 +42,7 @@ int at_quick_exit(void (*f)(void))
     __block_usr_sigs(&ss);
     __lock(&lock);
     if (n == 32) {
-        struct block *p = malloc(sizeof *p);
+        struct block *p = __libc_malloc(sizeof *p);
         if (!p) {
             __unlock(&lock);
             __restore_sigs(&ss);

@@ -42,7 +42,7 @@ int pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(vo
     __lock(&lock);
     if (nptr == 32)
     {
-        struct block *next = malloc(sizeof (struct block));
+        struct block *next = __libc_malloc(sizeof (struct block));
         if (!next) {
             __unlock(&lock);
             return ENOMEM;

@@ -146,7 +146,7 @@ static void enumerate_phdr(struct ldso *start)
         }
     }
     if (!cnt) return;
-    struct tls_module *tls_mod = calloc(cnt, sizeof (struct tls_module));
+    struct tls_module *tls_mod = __libc_calloc(cnt, sizeof (struct tls_module));
     if (!tls_mod)
     {
         print_error("Out of memory for tls module descriptions.");
@@ -398,7 +398,7 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
                     addend = rel_addr[1];
 
                 if (def.dso->tlsid > static_tls_cnt) {
-                    size_t *desc = malloc(2 * sizeof (size_t));
+                    size_t *desc = __libc_malloc(2 * sizeof (size_t));
                     if (!desc)
                         print_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname);
                     else {
@@ -708,7 +708,7 @@ static struct ldso *load_library(const char *name, const char *search_path)
         return load_libc(0);
     }
 
-    struct ldso *dso = malloc(sizeof (struct ldso) + strlen(fullname) + 1);
+    struct ldso *dso = __libc_malloc(sizeof (struct ldso) + strlen(fullname) + 1);
     if (!dso) {
         print_error("Error loading `%s': Out of memory", name);
         munmap(temp_dso.map, temp_dso.map_len);
@@ -773,7 +773,7 @@ static void load_direct_deps(struct ldso *dso, const char *search_path)
     if (dso == &main && cnt < 2)
         deps = builtin_deps;
     else {
-        deps = calloc(cnt + 1, sizeof (struct ldso *));
+        deps = __libc_calloc(cnt + 1, sizeof (struct ldso *));
         if (!deps) {
             print_error("Error loading `%s': Could not allocate space for dependencies.", dso->name);
             return;
@@ -807,7 +807,7 @@ static struct ldso **queue_initializers(struct ldso *start)
     /* result queue and intermediate stack share an array.
      * Stack takes the end.
      */
-    struct ldso **queue = malloc(cnt * sizeof (struct ldso *));
+    struct ldso **queue = __libc_malloc(cnt * sizeof (struct ldso *));
     if (!queue)
     {
         print_error("Out of memory for initializer queue.");
@@ -1012,8 +1012,8 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
     if (preload) load_preload(preload, lib_path);
     load_deps(head, lib_path);
 
-    /* must allocate memory before relocation, since we no longer have an allocator
-     * between relocation and starting the main program.
+    /* Have to call enumerate_phdr() before reloc_all(),
+     * so the TLS relocations can be processed.
      */
     enumerate_phdr(head);
     static_tls_cnt = tls_cnt;
@@ -1031,7 +1031,10 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
             }
         }
     }
-    /* also queue up initializers at this point for the same reason. */
+    /* the init queue I can alloc here or after the reloc, makes
+     * no real difference. But it must happen before committing
+     * to running this thing.
+     */
     main_init_queue = queue_initializers(head);
 
     reloc_all(main.next);
@@ -1097,8 +1100,7 @@ hidden void __run_constructors(void)
     if (pia_off && pia_sz)
         run_init_array((void *)(main.base + pia_off), pia_sz);
     process_init_queue(main_init_queue);
-    if (!malloc_replaced)
-        free(main_init_queue);
+    __libc_free(main_init_queue);
     main_init_queue = 0;
     pthread_mutex_unlock(&init_fini_lock);
 }
