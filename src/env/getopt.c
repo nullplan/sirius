@@ -37,25 +37,7 @@ int getopt(int argc, char *const argv[], const char *optstr)
     if (c != ':')
         p = strchr(optstr, c);
 
-    if (p && p[1] == ':') {
-        /* known option with argument */
-        if (!argv[optind][optchar + 1]) {
-            /* option was last in its string */
-            optarg = argv[optind + 1];
-            optind += 2;
-            optchar = 1;
-            if (optind > argc) {
-                if (do_msg)
-                    fprintf(stderr, "%s: Missing argument for option `%c'.\n", argv[0], c);
-                optopt = c;
-                return *optstr == ':'? ':' : '?';
-            }
-        } else {
-            optarg = argv[optind] + optchar + 1;
-            optind++;
-            optchar = 1;
-        }
-    } else {
+    if (!p || p[1] != ':') {
         /* presumed single-option flag */
         optchar++;
         if (!argv[optind][optchar]) {
@@ -69,6 +51,23 @@ int getopt(int argc, char *const argv[], const char *optstr)
             optopt = c;
             return '?';
         }
+    } else if (!argv[optind][optchar + 1]) {
+        /* option with argument in next arg */
+        optarg = argv[optind + 1];
+        optind += 2;
+        optchar = 1;
+        if (optind > argc) {
+            if (do_msg)
+                fprintf(stderr, "%s: Missing argument for option `%c'.\n", argv[0], c);
+            optopt = c;
+            return *optstr == ':'? ':' : '?';
+        }
+    } else {
+        /* option with argument being the remainder of the arg */
+        optarg = argv[optind] + optchar + 1;
+        optind++;
+        optchar = 1;
     }
+    
     return c;
 }
