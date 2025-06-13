@@ -465,9 +465,7 @@ int msgsnd(int, const void *, size_t, int);
 /* sys/resource.h */
 int getrlimit(int, struct rlimit *);
 int setrlimit(int, const struct rlimit *);
-int getpriority(int, id_t);
 int getrusage(int, struct rusage *);
-int setpriority(int, id_t, int);
 
 /* sys/sem.h */
 int semctl(int, int, int, ...);
@@ -540,7 +538,6 @@ size_t confstr(int, char *, size_t);
 long fpathconf(int, int);
 long pathconf(const char *, int);
 long sysconf(int);
-int nice(int);
 
 /* utmpx.h */
 void          endutxent(void);
