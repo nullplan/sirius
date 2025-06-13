@@ -125,6 +125,28 @@ static const Phdr *find_phdr_typed(const struct ldso *p, int t)
     return 0;
 }
 
+static void reclaim_single(const struct ldso *dso, size_t start, size_t end)
+{
+    if (start >= dso->relro_start && start < dso->relro_end)
+        start = dso->relro_end;
+    if (end >= dso->relro_start && end < dso->relro_end)
+        end = dso->relro_start;
+    if (start < end)
+        __donate_malloc_memory(dso->base + start, end - start);
+}
+
+static void reclaim_gaps(const struct ldso *dso)
+{
+    size_t n = dso->phnum;
+    for (const Phdr *ph = dso->phdr; n; n--, ph = (void *)((char *)ph + dso->phent))
+    {
+        if (ph->p_type != PT_LOAD || (ph->p_flags & (PF_R|PF_W)) != (PF_R|PF_W))
+            continue;
+        reclaim_single(dso, ph->p_vaddr & -PAGE_SIZE, ph->p_vaddr);
+        reclaim_single(dso, ph->p_vaddr + ph->p_memsz, (ph->p_vaddr + ph->p_memsz + PAGE_SIZE - 1) & -PAGE_SIZE);
+    }
+}
+
 static void enumerate_phdr(struct ldso *start)
 {
     int cnt = 0;
@@ -642,7 +664,7 @@ static int path_open(const char *name, const char *search_path, char *namebuf, s
     return -1;
 }
 
-static struct ldso *load_library(const char *name, const char *search_path)
+static struct ldso *load_library(const char *name, const char *search_path, int at_startup)
 {
     if (!*name) {
         errno = EINVAL;
@@ -727,7 +749,15 @@ static struct ldso *load_library(const char *name, const char *search_path)
     tail->next = dso;
     tail = dso;
 
-    if (ldd_mode) dprintf(1, "\t%s%s%s (0x%0*tx)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, 2 * (int)sizeof (size_t), dso->base);
+    if (ldd_mode) dprintf(1, "\t%s%s%s (0x%0*p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, 2 * (int)sizeof (size_t), (void *)dso->base);
+
+    /* if we are at startup, this library will not be unmapped again.
+     * If an error occurs, we will exit.
+     * So the gaps can be donated to malloc safely.
+     * At runtime, this can only happen after relocation has happened successfully.
+     */
+    if (at_startup)
+        reclaim_gaps(dso);
     return dso;
 }
 
@@ -740,14 +770,14 @@ static void load_preload(char *preload, const char *search_path)
         z = a + __stridx(a, ':');
         int cont = *z;
         *z = 0;
-        load_library(a, search_path);
+        load_library(a, search_path, 1);
         if (!cont) break;
         *z = ':';
         a = z + 1;
     }
 }
 
-static void load_direct_deps(struct ldso *dso, const char *search_path)
+static void load_direct_deps(struct ldso *dso, const char *search_path, int at_startup)
 {
     if (dso->deps) return;
     size_t cnt = 0;
@@ -784,15 +814,15 @@ static void load_direct_deps(struct ldso *dso, const char *search_path)
             deps[cnt++] = ld;
     for (const size_t *i = dso->dynv; *i; i += 2)
         if (i[0] == DT_NEEDED)
-            deps[cnt++] = load_library(dso->strtab + i[1], search_path);
+            deps[cnt++] = load_library(dso->strtab + i[1], search_path, at_startup);
     deps[cnt] = 0;
     dso->deps = deps;
 }
 
-static void load_deps(struct ldso *dso, const char *search_path)
+static void load_deps(struct ldso *dso, const char *search_path, int at_startup)
 {
     for (; dso; dso = dso->next)
-        load_direct_deps(dso, search_path);
+        load_direct_deps(dso, search_path, at_startup);
 }
 
 static struct ldso **queue_initializers(struct ldso *start)
@@ -916,7 +946,17 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     __hwcap = aux[AT_HWCAP];
     __init_tp(__copy_tls(&builtin_tls));
 
-    void (*next_stage)(long *sp, const size_t *dynv, size_t *aux) = load_run_remaining;
+    /* initialize libc relro pointers here, because it is after stage 2 and we
+     * must not load PAGE_SIZE before processing symbolic rels.
+     * Also, if __page_size is needed, then we just initialized it.
+     */
+    const Phdr *ph = find_phdr_typed(&libc, PT_GNU_RELRO);
+    if (ph) {
+        libc.relro_start = ph->p_vaddr & -PAGE_SIZE;
+        libc.relro_end = (ph->p_vaddr + ph->p_memsz) & -PAGE_SIZE;
+    }
+
+    void (*next_stage)(long *sp, const size_t *dynv, const size_t *aux) = load_run_remaining;
     __asm__ volatile("" : "+r"(next_stage) :: "memory");
     next_stage(sp, dynv, aux);
     for (;;);
@@ -1010,8 +1050,10 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
 
     head = tail = &main;
 
+    reclaim_gaps(&libc);
+    reclaim_gaps(&main);
     if (preload) load_preload(preload, lib_path);
-    load_deps(head, lib_path);
+    load_deps(head, lib_path, 1);
 
     /* Have to call enumerate_phdr() before reloc_all(),
      * so the TLS relocations can be processed.
@@ -1038,6 +1080,10 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
      */
     main_init_queue = queue_initializers(head);
 
+    /* also, process relocations of the libs *BEFORE* the main app,
+     * because the main app can contain copy rels that copy stuff
+     * that itself contains relocations.
+     */
     reloc_all(main.next);
     relocate(&main);
 

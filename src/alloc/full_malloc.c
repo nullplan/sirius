@@ -301,3 +301,23 @@ void *aligned_alloc(size_t a, size_t sz)
     return mem_from_chunk(c);
 
 }
+
+hidden void __donate_malloc_memory(void *p, size_t len)
+{
+    if (len >= 2 * ALLOC_ALIGN)
+    {
+        size_t *start = (void *)(((uintptr_t)p + OVERHEAD + ALLOC_ALIGN - 1) & -ALLOC_ALIGN);
+        size_t *end = (void *)(((uintptr_t)p + len) & -ALLOC_ALIGN);
+        if (start < end) {
+            struct chunk *c = chunk_from_mem(start);
+            struct chunk *n = chunk_from_mem(end);
+            c->psize = C_INUSE;
+            c->csize = (end - start) | C_INUSE;
+            n->psize = c->csize;
+            n->csize = C_INUSE;
+            __lock(&malloc_lock);
+            bin_chunk(c);
+            __unlock(&malloc_lock);
+        }
+    }
+}
