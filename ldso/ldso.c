@@ -871,7 +871,7 @@ static struct ldso **queue_initializers(struct ldso *start)
 }
 
 static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv);
-static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *aux);
+static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const size_t *aux);
 
 hidden _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
 {
@@ -962,13 +962,14 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     for (;;);
 }
 
-static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *aux)
+static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const size_t *aux)
 {
     int argc = *sp;
     char **argv = (void *)(sp + 1);
 
     char *lib_path = 0;
     char *preload = 0;
+    void *entry_point;
 
     if (!__elevated)
     {
@@ -1003,6 +1004,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
             main.dynv = (void *)(main.base + dyn_off);
             process_dynv(&main);
         }
+        entry_point = (void *)aux[AT_ENTRY];
     } else {
         /* we were called as command */
         int optoff;
@@ -1043,7 +1045,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
         Ehdr *eh = map_library(fd, &main);
         if (!eh) _Exit(1);
         close(fd);
-        aux[AT_ENTRY] = main.base + eh->e_entry;
+        entry_point = main.base + eh->e_entry;
     }
 
     if (!lib_path) lib_path = "/lib:/usr/lib";
@@ -1096,7 +1098,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
         malloc_replaced = 1;
 
     runtime = 1;
-    a_stackjmp((void *)aux[AT_ENTRY], argv - 1);
+    a_stackjmp(entry_point, argv - 1);
     for (;;);
 }
 
