@@ -55,7 +55,7 @@ typedef Elf64_Phdr Phdr;
 #endif
 
 struct ldso {
-    uintptr_t base;
+    char *base;
     void *map;
     size_t map_len;
     const Phdr *phdr;
@@ -80,8 +80,8 @@ struct ldso {
     struct ldso *next, *prev;
     struct ldso *fini_next;
     pthread_t initializing_thread;
-    const char *relro_start;
-    const char *relro_end;
+    uintptr_t relro_start;
+    uintptr_t relro_end;
 };
 
 static struct ldso main, libc;
@@ -132,17 +132,11 @@ static void enumerate_phdr(struct ldso *start)
     {
         if (find_phdr_typed(p, PT_TLS))
             cnt++;
-        const Phdr *ph_stack = find_phdr_typed(p, PT_GNU_STACK);
-        if (ph_stack)
+        const Phdr *ph = find_phdr_typed(p, PT_GNU_STACK);
+        if (ph)
         {
-            if (ph_stack->p_memsz > __default_stacksize && ph_stack->p_memsz < MAX_DEFAULT_STACK_SIZE)
-                __default_stacksize = ph_stack->p_memsz;
-        }
-
-        const Phdr *ph_relro = find_phdr_typed(p, PT_GNU_RELRO);
-        if (ph_relro) {
-            p->relro_start = (void *)((p->base + ph_relro->p_vaddr) & -PAGE_SIZE);
-            p->relro_end = (void *)((p->base + ph_relro->p_vaddr + ph_relro->p_memsz) & -PAGE_SIZE);
+            if (ph->p_memsz > __default_stacksize && ph->p_memsz < MAX_DEFAULT_STACK_SIZE)
+                __default_stacksize = ph->p_memsz;
         }
     }
     if (!cnt) return;
@@ -160,7 +154,7 @@ static void enumerate_phdr(struct ldso *start)
         tls_mod->size = ph_tls->p_memsz;
         tls_mod->align = ph_tls->p_align;
         tls_mod->len = ph_tls->p_filesz;
-        tls_mod->image = (void *)(p->base + ph_tls->p_vaddr);
+        tls_mod->image = p->base + ph_tls->p_vaddr;
         __add_tls(tls_mod);
         p->tlsoff = tls_mod->off;
         tls_mod++;
@@ -171,12 +165,12 @@ static void process_dynv(struct ldso *dso)
 {
     for (const size_t *d = dso->dynv; *d; d += 2)
     {
-        uintptr_t p = dso->base + d[1];
+        void *p = dso->base + d[1];
         switch (*d) {
-            case DT_HASH:       dso->hashtab = (void *)p; break;
-            case DT_GNU_HASH:   dso->ghashtab = (void *)p; break;
-            case DT_SYMTAB:     dso->symtab = (void *)p; break;
-            case DT_STRTAB:     dso->strtab = (void *)p; break;
+            case DT_HASH:       dso->hashtab = p; break;
+            case DT_GNU_HASH:   dso->ghashtab = p; break;
+            case DT_SYMTAB:     dso->symtab = p; break;
+            case DT_STRTAB:     dso->strtab = p; break;
         }
     }
 }
@@ -340,7 +334,7 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
                 (struct symdef){dso, usym} :
                 find_sym(dso->strtab + usym->st_name, type == REL_COPY? head->next : head, type == REL_PLT);
             if (def.sym) {
-                symval = def.dso->base + def.sym->st_value;
+                symval = (size_t)(def.dso->base + def.sym->st_value);
                 tlsval = def.sym->st_value;
             }
             if (!def.sym && (usym->st_info >> 4) != STB_WEAK)
@@ -348,7 +342,7 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
         }
         switch (type) {
             case REL_RELATIVE:
-                *rel_addr = dso->base + addend;
+                *rel_addr = (size_t)dso->base + addend;
                 break;
 
             case REL_SYMBOLIC:
@@ -455,10 +449,10 @@ static void relocate(struct ldso *dso)
     process_relocs(dso, (void *)(dso->base + dyn[DT_JMPREL]), dyn[DT_PLTRELSZ], dyn[DT_PLTREL] == DT_REL? 2 : 3);
     /* relr table is all relative, so we skip it for libc, since it has already been processed. */
     if (dso != &libc)
-        process_relr(dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ]);
+        process_relr((size_t)dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ]);
     dso->relocated = 1;
     if (dso->relro_start != dso->relro_end
-            && mprotect((void *)dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
+            && mprotect(dso->base + dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
     {
         print_error("Error relocation `%s': RELRO protection failed: %m", dso->name);
     }
@@ -550,7 +544,7 @@ static void *map_library(int fd, struct ldso *dso)
         print_error("Error loading `%s': Non-relocatable object could not be loaded to preferred address", dso->name);
         goto out_unmap;
     }
-    dso->base = (uintptr_t)map - min_address;
+    dso->base = (char *)map - min_address;
     dso->phdr = (void *)((char *)map + ((Ehdr*)map)->e_phoff);
 
     ph = ph0;
@@ -564,13 +558,13 @@ static void *map_library(int fd, struct ldso *dso)
             size_t this_max = (ph->p_vaddr + ph->p_memsz + PAGE_SIZE - 1) & -PAGE_SIZE;
             /* reuse first segment */
             if (this_min != min_address
-                    && mmap((void *)(dso->base + this_min), this_max - this_min, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_FIXED, fd, this_off) == MAP_FAILED) {
+                    && mmap(dso->base + this_min, this_max - this_min, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_FIXED, fd, this_off) == MAP_FAILED) {
                 print_error("Error loading `%s': %m", dso->name);
                 goto out_unmap;
             }
             if (ph->p_memsz > ph->p_filesz && (ph->p_flags & PF_W)) {
-                char *eoi = (char *)(dso->base + ph->p_vaddr + ph->p_filesz);
-                char *pagebrk = (char *)(((uintptr_t)eoi + PAGE_SIZE - 1) & -PAGE_SIZE);
+                char *eoi = dso->base + ph->p_vaddr + ph->p_filesz;
+                char *pagebrk = eoi + ((-(uintptr_t)eoi) & (PAGE_SIZE - 1));
                 memset(eoi, 0, pagebrk - eoi);
                 if (ph->p_memsz - ph->p_filesz > pagebrk - eoi
                         && mmap(pagebrk, (ph->p_memsz - ph->p_filesz - (pagebrk - eoi) + PAGE_SIZE - 1) & -PAGE_SIZE, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
@@ -578,6 +572,10 @@ static void *map_library(int fd, struct ldso *dso)
                     goto out_unmap;
                 }
             }
+        }
+        if (ph->p_type == PT_GNU_RELRO) {
+            dso->relro_start = ph->p_vaddr & -PAGE_SIZE;
+            dso->relro_end = (ph->p_vaddr + ph->p_memsz + PAGE_SIZE - 1) & -PAGE_SIZE;
         }
     }
     process_dynv(dso);
@@ -605,7 +603,7 @@ static struct ldso *load_libc(int variant)
         static unsigned reported;
         if (!(reported & (1u << variant))) {
             reported |= 1u << variant;
-            dprintf(1, "\tlib%s.so => %s (0x%0*tx)\n", libc_alias[variant], libc.name, 2 * sizeof (size_t), libc.base);
+            dprintf(1, "\tlib%s.so => %s (0x%0*p)\n", libc_alias[variant], libc.name, 2 * (int)sizeof (size_t), (void *)libc.base);
         }
     }
 
@@ -876,12 +874,12 @@ hidden _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
     libc_original_addends = original_addends;
 
     head = &libc;
-    libc.base = base;
+    libc.base = (void *)base;
     libc.dynv = dynv;
     libc.name = libc.shortname = "libc.so";
     libc.kernel_mapped = 1;
     const Ehdr *eh = (void *)base;
-    libc.phdr = (void *)((char *)base + eh->e_phoff);
+    libc.phdr = (void *)(libc.base + eh->e_phoff);
     libc.phent = eh->e_phentsize;
     libc.phnum = eh->e_phnum;
     process_dynv(&libc);
@@ -950,14 +948,17 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, size_t *a
         size_t dyn_off = 0;
         for (size_t i = 0; i < aux[AT_PHNUM]; i++, ph = (void *)((char *)ph + aux[AT_PHENT])) {
             if (ph->p_type == PT_PHDR) {
-                main.base = aux[AT_PHDR] - ph->p_vaddr;
+                main.base = (char *)aux[AT_PHDR] - ph->p_vaddr;
             } else if (ph->p_type == PT_INTERP) {
                 interp_off = ph->p_vaddr;
             } else if (ph->p_type == PT_DYNAMIC) {
                 dyn_off = ph->p_vaddr;
+            } else if (ph->p_type == PT_GNU_RELRO) {
+                main.relro_start = ph->p_vaddr & -PAGE_SIZE;
+                main.relro_end = (ph->p_vaddr + ph->p_memsz + PAGE_SIZE - 1) & -PAGE_SIZE;
             }
         }
-        if (interp_off) libc.name = (void *)(main.base + interp_off);
+        if (interp_off) libc.name = main.base + interp_off;
         if (dyn_off) {
             main.dynv = (void *)(main.base + dyn_off);
             process_dynv(&main);
