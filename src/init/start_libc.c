@@ -70,8 +70,7 @@ void __init_libc(char *pn, char **envp)
             aux[auxv[0]] = auxv[1];
     }
 
-    if (aux[AT_SYSINFO])
-        __sysinfo = aux[AT_SYSINFO];
+    __init_sysinfo(aux);
     __page_size = aux[AT_PAGESZ];
     __init_canary((void *)aux[AT_RANDOM]);
     __hwcap = aux[AT_HWCAP];

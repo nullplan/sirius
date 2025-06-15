@@ -942,7 +942,7 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     decode_vec(aux, auxv, AUX_CNT);
     __page_size = aux[AT_PAGESZ];
     __elevated = (aux[0] & 0x7800) != 0x7800 || aux[AT_UID] != aux[AT_EUID] || aux[AT_GID] != aux[AT_EGID] || aux[AT_SECURE];
-    if (aux[AT_SYSINFO]) __sysinfo = aux[AT_SYSINFO];
+    __init_sysinfo(aux);
     __hwcap = aux[AT_HWCAP];
     __init_tp(__copy_tls(&builtin_tls));
 

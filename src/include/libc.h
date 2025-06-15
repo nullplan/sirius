@@ -27,6 +27,7 @@ extern hidden void __init_canary(const void *);
 extern hidden struct __localedef __global_locale;
 extern hidden void __init_tsd(void);
 extern hidden struct __pthread *__init_tp(struct __pthread *);
+extern hidden void __init_sysinfo(const size_t *);
 
 #ifdef PAGESIZE
 #define PAGE_SIZE PAGESIZE
