@@ -18,7 +18,7 @@ static const double C[7] = {
 
 double log(double x)
 {
-    if (x == 0) return -1.0/0.0;
+    if (x == 0) return -DBL_MAX * DBL_MAX;
     if (signbit(x)) return (x-x)/(x-x);
     if (!isfinite(x)) return x;
 

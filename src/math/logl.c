@@ -29,7 +29,7 @@ long double logl(long double x)
         2.0L/21.0L,
     };
 
-    if (x == 0) return -1.0/0.0;
+    if (x == 0) return -DBL_MAX * DBL_MAX;
     if (signbit(x)) return (x-x)/(x-x);
     if (!isfinite(x)) return x;
 
