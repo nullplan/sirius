@@ -83,6 +83,9 @@ _Noreturn void pthread_exit(void *result)
         exit(0);
     }
 
+    self->next->prev = self->prev;
+    self->prev->next = self->next;
+
     __lock(&self->killlock);
     int tid = self->tid;
     self->tid = 0;
