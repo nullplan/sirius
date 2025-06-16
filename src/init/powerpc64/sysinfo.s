@@ -5,12 +5,12 @@
     blr
 
 .Lscv:
-    mflr %r0
-    stdu %r0, -32(%r1)
+    mflr %r12
+    stdu %r12, -32(%r1)
     .long (17 << 26) + 1
-    ld %r0, 0(%r1)
+    ld %r12, 0(%r1)
     addi %r1, %r1, 32
-    mtlr %r0
+    mtlr %r12
     blr
 
 .data
