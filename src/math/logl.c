@@ -11,24 +11,24 @@ static const long double ln2hi = 0x1.62e42fefa39ef35793c7673007e5P-1L;
 static const long double ln2lo = 0x1.dabd03cd0c99ca62d8b628345d6eP-114L;
 #endif
 
-static const long double C[10] = {
-    2.0L/3.0L,
-    2.0L/5.0L,
-    2.0L/7.0L,
-    2.0L/9.0L,
-    2.0L/11.0L,
-    2.0L/13.0L,
-    2.0L/15.0L,
-    2.0L/17.0L,
-    2.0L/19.0L,
-    2.0L/21.0L,
-};
-
 long double logl(long double x)
 {
     #if LDBL_MANT_DIG==53
     return log(x);
     #else
+    static const long double C[10] = {
+        2.0L/3.0L,
+        2.0L/5.0L,
+        2.0L/7.0L,
+        2.0L/9.0L,
+        2.0L/11.0L,
+        2.0L/13.0L,
+        2.0L/15.0L,
+        2.0L/17.0L,
+        2.0L/19.0L,
+        2.0L/21.0L,
+    };
+
     if (x == 0) return -1.0/0.0;
     if (signbit(x)) return (x-x)/(x-x);
     if (!isfinite(x)) return x;
