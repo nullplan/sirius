@@ -19,6 +19,11 @@ stdin;
 
 __stack_chk_guard;
 
+optarg;
+opterr;
+optind;
+optopt;
+
 malloc;
 calloc;
 realloc;
