@@ -7,11 +7,8 @@ static uint32_t mul32(uint32_t a, uint32_t b)
 
 static uint32_t inner_sqrtf(uint32_t s)
 {
-    static const uint32_t sqrtf_data[96] = {
-        #include "sqrtf_data.h"
-    };
     uint32_t b = s;
-    uint32_t t = sqrtf_data[(s >> 23) - 0x20];
+    uint32_t t = (__sqrt_data[(s >> 23) - 0x20] + 0ul) << 24;
     uint32_t x = mul32(s, t);
 
     for (int i = 0; i < 4; i++) {

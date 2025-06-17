@@ -28,11 +28,8 @@ static uint64_t mul64(uint64_t a, uint64_t b)
 
 static uint64_t inner_sqrt(uint64_t s)
 {
-    static const uint64_t sqrt_data[96] = {
-        #include "sqrt_data.h"
-    };
     uint64_t b = s;
-    uint64_t t = sqrt_data[(s >> 55) - 0x20];
+    uint64_t t = (__sqrt_data[(s >> 55) - 0x20] + 0ull) << 56;
     uint64_t x = mul64(s, t);
 
     for (int i = 0; i < 4; i++) {
