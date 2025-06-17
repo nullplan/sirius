@@ -942,9 +942,7 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     decode_vec(aux, auxv, AUX_CNT);
     __page_size = aux[AT_PAGESZ];
     __elevated = (aux[0] & 0x7800) != 0x7800 || aux[AT_UID] != aux[AT_EUID] || aux[AT_GID] != aux[AT_EGID] || aux[AT_SECURE];
-    __init_sysinfo(aux);
-    __hwcap = aux[AT_HWCAP];
-    __init_tp(__copy_tls(&builtin_tls));
+    __init_tp(__copy_tls(&builtin_tls), aux[AT_HWCAP], __get_sysinfo(aux));
 
     /* initialize libc relro pointers here, because it is after stage 2 and we
      * must not load PAGE_SIZE before processing symbolic rels.
@@ -1092,7 +1090,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
     if (early_error) _Exit(1);
     if (ldd_mode) _Exit(0);
 
-    if (tls) __init_tp(__copy_tls(tls));
+    if (tls) __init_tp(__copy_tls(tls), aux[AT_HWCAP], __get_sysinfo(aux));
 
     if (find_sym("malloc", head, 1).dso != &libc)
         malloc_replaced = 1;
@@ -1102,7 +1100,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
     for (;;);
 }
 
-hidden void __init_from_phdrs(const void *ph, size_t num, size_t ent)
+hidden void __init_from_phdrs(const void *ph, size_t num, size_t ent, size_t hwcap, size_t sysinfo)
 {
     /* nothing to do, everything was already done. */
 }

@@ -39,12 +39,12 @@ hidden struct __localedef __global_locale;
 
 hidden size_t __hwcap;
 
-hidden struct __pthread *__init_tp(struct __pthread *tp)
+hidden struct __pthread *__init_tp(struct __pthread *tp, size_t hwcap, size_t sysinfo)
 {
     tp->self = tp->next = tp->prev = tp;
-    tp->sysinfo = __sysinfo;
+    tp->sysinfo = sysinfo;
     tp->canary = __next_canary();
-    tp->hwcap = __hwcap;
+    tp->hwcap = hwcap;
     tp->tid = __syscall(SYS_set_tid_address, &__thread_list_lock);
     tp->locale = &__global_locale;
     if (__set_thread_area(__tp_adjust(tp)))
@@ -70,11 +70,9 @@ void __init_libc(char *pn, char **envp)
             aux[auxv[0]] = auxv[1];
     }
 
-    __init_sysinfo(aux);
     __page_size = aux[AT_PAGESZ];
     __init_canary((void *)aux[AT_RANDOM]);
-    __hwcap = aux[AT_HWCAP];
-    __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]);
+    __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT], aux[AT_HWCAP], __get_sysinfo(aux));
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     __global_locale = __c_locale;
 
