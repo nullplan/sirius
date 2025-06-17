@@ -7,8 +7,8 @@ static const struct hashfunc {
 } functions[] = {
     {"$5$", __sha256crypt},
     {"$6$", __sha512crypt},
-    #if 0
     {"$1$", __md5crypt},
+    #if 0
     {"$y$", __yescrypt},
     {"$gy$", __gyescrypt},
     {"$7$", __scrypt},
