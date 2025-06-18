@@ -1,16 +1,12 @@
-#include "crypt.h"
+/* used by both sha256crypt and yescrypt. */
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+#include "sha256.h"
 
 /* adapted from Ulrich Drepper's Public Domain implementation */
-struct sha256_ctx {
-    uint32_t h[8];
-    size_t total;
-    unsigned char buf[64];
-};
-
 /* Constants from FIPS 180-2:4.2.2 */
 static const uint32_t K[64] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -82,7 +78,7 @@ static void sha256_process_block(const unsigned char *buffer, struct sha256_ctx 
     ctx->h[7] += h;
 }
 
-static void sha256_init_ctx(struct sha256_ctx *ctx)
+hidden void __sha256_init_ctx(struct sha256_ctx *ctx)
 {
     ctx->h[0] = 0x6a09e667;
     ctx->h[1] = 0xbb67ae85;
@@ -95,7 +91,12 @@ static void sha256_init_ctx(struct sha256_ctx *ctx)
     ctx->total = 0;
 }
 
-static void sha256_add_bytes(struct sha256_ctx *ctx, const void *data, size_t len)
+static void sha256_copy_ctx(struct sha256_ctx *dst, const struct sha256_ctx *src)
+{
+    memcpy(dst, src, offsetof(struct sha256_ctx, buf) + (src->total & 63));
+}
+
+hidden void __sha256_add_bytes(struct sha256_ctx *ctx, const void *data, size_t len)
 {
     size_t pos = ctx->total & 63;
     const unsigned char *d = data;
@@ -122,7 +123,7 @@ static void sha256_add_bytes(struct sha256_ctx *ctx, const void *data, size_t le
         memcpy(ctx->buf, d, len);
 }
 
-static void sha256_finalize(struct sha256_ctx *ctx, unsigned char *digest)
+hidden void __sha256_finalize(struct sha256_ctx *ctx, unsigned char *digest)
 {
     size_t pos = ctx->total & 63;
     ctx->buf[pos++] = 0x80;
@@ -151,144 +152,101 @@ static void sha256_finalize(struct sha256_ctx *ctx, unsigned char *digest)
     }
 }
 
-static void repeated_add(struct sha256_ctx *ctx, const unsigned char *hash, size_t len)
+hidden void __sha256_buf(const void *data, size_t size, unsigned char *digest)
 {
-    while (len > 32) {
-        sha256_add_bytes(ctx, hash, 32);
-        len -= 32;
-    }
-    sha256_add_bytes(ctx, hash, len);
-}
-
-static char *sha256crypt(const char *pass, const char *salt, char *buf)
-{
-    char *rv = buf;
-    if (memcmp(salt, "$5$", 3)) return 0;
-    salt += 3;
-
-    int rounds = 5000;
-    int rounds_given = 0;
-    if (!memcmp(salt, "rounds=", 7)) {
-        char *endp;
-        unsigned long lrounds = strtoul(salt + 7, &endp, 10);
-        if (*endp == '$') {
-            rounds_given = 1;
-            if (lrounds < 1000)
-                rounds = 1000;
-            else if (lrounds >= 1000000000)
-                rounds = 999999999;
-            else
-                rounds = lrounds;
-            salt = endp + 1;
-        }
-    }
-
-    size_t saltlen;
-    for (saltlen = 0; salt[saltlen] && salt[saltlen] != '$' && saltlen < 16; saltlen++);
-
-    size_t pwdlen = strlen(pass);
-
     struct sha256_ctx ctx;
-    unsigned char hashbuf[32], dp[32], ds[32];
-
-    sha256_init_ctx(&ctx);
-    sha256_add_bytes(&ctx, pass, pwdlen);
-    sha256_add_bytes(&ctx, salt, saltlen);
-    sha256_add_bytes(&ctx, pass, pwdlen);
-    sha256_finalize(&ctx, hashbuf);
-
-    sha256_init_ctx(&ctx);
-    sha256_add_bytes(&ctx, pass, pwdlen);
-    sha256_add_bytes(&ctx, salt, saltlen);
-
-    repeated_add(&ctx, hashbuf, pwdlen);
-    for (size_t x = pwdlen; x; x >>= 1)
-        if (x & 1)
-            sha256_add_bytes(&ctx, hashbuf, 32);
-        else
-            sha256_add_bytes(&ctx, pass, pwdlen);
-    sha256_finalize(&ctx, hashbuf);
-
-    sha256_init_ctx(&ctx);
-    for (size_t i = 0; i < pwdlen; i++)
-        sha256_add_bytes(&ctx, pass, pwdlen);
-    sha256_finalize(&ctx, dp);
-
-    sha256_init_ctx(&ctx);
-    for (size_t i = 0; i < hashbuf[0]+16; i++)
-        sha256_add_bytes(&ctx, salt, saltlen);
-    sha256_finalize(&ctx, ds);
-
-    for (int i = 0; i < rounds; i++)
-    {
-        sha256_init_ctx(&ctx);
-        if (i & 1) repeated_add(&ctx, dp, pwdlen);
-        else sha256_add_bytes(&ctx, hashbuf, 32);
-        if (i % 3) sha256_add_bytes(&ctx, ds, saltlen);
-        if (i % 7) repeated_add(&ctx, dp, pwdlen);
-        if (i & 1) sha256_add_bytes(&ctx, hashbuf, 32);
-        else repeated_add(&ctx, dp, pwdlen);
-        sha256_finalize(&ctx, hashbuf);
-    }
-
-    static const char alphabet[64] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    memcpy(buf, "$5$", 3);
-    buf += 3;
-    if (rounds_given)
-        buf += sprintf(buf, "rounds=%d$", rounds);
-    memcpy(buf, salt, saltlen);
-    buf += saltlen;
-    *buf++ = '$';
-
-    unsigned tmp;
-    static const unsigned char permute[] = {
-         0, 10, 20,
-        21,  1, 11,
-        12, 22,  2,
-         3, 13, 23,
-        24,  4, 14,
-        15, 25,  5,
-         6, 16, 26,
-        27,  7, 17,
-        18, 28,  8,
-         9, 19, 29,
-    };
-
-    for (int i = 0; i < sizeof permute; i += 3)
-    {
-        tmp = hashbuf[permute[i]] << 16 | hashbuf[permute[i+1]] << 8 | hashbuf[permute[i+2]];
-        *buf++ = alphabet[tmp & 63];
-        *buf++ = alphabet[(tmp >> 6) & 63];
-        *buf++ = alphabet[(tmp >> 12) & 63];
-        *buf++ = alphabet[(tmp >> 18) & 63];
-    }
-
-    tmp = hashbuf[31] << 8 | hashbuf[30];
-    *buf++ = alphabet[tmp & 63];
-    *buf++ = alphabet[(tmp >> 6) & 63];
-    *buf++ = alphabet[(tmp >> 12) & 63];
-    *buf = 0;
-    return rv;
+    __sha256_init_ctx(&ctx);
+    __sha256_add_bytes(&ctx, data, size);
+    __sha256_finalize(&ctx, digest);
 }
 
-extern hidden char *__sha256crypt(const char *pass, const char *setting, char *buf)
+struct hmac_sha256_ctx {
+    struct sha256_ctx ictx, octx;
+};
+
+static void hmac_sha256_init_ctx(struct hmac_sha256_ctx *ctx, const void *key, size_t klen)
 {
-    static const char testsalt[] = "$5$rounds=10$roundstoolow";
-    static const char testpass[] = "the minimum number is still observed";
-    static const char testresult[] = "$5$rounds=1000$roundstoolow$yfvwcWrQ8l/K0DAWyuPMDNHpIVlTQebY9l/gL972bIC";
-    char testbuf[128];
+    unsigned char padbuf[64];
+    unsigned char keymd[32];
+    if (klen > 64) {
+        __sha256_init_ctx(&ctx->ictx);
+        __sha256_add_bytes(&ctx->ictx, key, klen);
+        __sha256_finalize(&ctx->ictx, keymd);
+        key = keymd;
+        klen = sizeof keymd;
+    }
+    __sha256_init_ctx(&ctx->ictx);
+    __sha256_init_ctx(&ctx->octx);
+    memset(padbuf, 0x36, sizeof padbuf);
+    for (size_t i = 0; i < klen; i++)
+        padbuf[i] ^= ((const unsigned char *)key)[i];
+    __sha256_add_bytes(&ctx->ictx, padbuf, sizeof padbuf);
+    for (size_t i = 0; i < sizeof padbuf; i++)
+        padbuf[i] ^= 0x36 ^ 0x5c;
+    __sha256_add_bytes(&ctx->octx, padbuf, sizeof padbuf);
+}
 
-    /* main result calculation */
-    char *res = sha256crypt(pass, setting, buf);
+static void hmac_sha256_copy_ctx(struct hmac_sha256_ctx *dst, const struct hmac_sha256_ctx *src)
+{
+    sha256_copy_ctx(&dst->ictx, &src->ictx);
+    sha256_copy_ctx(&dst->octx, &src->octx);
+}
 
-    /* self test. The asm tells GCC that it does not know the input to the self test,
-     * but that it is dependent on the output of the main calculation.
-     * This increases the likelyhood of GCC not inlining the test call and using the same
-     * stack spaces, which is another benefit of the test.
-     */
-    char *p;
-    __asm__("" : "=r"(p) : "0"(testpass), "r"(res));
-    char *q = sha256crypt(p, testsalt, testbuf);
-    if (!q || strcmp(q, testresult)) res = 0;
-    return res;
+static void hmac_sha256_add_bytes(struct hmac_sha256_ctx *ctx, const void *data, size_t datalen)
+{
+    __sha256_add_bytes(&ctx->ictx, data, datalen);
+}
+
+static void hmac_sha256_finalize(struct hmac_sha256_ctx *ctx, unsigned char *digest)
+{
+    __sha256_finalize(&ctx->ictx, digest);
+    __sha256_add_bytes(&ctx->octx, digest, 32);
+    __sha256_finalize(&ctx->octx, digest);
+}
+
+hidden void __hmac_sha256_buf(const void *key, size_t klen, const void *data, size_t datalen, unsigned char *digest)
+{
+    struct hmac_sha256_ctx ctx;
+    hmac_sha256_init_ctx(&ctx, key, klen);
+    hmac_sha256_add_bytes(&ctx, data, datalen);
+    hmac_sha256_finalize(&ctx, digest);
+}
+
+static void pbkdf2_sha256_block(const struct hmac_sha256_ctx *pwdctx, const void *salt, size_t slen, uint64_t c, size_t block, unsigned char *buf, size_t buflen)
+{
+    unsigned char ubuf[32];
+    unsigned char ibuf[4];
+    struct hmac_sha256_ctx ctx;
+    hmac_sha256_copy_ctx(&ctx, pwdctx);
+    ibuf[0] = block >> 24;
+    ibuf[1] = block >> 16;
+    ibuf[2] = block >> 8;
+    ibuf[3] = block;
+    hmac_sha256_add_bytes(&ctx, salt, slen);
+    hmac_sha256_add_bytes(&ctx, ibuf, 4);
+    hmac_sha256_finalize(&ctx, ubuf);
+    memcpy(buf, ubuf, buflen);
+    for (uint64_t j = 1; j < c; j++) {
+        hmac_sha256_copy_ctx(&ctx, pwdctx);
+        hmac_sha256_add_bytes(&ctx, ubuf, sizeof ubuf);
+        hmac_sha256_finalize(&ctx, ubuf);
+        for (size_t i = 0; i < buflen; i++)
+            buf[i] ^= ubuf[i];
+    }
+}
+
+hidden void __pbkdf2_sha256(const void *pass, size_t pwdlen, const void *salt, size_t slen, uint64_t c, unsigned char *buf, size_t dkLen)
+{
+    struct hmac_sha256_ctx ctx;
+    size_t block = 1;
+    hmac_sha256_init_ctx(&ctx, pass, pwdlen);
+
+    while (dkLen >= 32) {
+        pbkdf2_sha256_block(&ctx, salt, slen, c, block, buf, 32);
+        block++;
+        buf += 32;
+        dkLen -= 32;
+    }
+    if (dkLen)
+        pbkdf2_sha256_block(&ctx, salt, slen, c, block, buf, dkLen);
 }
