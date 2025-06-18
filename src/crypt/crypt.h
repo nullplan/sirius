@@ -9,6 +9,5 @@ extern hidden char *__sha256crypt(const char *, const char *, char *);
 extern hidden char *__sha512crypt(const char *, const char *, char *);
 extern hidden char *__yescrypt(const char *, const char *, char *);
 extern hidden char *__gyescrypt(const char *, const char *, char *);
-extern hidden char *__scrypt(const char *, const char *, char *);
 extern hidden char *__bcrypt(const char *, const char *, char *);
 #endif
