@@ -1,4 +1,5 @@
 #include "crypt.h"
+#include "cpu.h"
 /* originally: yescrypt.h */
 /*-
  * Copyright 2009 Colin Percival
@@ -799,10 +800,8 @@ static void smix2(uint8_t *B, size_t r, uint32_t N, uint64_t Nloop,
 
 static uint64_t p2floor(uint64_t x)
 {
-    uint64_t y;
-    while ((y = x & (x - 1)))
-        x = y;
-    return x;
+    if (!x) return 0;
+    return 1ull << (63 - a_clz_64(x));
 }
 
 static void smix(uint8_t *B, size_t r, uint32_t N, uint32_t p, uint32_t t,
@@ -837,9 +836,9 @@ static void smix(uint8_t *B, size_t r, uint32_t N, uint32_t p, uint32_t t,
     else if (flags & YESCRYPT_RW)
         Nloop_rw = Nloop_all / p;
 
-    Nchunk &= ~(uint32_t)1; /* round down to even */
-    Nloop_all++; Nloop_all &= ~(uint64_t)1; /* round up to even */
-    Nloop_rw++; Nloop_rw &= ~(uint64_t)1; /* round up to even */
+    Nchunk &= ~1u; /* round down to even */
+    Nloop_all += (Nloop_all & 1); /* round up to even */
+    Nloop_rw += (Nloop_rw & 1); /* round up to even */
 
     for (i = 0; i < p; i++) {
         uint32_t Vchunk = i * Nchunk;
@@ -881,8 +880,7 @@ static void smix(uint8_t *B, size_t r, uint32_t N, uint32_t p, uint32_t t,
     }
 }
 
-static int yescrypt_kdf_body(const yescrypt_shared_t *shared,
-        yescrypt_local_t *local,
+static int yescrypt_kdf_body(yescrypt_local_t *local,
         const uint8_t *passwd, size_t passwdlen,
         const uint8_t *salt, size_t saltlen,
         yescrypt_flags_t flags, uint64_t N, uint32_t r, uint32_t p, uint32_t t,
@@ -941,23 +939,8 @@ static int yescrypt_kdf_body(const yescrypt_shared_t *shared,
     }
 
     VROM = NULL;
-    if (shared) {
-        uint64_t expected_size = (size_t)128 * r * NROM;
-        if ((NROM & (NROM - 1)) != 0 ||
-                NROM <= 1 || NROM > UINT32_MAX ||
-                shared->aligned_size < expected_size)
-            goto out_EINVAL;
-        if (!(flags & YESCRYPT_INIT_SHARED)) {
-            uint64_t *tag = (uint64_t *)
-                ((uint8_t *)shared->aligned + expected_size - 48);
-            if (tag[0] != YESCRYPT_ROM_TAG1 || tag[1] != YESCRYPT_ROM_TAG2)
-                goto out_EINVAL;
-        }
-        VROM = shared->aligned;
-    } else {
-        if (NROM)
-            goto out_EINVAL;
-    }
+    if (NROM)
+        goto out_EINVAL;
 
     /* Allocate memory */
     V = NULL;
@@ -1040,9 +1023,10 @@ static int yescrypt_kdf_body(const yescrypt_shared_t *shared,
     if (flags && buflen < sizeof(dk)) {
         __pbkdf2_sha256(passwd, passwdlen, B, B_size, 1, dk, sizeof(dk));
         dkp = dk;
+        memcpy(buf, dk, buflen);
+    } else {
+        __pbkdf2_sha256(passwd, passwdlen, B, B_size, 1, buf, buflen);
     }
-
-    __pbkdf2_sha256(passwd, passwdlen, B, B_size, 1, buf, buflen);
 
     /*
      * Except when computing classic scrypt, allow all computation so far
@@ -1076,7 +1060,7 @@ out_EINVAL:
     return -1;
 }
 
-static int yescrypt_kdf(const yescrypt_shared_t *shared, yescrypt_local_t *local,
+static int yescrypt_kdf(yescrypt_local_t *local,
         const uint8_t *passwd, size_t passwdlen,
         const uint8_t *salt, size_t saltlen,
         const yescrypt_params_t *params,
@@ -1100,14 +1084,14 @@ static int yescrypt_kdf(const yescrypt_shared_t *shared, yescrypt_local_t *local
 
     if ((flags & (YESCRYPT_RW | YESCRYPT_INIT_SHARED)) == YESCRYPT_RW &&
             p >= 1 && N / p >= 0x100 && N / p * r >= 0x20000) {
-        if (yescrypt_kdf_body(shared, local,
+        if (yescrypt_kdf_body(local,
                     passwd, passwdlen, salt, saltlen,
                     flags | YESCRYPT_ALLOC_ONLY, N, r, p, t, NROM,
                     buf, buflen) != -3) {
             errno = EINVAL;
             return -1;
         }
-        if ((retval = yescrypt_kdf_body(shared, local,
+        if ((retval = yescrypt_kdf_body(local,
                         passwd, passwdlen, salt, saltlen,
                         flags | YESCRYPT_PREHASH, N >> 6, r, p, 0, NROM,
                         dk, sizeof(dk))))
@@ -1116,7 +1100,7 @@ static int yescrypt_kdf(const yescrypt_shared_t *shared, yescrypt_local_t *local
         passwdlen = sizeof(dk);
     }
 
-    retval = yescrypt_kdf_body(shared, local,
+    retval = yescrypt_kdf_body(local,
             passwd, passwdlen, salt, saltlen,
             flags, N, r, p, t, NROM, buf, buflen);
     return retval;
@@ -1342,74 +1326,9 @@ fail:
     return NULL;
 }
 
-typedef enum { ENC = 1, DEC = -1 } encrypt_dir_t;
-
-static void memxor(unsigned char *dst, unsigned char *src, size_t size)
-{
-    while (size--)
-        *dst++ ^= *src++;
-}
-
-static void encrypt(unsigned char *data, size_t datalen,
-        const yescrypt_binary_t *key, encrypt_dir_t dir)
-{
-    struct sha256_ctx ctx;
-    unsigned char f[32 + 4];
-    size_t halflen, which;
-    unsigned char mask, round, target;
-
-    if (!datalen)
-        return;
-    if (datalen > 64)
-        datalen = 64;
-
-    halflen = datalen >> 1;
-
-    which = 0; /* offset to half we are working on (0 or halflen) */
-    mask = 0x0f; /* current half's extra nibble mask if datalen is odd */
-
-    round = 0;
-    target = 5; /* 6 rounds due to Jacques Patarin's CRYPTO 2004 paper */
-
-    if (dir == DEC) {
-        which = halflen; /* even round count, so swap the halves */
-        mask ^= 0xff;
-
-        round = target;
-        target = 0;
-    }
-
-    f[32] = 0;
-    f[33] = sizeof(*key);
-    f[34] = datalen;
-
-    do {
-        __sha256_init_ctx(&ctx);
-        f[35] = round;
-        __sha256_add_bytes(&ctx, &f[32], 4);
-        __sha256_add_bytes(&ctx, key, sizeof(*key));
-        __sha256_add_bytes(&ctx, &data[which], halflen);
-        if (datalen & 1) {
-            f[0] = data[datalen - 1] & mask;
-            __sha256_add_bytes(&ctx, f, 1);
-        }
-        __sha256_finalize(&ctx, f);
-        which ^= halflen;
-        memxor(&data[which], f, halflen);
-        if (datalen & 1) {
-            mask ^= 0xff;
-            data[datalen - 1] ^= f[halflen] & mask;
-        }
-        if (round == target)
-            break;
-        round += dir;
-    } while (1);
-}
-
-static char *yescrypt_r(const yescrypt_shared_t *shared, yescrypt_local_t *local,
+static char *yescrypt_r(yescrypt_local_t *local,
         const char *passwd, size_t passwdlen,
         const char *setting,
-        const yescrypt_binary_t *key,
         char *buf, size_t buflen)
 {
     unsigned char saltbin[64], hashbin[32];
@@ -1437,9 +1356,6 @@ static char *yescrypt_r(const yescrypt_shared_t *shared, yescrypt_local_t *local
 
         src = decode64_uint32_fixed(&params.p, 30, src);
         if (!src)
-            return NULL;
-
-        if (key)
             return NULL;
     } else {
         uint32_t flavor, N_log2;
@@ -1525,22 +1441,15 @@ static char *yescrypt_r(const yescrypt_shared_t *shared, yescrypt_local_t *local
             goto fail;
 
         salt = saltbin;
-
-        if (key)
-            encrypt(saltbin, saltlen, key, ENC);
     }
 
     need = prefixlen + saltstrlen + 1 + HASH_LEN + 1;
     if (need > buflen || need < saltstrlen)
         goto fail;
 
-    if (yescrypt_kdf(shared, local, (void *)passwd, passwdlen, salt, saltlen,
+    if (yescrypt_kdf(local, (void *)passwd, passwdlen, salt, saltlen,
                 &params, hashbin, sizeof(hashbin)))
         goto fail;
-
-    if (key) {
-        encrypt(hashbin, sizeof(hashbin), key, ENC);
-    }
 
     dst = buf;
     memcpy(dst, setting, prefixlen + saltstrlen);
@@ -1569,11 +1478,10 @@ hidden char *__yescrypt(const char *pass, const char *setting, char *buf)
 
     if (yescrypt_init_local(&local))
         return NULL;
-    retval = yescrypt_r(NULL, &local, pass, strlen(pass), setting, NULL, buf, CRYPT_LEN);
+    retval = yescrypt_r(&local, pass, strlen(pass), setting, buf, CRYPT_LEN);
     char *p;
     __asm__("" : "=r"(p) : "0"(testpass), "r"(retval));
-    memset(local.base, 0, local.base_size);
-    char *q = yescrypt_r(NULL, &local, p, sizeof testpass - 1, testsetting, 0, testbuf, sizeof testbuf);
+    char *q = yescrypt_r(&local, p, sizeof testpass - 1, testsetting, testbuf, sizeof testbuf);
     if (yescrypt_free_local(&local))
         return NULL;
     if (q != testbuf || memcmp(testbuf, testsetting, sizeof testsetting))
