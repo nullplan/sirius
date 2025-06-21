@@ -10,9 +10,10 @@ static const struct hashfunc {
     {"$1$", __md5crypt},
     {"$y$", __yescrypt},
     {"$7$", __yescrypt},
+    {"$2a$", __bcrypt},
+    {"$2b$", __bcrypt},
     #if 0
     {"$gy$", __gyescrypt},
-    {"$2b", __bcrypt},
     #endif
 };
 

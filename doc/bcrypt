@@ -1,0 +1,60 @@
+bcrypt spec reversed from OpenBSD source
+========================================
+
+Since no actual spec of the algo seems to exist, here's the spec as far as I
+could reverse-engineer it from the OpenBSD source:
+
+The hash format is
+
+$2<revision>$<rounds>$<salt><cipher>
+
+<revision> is either 'a' or 'b', and must be mirrored (of course). Only
+difference seems to be how the password length is treated. Revision a takes as
+password length the full length of the string, plus 1 for the NUL byte, and the
+whole thing truncated to 8 bits (so a 255 byte input is treated as a 0-length
+input).
+
+Revision b caps the length without the NUL byte at 72, then adds 1. Neither
+revision actually rejects overlong keys, they just apparently don't use parts of
+it.
+
+<rounds> is the binary log of the number of rounds. It must be at least 4 and at
+most 31. Invalid rounds specs are rejected. The number is always two digits
+long.
+
+<salt> and <cipher> are both unpadded base64 strings. The base64 format uses a
+non-standard alphabet, but apparently no permutation for once. The alphabet is
+
+./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqsrtuvwxyz0123456789
+
+The salt is fixed at 16 bytes length in binary space. That means its base64
+string is fixed at 22 bytes. The ciphertext is 24 bytes in length, but only 23
+of it are encoded in the string, leading to 31 bytes of base64. The total output
+length is 60 bytes, plus 1 for the terminating NUL byte.
+
+On input, we decode <revision>, <rounds>, and <salt>, then initialize a Blowfish
+context and expand the state with the salt as data and the password as key. Then
+for each round, they state is first extended with just the key and then just the
+salt.
+
+Initializing a Blowfish context simply means setting the S boxes and round keys
+to their constant initial values.
+
+Blowfish treats all incoming data as a repeating stream of bytes, which are
+parsed into 32-bit numbers in BE. Expanding a state with data and key means that
+first the round keys are XORed with the key in order, and then we start two
+registers, L and R, both at 0, then for each pair of rounds (in this case this
+means the 18 rounds of blowfish), we XOR in the next data word into L, then the
+next one into R, then encipher the words with the state, and then replace the
+two current round keys with the L and R that come out of that. That process is
+then repeated for the S-boxes.
+
+Expanding a state with just a key means the same as above, but assume the data
+stream to be zero-length or all zeroes.
+
+
+Back to bcrypt(): Now that the key schedule is done, the string
+"OrpheanBeholderScryDoubt" is encrypted 64 times with that key. The resulting
+cipher text is then converted from an array of 32-bit numbers to an array of
+8-bit numbers in the big endian way, and that block is then base64 encoded to be
+concatenated to the output.
