@@ -75,6 +75,13 @@ static inline int a_ctz(size_t x)
     return x;
 }
 
+#define a_clz_64 a_clz_64
+static inline int a_clz_64(uint64_t x)
+{
+    __asm__("clz %0, %1" : "=r"(x) : "r"(x));
+    return x;
+}
+
 #define a_mul128 a_mul128
 static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 {

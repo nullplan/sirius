@@ -47,6 +47,7 @@ static inline void a_crash(void) {
 }
 
 #define a_clz a_clz
+#define a_clz_64 a_clz
 static inline int a_clz(size_t x) {
     __asm__("cntlzd %0, %1" : "=r"(x) : "r"(x));
     return x;

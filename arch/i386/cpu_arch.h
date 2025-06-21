@@ -37,6 +37,13 @@ static inline int a_ctz(size_t x)
     return x;
 }
 
+#define a_clz a_clz
+static inline int a_clz(size_t x)
+{
+    __asm__("bsr %1,%0" : "=r"(x) : "rm"(x) : "cc");
+    return 31 - x;
+}
+
 static inline void a_stackjmp(void *func, void *stack)
 {
     __asm__("movl %1, %%esp; jmpl *%0" :: "r"(func), "r"(stack));

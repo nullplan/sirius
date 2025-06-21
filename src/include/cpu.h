@@ -178,6 +178,14 @@ static inline int a_ctz_64(uint64_t x) {
 }
 #endif
 
+#ifndef a_clz_64
+static inline int a_clz_64(uint64_t x) {
+    if (sizeof (size_t) == 8) return a_clz(x);
+    if (x >> 32) return a_clz(x >> 32);
+    return 32+a_clz(x);
+}
+#endif
+
 #ifndef a_mul128
 static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 {
