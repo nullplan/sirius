@@ -177,9 +177,10 @@ static void hmac_sha256_init_ctx(struct hmac_sha256_ctx *ctx, const void *key, s
     }
     __sha256_init_ctx(&ctx->ictx);
     __sha256_init_ctx(&ctx->octx);
-    memset(padbuf, 0x36, sizeof padbuf);
-    for (size_t i = 0; i < klen; i++)
-        padbuf[i] ^= ((const unsigned char *)key)[i];
+    memcpy(padbuf, key, klen);
+    memset(padbuf + klen, 0, 64 - klen);
+    for (size_t i = 0; i < sizeof padbuf; i++)
+        padbuf[i] ^= 0x36;
     __sha256_add_bytes(&ctx->ictx, padbuf, sizeof padbuf);
     for (size_t i = 0; i < sizeof padbuf; i++)
         padbuf[i] ^= 0x36 ^ 0x5c;
