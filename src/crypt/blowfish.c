@@ -56,18 +56,17 @@ static uint32_t streamword(const unsigned char *data, size_t datalen, size_t *of
     return rv;
 }
 
-static void bf_expand(struct bf_ctx *ctx, const unsigned char *data, size_t datalen, const unsigned char *key, size_t keylen)
+static void bf_expand(struct bf_ctx *ctx, const uint32_t data[static 4], const uint32_t key[static 18])
 {
-    assert(datalen && keylen);
-    size_t keyoff = 0;
     for (size_t i = 0; i < 18; i++)
-        ctx->P[i] ^= streamword(key, keylen, &keyoff);
+        ctx->P[i] ^= key[i];
 
     size_t dataoff = 0;
     uint32_t l = 0, r = 0;
     for (size_t i = 0; i < 18; i += 2) {
-        l ^= streamword(data, datalen, &dataoff);
-        r ^= streamword(data, datalen, &dataoff);
+        l ^= data[dataoff++];
+        r ^= data[dataoff++];
+        if (dataoff >= 4) dataoff = 0;
         bf_encipher(ctx, &l, &r);
         ctx->P[i] = l;
         ctx->P[i+1] = r;
@@ -75,8 +74,9 @@ static void bf_expand(struct bf_ctx *ctx, const unsigned char *data, size_t data
 
     for (size_t i = 0; i < 4; i++) {
         for (size_t j = 0; j < 256; j += 2) {
-            l ^= streamword(data, datalen, &dataoff);
-            r ^= streamword(data, datalen, &dataoff);
+            l ^= data[dataoff++];
+            r ^= data[dataoff++];
+            if (dataoff >= 4) dataoff = 0;
             bf_encipher(ctx, &l, &r);
             ctx->S[i][j] = l;
             ctx->S[i][j+1] = r;
@@ -84,12 +84,14 @@ static void bf_expand(struct bf_ctx *ctx, const unsigned char *data, size_t data
     }
 }
 
-static void bf_expand0(struct bf_ctx *ctx, const unsigned char *key, size_t keylen)
+static void bf_expand0(struct bf_ctx *ctx, const uint32_t *key, size_t keylen)
 {
     assert(keylen);
     size_t keyoff = 0;
-    for (size_t i = 0; i < 18; i++)
-        ctx->P[i] ^= streamword(key, keylen, &keyoff);
+    for (size_t i = 0; i < 18; i++) {
+        ctx->P[i] ^= key[keyoff++];
+        if (keyoff >= keylen) keyoff = 0;
+    }
     uint32_t l = 0, r = 0;
     for (size_t i = 0; i < 18; i += 2) {
         bf_encipher(ctx, &l, &r);
@@ -105,18 +107,44 @@ static void bf_expand0(struct bf_ctx *ctx, const unsigned char *key, size_t keyl
         }
 }
 
-static void bcrypt_core(const unsigned char *salt, size_t saltlen, const unsigned char *key, size_t keylen, size_t rounds, unsigned char *out)
+static void bcrypt_core(const unsigned char salt[static 16], const unsigned char *key, size_t keylen, size_t rounds, unsigned char *out)
 {
     /* OrpheanBeholderScryDoubt */
     uint32_t cipher[6] = {
         0x4F727068, 0x65616E42, 0x65686F6C, 0x64657253, 0x63727944, 0x6F756274
     };
     struct bf_ctx ctx;
+    uint32_t saltwords[4];
+    saltwords[0] = (salt[0] + 0ul) << 24 | salt[1] << 16 | salt[2] << 8 | salt[3];
+    saltwords[1] = (salt[4] + 0ul) << 24 | salt[5] << 16 | salt[6] << 8 | salt[7];
+    saltwords[2] = (salt[8] + 0ul) << 24 | salt[9] << 16 | salt[10] << 8 | salt[11];
+    saltwords[3] = (salt[12] + 0ul) << 24 | salt[13] << 16 | salt[14] << 8 | salt[15];
+
+    uint32_t keywords[18];
+    size_t i = 0;
+    keywords[0] = streamword(key, keylen, &i);
+    keywords[1] = streamword(key, keylen, &i);
+    keywords[2] = streamword(key, keylen, &i);
+    keywords[3] = streamword(key, keylen, &i);
+    keywords[4] = streamword(key, keylen, &i);
+    keywords[5] = streamword(key, keylen, &i);
+    keywords[6] = streamword(key, keylen, &i);
+    keywords[7] = streamword(key, keylen, &i);
+    keywords[8] = streamword(key, keylen, &i);
+    keywords[9] = streamword(key, keylen, &i);
+    keywords[10] = streamword(key, keylen, &i);
+    keywords[11] = streamword(key, keylen, &i);
+    keywords[12] = streamword(key, keylen, &i);
+    keywords[13] = streamword(key, keylen, &i);
+    keywords[14] = streamword(key, keylen, &i);
+    keywords[15] = streamword(key, keylen, &i);
+    keywords[16] = streamword(key, keylen, &i);
+    keywords[17] = streamword(key, keylen, &i);
     bf_init_ctx(&ctx);
-    bf_expand(&ctx, salt, saltlen, key, keylen);
+    bf_expand(&ctx, saltwords, keywords);
     for (size_t i = 0; i < rounds; i++) {
-        bf_expand0(&ctx, key, keylen);
-        bf_expand0(&ctx, salt, saltlen);
+        bf_expand0(&ctx, keywords, 18);
+        bf_expand0(&ctx, saltwords, 4);
     }
 
     /* now to encrypt the text 64 times */
@@ -235,7 +263,7 @@ static char *bcrypt(const char *pass, const char *setting, char *buf)
     salt += 22;
 
     unsigned char cipher[24];
-    bcrypt_core(binsalt, sizeof binsalt, (const unsigned char *)pass, pwdlen, rounds, cipher);
+    bcrypt_core(binsalt, (const unsigned char *)pass, pwdlen, rounds, cipher);
 
     memcpy(buf, setting, 4+3+22);
     *base64_encode(cipher, sizeof cipher - 1, buf + 4+3+22) = 0;
