@@ -186,16 +186,19 @@ static int countdig(uint32_t val)
 
 #define BILLION 1000000000
 static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flags,
-        int c, const char *prefix, int preflen)
+        int c, const char *prefix, int preflen, int isld)
 {
-    uint32_t big[(LDBL_MANT_DIG - LDBL_MIN_EXP + 8) / 9 + 1];
+    const int mant_dig = isld? LDBL_MANT_DIG : DBL_MANT_DIG;
+    const int arrsz = isld?(LDBL_MANT_DIG - LDBL_MIN_EXP + 8) / 9 + 1 :
+        (DBL_MANT_DIG - DBL_MIN_EXP + 8) / 9 + 1;
+    uint32_t big[arrsz];
     int e2;
     x = frexpl(x, &e2);
     if (x) {
         x *= 0x1p29;
         e2 -= 29;
     }
-    uint32_t *a = e2 < 0? big : big + sizeof big / sizeof *big - LDBL_MANT_DIG;
+    uint32_t *a = e2 < 0? big : big + arrsz - mant_dig;
     uint32_t *z, *rp;
     z = rp = a;
     do {
@@ -400,7 +403,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
     }
 }
 
-static size_t fmt_fp(FILE *f, long double x, int width, int prec, int flags, int c)
+static size_t fmt_fp(FILE *f, long double x, int width, int prec, int flags, int c, int isld)
 {
     const char *prefix = "-0X+0X 0X-0x+0x 0x";
     int preflen = 1;
@@ -425,7 +428,7 @@ static size_t fmt_fp(FILE *f, long double x, int width, int prec, int flags, int
     }
 
     if ((c|32) == 'a') return fmt_hexfloat(f, x, width, prec, flags, c, prefix, preflen + 2);
-    return fmt_decfloat(f, x, width, prec, flags, c, prefix, preflen);
+    return fmt_decfloat(f, x, width, prec, flags, c, prefix, preflen, isld);
 }
 
 
@@ -853,7 +856,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
 
             case 'A': case 'E': case 'F': case 'G':
             case 'a': case 'e': case 'f': case 'g':
-                if (addo(&rv, fmt_fp(f, arg.f, width, prec, flags, c)))
+                if (addo(&rv, fmt_fp(f, arg.f, width, prec, flags, c, st == LDBL)))
                     goto overflow;
                 continue;
         }
