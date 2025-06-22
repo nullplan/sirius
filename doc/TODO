@@ -418,7 +418,6 @@ void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, cons
 
 /* stdio.h */
 FILE *open_memstream(char **, size_t *);
-int pclose(FILE *);
 
 /* stdlib.h */
 int strfromd(char *__restrict, size_t, const char *__restrict, double);
