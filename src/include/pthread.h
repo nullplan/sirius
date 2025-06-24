@@ -41,6 +41,9 @@ struct __pthread
         long off;
         struct __mtx *pending;
     } robust;
+    char *dlerr_msg;
+    char *dlerr_alloc;
+    size_t dlerr_alloc_size;
 
     #ifndef TLS_VARIANT_2
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
