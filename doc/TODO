@@ -423,7 +423,6 @@ FILE *open_memstream(char **, size_t *);
 int strfromd(char *__restrict, size_t, const char *__restrict, double);
 int strfromf(char *__restrict, size_t, const char *__restrict, float);
 int strfroml(char *__restrict, size_t, const char *__restrict, long double);
-size_t memalignment(const void *);
 int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
 char *mkdtemp(char *);
 int mkostemp(char *, int);
