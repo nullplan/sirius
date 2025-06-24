@@ -107,6 +107,7 @@ unsigned short *seed48(unsigned short [3]);
 void srand48(long);
 long random(void);
 void srandom(unsigned);
+char *setstate(char *);
 
 int grantpt(int);
 int unlockpt(int);
