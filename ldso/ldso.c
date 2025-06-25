@@ -95,7 +95,6 @@ static struct ldso *const no_deps[] = {0};
 static struct ldso *builtin_deps[2];
 static int tls_cnt;
 static int static_tls_cnt;
-static struct ldso **main_init_queue;
 static pthread_mutex_t init_fini_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t lib_initialized = PTHREAD_COND_INITIALIZER;
 static int malloc_replaced;
@@ -104,16 +103,38 @@ hidden unsigned long __default_stacksize = DEFAULT_STACK_SIZE;
 
 extern hidden const char __tlsdesc_dynamic[], __tlsdesc_static[];
 
-static void print_error(const char *fmt, ...)
+static int print_error(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    if (!runtime) {
-        vdprintf(2, fmt, ap);
-        write(2, "\n", 1);
-        early_error = 1;
-    }
+    vdprintf(2, fmt, ap);
+    write(2, "\n", 1);
     va_end(ap);
+    return 0;
+}
+
+static int buffer_error(const char *fmt, ...)
+{
+    va_list ap;
+    pthread_t self = __pthread_self();
+    va_start(ap, fmt);
+    int len = vsnprintf(self->dlerr_alloc, self->dlerr_alloc_size, fmt, ap);
+    va_end(ap);
+    if (len >= self->dlerr_alloc_size) {
+        __libc_free(self->dlerr_alloc);
+        self->dlerr_alloc = __libc_malloc(len + 1);
+        if (self->dlerr_alloc) {
+            self->dlerr_alloc_size = len + 1;
+            va_start(ap, fmt);
+            vsnprintf(self->dlerr_alloc, len + 1, fmt, ap);
+            va_end(ap);
+            self->dlerr_msg = self->dlerr_alloc;
+        } else {
+            self->dlerr_alloc_size = 0;
+            self->dlerr_msg = "Out of memory for error message.";
+        }
+    }
+    return 1;
 }
 
 static const Phdr *find_phdr_typed(const struct ldso *p, int t)
@@ -147,7 +168,7 @@ static void reclaim_gaps(const struct ldso *dso)
     }
 }
 
-static void enumerate_phdr(struct ldso *start)
+static int enumerate_phdr(struct ldso *start, int (*handle_error)(const char *, ...))
 {
     int cnt = 0;
     for (struct ldso *p = start; p; p = p->next)
@@ -161,12 +182,12 @@ static void enumerate_phdr(struct ldso *start)
                 __default_stacksize = ph->p_memsz;
         }
     }
-    if (!cnt) return;
+    if (!cnt) return 0;
     struct tls_module *tls_mod = __libc_calloc(cnt, sizeof (struct tls_module));
     if (!tls_mod)
     {
-        print_error("Out of memory for tls module descriptions.");
-        return;
+        handle_error("Out of memory for tls module descriptions.");
+        return -1;
     }
 
     for (struct ldso *p = start; p; p = p->next) {
@@ -181,6 +202,7 @@ static void enumerate_phdr(struct ldso *start)
         p->tlsoff = tls_mod->off;
         tls_mod++;
     }
+    return 0;
 }
 
 static void process_dynv(struct ldso *dso)
@@ -197,12 +219,14 @@ static void process_dynv(struct ldso *dso)
     }
 }
 
-static size_t scan_vec(const size_t *vec, size_t tag)
+static void scan_vec_pair(const size_t *vec, size_t tag1, size_t tag2, size_t *v1, size_t *v2)
 {
-    for (; *vec; vec += 2)
-        if (*vec == tag)
-            return vec[1];
-    return 0;
+    for (; *vec; vec += 2) {
+        if (*vec == tag1)
+            *v1 = vec[1];
+        else if (*vec == tag2)
+            *v2 = vec[1];
+    }
 }
 
 static void decode_vec(size_t *arr, const size_t *vec, size_t lim)
@@ -320,11 +344,12 @@ static struct symdef find_sym(const char *name, struct ldso *ctx, int need_defin
     return (struct symdef){0};
 }
 
-static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, size_t stride)
+static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, size_t stride, int (*handle_error)(const char *, ...))
 {
     int skip_rels = dso == &libc;
     int reuse_addends = dso == &libc && stride == 2;
     size_t addend_idx = 0;
+    int rv = 0;
 
     for (; relsz; relsz -= stride * sizeof (size_t), rel += stride)
     {
@@ -359,8 +384,11 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
                 symval = (size_t)(def.dso->base + def.sym->st_value);
                 tlsval = def.sym->st_value;
             }
-            if (!def.sym && (usym->st_info >> 4) != STB_WEAK)
-                print_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name);
+            if (!def.sym && (usym->st_info >> 4) != STB_WEAK) {
+                rv = -1;
+                if (handle_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name))
+                    return rv;
+            }
         }
         switch (type) {
             case REL_RELATIVE:
@@ -379,9 +407,11 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
                 break;
 
             case REL_COPY:
-                if (usym->st_size != def.sym->st_size)
-                    print_error("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size);
-                else
+                if (usym->st_size != def.sym->st_size) {
+                    rv = -1;
+                    if (handle_error("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size))
+                        return rv;
+                } else
                     memcpy(rel_addr, (void *)symval, usym->st_size);
                 break;
 
@@ -398,9 +428,11 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
                 break;
 
             case REL_TPOFF:
-                if (def.dso->tlsid > static_tls_cnt)
-                    print_error("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name);
-                else {
+                if (def.dso->tlsid > static_tls_cnt) {
+                    rv = -1;
+                    if (handle_error("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name))
+                        return rv;
+                } else {
 #ifdef TLS_VARIANT_2
                     *rel_addr = tlsval - def.dso->tlsoff + addend;
 #else
@@ -415,9 +447,11 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
 
                 if (def.dso->tlsid > static_tls_cnt) {
                     size_t *desc = __libc_malloc(2 * sizeof (size_t));
-                    if (!desc)
-                        print_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname);
-                    else {
+                    if (!desc) {
+                        rv = -1;
+                        if (handle_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname))
+                            return rv;
+                    } else {
                         rel_addr[0] = (size_t)__tlsdesc_dynamic;
                         rel_addr[1] = (size_t)desc;
                         desc[0] = def.dso->tlsid;
@@ -435,10 +469,13 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
 
 
             default:
-                print_error("error relocating `%s': Unknown relocation type %d", dso->shortname, type);
+                rv = -1;
+                if (handle_error("error relocating `%s': Unknown relocation type %d", dso->shortname, type))
+                    return rv;
                 break;
         }
     }
+    return rv;
 }
 
 static void process_relr(size_t base, const size_t *rel, size_t sz)
@@ -461,7 +498,7 @@ static void process_relr(size_t base, const size_t *rel, size_t sz)
     }
 }
 
-static void relocate(struct ldso *dso)
+static int relocate(struct ldso *dso, int (*handle_error)(const char *, ...))
 {
     if (dso->relocated) return;
     size_t dyn[DT_RELR + 1] = {0};
@@ -476,7 +513,7 @@ static void relocate(struct ldso *dso)
     if (dso->relro_start != dso->relro_end
             && mprotect(dso->base + dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
     {
-        print_error("Error relocation `%s': RELRO protection failed: %m", dso->name);
+        print_error("Error relocating `%s': RELRO protection failed: %m", dso->name);
     }
 }
 
@@ -495,13 +532,27 @@ static int prot_from_flags(int flg)
     return rv;
 }
 
+static ssize_t full_read(int fd, void *buf, size_t len, off_t off)
+{
+    ssize_t read = 0;
+    while (len) {
+        ssize_t rv = pread(fd, buf, len, off);
+        if (rv < 0) return rv;
+        if (rv == 0) break;
+        buf = (char *)buf + rv;
+        len -= rv;
+        off += rv;
+        read += rv;
+    }
+    return read;
+}
 static void *map_library(int fd, struct ldso *dso)
 {
     union {
         Ehdr eh;
         char b[1024];
     } buf;
-    ssize_t rd = read(fd, buf.b, sizeof buf);
+    ssize_t rd = full_read(fd, buf.b, sizeof buf, 0);
     if (rd < 0) {
         print_error("`%s': Read error: %m", dso->name);
         return 0;
@@ -527,7 +578,7 @@ static void *map_library(int fd, struct ldso *dso)
     if (buf.eh.e_phoff + dso->phnum * dso->phent <= rd)
         ph0 = (void *)(buf.b + buf.eh.e_phoff);
     else {
-        rd = pread(fd, buf.b, dso->phent * dso->phnum, buf.eh.e_phoff);
+        rd = full_read(fd, buf.b, dso->phent * dso->phnum, buf.eh.e_phoff);
         if (rd != dso->phent * dso->phnum) {
             print_error("`%s: Failed to read program headers", dso->name);
             return 0;
@@ -887,9 +938,10 @@ hidden _Noreturn void _start_c(long *sp, const size_t *dynv, long base)
      *
      * To that end we count the symbolic DT_REL relocations.
      */
-    size_t reloff = scan_vec(dynv, DT_REL);
-    size_t relsz = scan_vec(dynv, DT_RELSZ);
+    size_t reloff = 0;
+    size_t relsz = 0;
     size_t relsymcnt = 0;
+    scan_vec_pair(dynv, DT_REL, DT_RELSZ, &reloff, &relsz);
     const size_t *const rel = (void *)(base + reloff);
     for (size_t i = 0, left = relsz; left; i += 2, left -= 2 * sizeof (size_t))
         if (R_TYPE(rel[i+1]) != REL_RELATIVE)
@@ -934,8 +986,6 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     /* we set up a temporary thread pointer to use for holding errno, hwcap, and sysinfo */
     /* also, cause it's on the way, we set __environ for use with getenv() later. */
     size_t aux[AUX_CNT] = {0};
-    struct __pthread tp = {0};
-    tp.self = tp.next = tp.prev = &tp;
     size_t *auxv = (void *)(sp + 2 + *sp);
     __environ = (void *)auxv;
     while (*auxv++);
@@ -1064,7 +1114,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
     if (tls_cnt) {
         struct tls_data data = __get_tls_data();
         char *p = (char *)(((uintptr_t)&builtin_tls + data.align - 1) & -data.align);
-        if ((char *)&builtin_tls + sizeof builtin_tls - p <= data.size)
+        if ((char *)&builtin_tls + sizeof builtin_tls - p >= data.size)
             tls = p;
         else {
             tls = aligned_alloc(data.align, data.size);
@@ -1074,11 +1124,6 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
             }
         }
     }
-    /* the init queue I can alloc here or after the reloc, makes
-     * no real difference. But it must happen before committing
-     * to running this thing.
-     */
-    main_init_queue = queue_initializers(head);
 
     /* also, process relocations of the libs *BEFORE* the main app,
      * because the main app can contain copy rels that copy stuff
@@ -1142,8 +1187,13 @@ static void process_init_queue(struct ldso **queue) {
 hidden void __run_constructors(void)
 {
     pthread_mutex_lock(&init_fini_lock);
-    size_t pia_off = scan_vec(main.dynv, DT_PREINIT_ARRAY);
-    size_t pia_sz = scan_vec(main.dynv, DT_PREINIT_ARRAYSZ);
+    struct ldso **main_init_queue;
+    main_init_queue = queue_initializers(head);
+    if (!main_init_queue) _Exit(1);
+
+    size_t pia_off = 0;
+    size_t pia_sz = 0;
+    scan_vec_pair(main.dynv, DT_PREINIT_ARRAY, DT_PREINIT_ARRAYSZ, &pia_off, &pia_sz);
     if (pia_off && pia_sz)
         run_init_array((void *)(main.base + pia_off), pia_sz);
     process_init_queue(main_init_queue);
@@ -1171,8 +1221,9 @@ hidden void __run_destructors(void)
     for (struct ldso *p = fini_head; p; p = p->fini_next)
     {
         pthread_mutex_unlock(&init_fini_lock);
-        size_t fa_off = scan_vec(p->dynv, DT_FINI_ARRAY);
-        size_t fa_sz = scan_vec(p->dynv, DT_FINI_ARRAYSZ);
+        size_t fa_off = 0;
+        size_t fa_sz = 0;
+        scan_vec_pair(p->dynv, DT_FINI_ARRAY, DT_FINI_ARRAYSZ, &fa_off, &fa_sz);
         void (**fini_array)(void) = (void *)(p->base + fa_off);
         size_t n = fa_sz / sizeof (void (*)(void));
         while (n--)
