@@ -125,6 +125,7 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
     int tid = __clone(startup, sp, flags, &startup_args, &new_td->tid, __tp_adjust(new_td), &__thread_list_lock);
     int rv = EAGAIN;
     if (tid < 0) goto out_unlock;
+    rv = 0;
     if (a && (a->__flags & PTHREAD_EXPLICIT_SCHED)) {
         rv = -__syscall(SYS_sched_setscheduler, tid, a->__pol, &a->__prio);
         if (rv) {
