@@ -101,7 +101,7 @@ static size_t fmt_hexfloat(FILE *f, long double x, int width, int prec, int flag
 
     if (prec < 0) prec = (LDBL_MANT_DIG + 3) / 4;
     if (prec < 8 * (z - a)) {
-        uint32_t *r = a + prec/8;
+        uint32_t *r = a + 1 + prec/8;
         uint32_t mask = (1ul << (4 * (8 - prec % 8) - 1) << 1) - 1;
         uint32_t away = *r & mask;
         *r -= away;
@@ -127,7 +127,7 @@ static size_t fmt_hexfloat(FILE *f, long double x, int width, int prec, int flag
             }
             if (r == a) {
                 *a = 1;
-                e2--;
+                e2++;
             }
         }
         z = r + 1;
