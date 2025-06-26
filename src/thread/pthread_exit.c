@@ -48,7 +48,7 @@ _Noreturn void pthread_exit(void *result)
     }
 
     __pthread_tsd_destroy();
-    free(self->dlerr_alloc);
+    __libc_free(self->dlerr_alloc);
 
     sigset_t ss;
     /* here comes the two-stage signal block.
