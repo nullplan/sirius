@@ -19,6 +19,8 @@ struct aiocb {
     int aio_reqprio;
     struct sigevent aio_sigevent;
     int aio_lio_opcode;
+    volatile int __err;
+    ssize_t __res;
 };
 
 #define AIO_ALLDONE (-2)
@@ -32,7 +34,7 @@ struct aiocb {
 #define LIO_WRITE 2
 
 int aio_cancel(int, struct aiocb *);
-int aio_error(int, struct aiocb *);
+int aio_error(struct aiocb *);
 int aio_fsync(int, struct aiocb *);
 int aio_read(struct aiocb *);
 ssize_t aio_return(struct aiocb *);
