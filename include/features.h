@@ -17,6 +17,12 @@
 #  endif
 #endif
 
+#if __STDC_VERSION > 202300L
+#define __unsequenced [[unsequenced]]
+#else
+#define __unsequenced
+#endif
+
 #ifdef __GNUC__
 #define _Alignas(x) __attribute__((aligned(x)))
 #elif __STDC_VERSION__ > 201100L
