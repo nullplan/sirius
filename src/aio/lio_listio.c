@@ -31,6 +31,11 @@ static void *waiter(void *ctx)
 
 int lio_listio(int mode, struct aiocb *restrict const cbs[restrict], int n, struct sigevent *restrict evt)
 {
+    if (mode != LIO_WAIT && mode != LIO_NOWAIT)
+    {
+        errno = EINVAL;
+        return -1;
+    }
     size_t nop = 0;
     for (int i = 0; i < n; i++)
         if (cbs[i] && (cbs[i]->aio_lio_opcode == LIO_READ || cbs[i]->aio_lio_opcode == LIO_WRITE)) {
