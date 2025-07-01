@@ -75,6 +75,7 @@ static inline int a_ctz(size_t x)
     return x;
 }
 
+#define a_clz a_clz_64
 #define a_clz_64 a_clz_64
 static inline int a_clz_64(uint64_t x)
 {
