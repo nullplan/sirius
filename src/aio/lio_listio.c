@@ -16,17 +16,15 @@ static void *waiter(void *ctx)
     struct waitarg *args = ctx;
     for (size_t i = 0; i < args->n; i++)
         while (aio_suspend((void *)(args->cbs + i), 1, 0) < 0 && errno == EINTR);
-    if (args->evt.sigev_notify == SIGEV_SIGNAL)
-        sigqueue(getpid(), args->evt.sigev_signo, args->evt.sigev_value);
-    else if (args->evt.sigev_notify == SIGEV_THREAD)
-    {
+    if (args->evt.sigev_notify == SIGEV_THREAD) {
         void (*f)(union sigval) = args->evt.sigev_notify_function;
         union sigval value = args->evt.sigev_value;
         free(args);
         f(value);
-    }
-    else
+    } else {
+        sigqueue(getpid(), args->evt.sigev_signo, args->evt.sigev_value);
         free(args);
+    }
     return 0;
 
 }
@@ -60,16 +58,14 @@ int lio_listio(int mode, struct aiocb *restrict const cbs[restrict], int n, stru
             }
         return 0;
     }
-    if (!nop) return 0;
+    if (!nop || !evt || (evt->sigev_notify != SIGEV_SIGNAL && evt->sigev_notify != SIGEV_THREAD)) return 0;
+
     struct waitarg *w = malloc(sizeof (struct waitarg) + nop * sizeof (struct aiocb *));
     if (!w) {
         errno = EAGAIN;
         return -1;
     }
-    if (evt)
-        w->evt = *evt;
-    else
-        w->evt.sigev_notify = SIGEV_NONE;
+    w->evt = *evt;
     w->n = nop;
     nop = 0;
     for (int i = 0; i < n; i++)
