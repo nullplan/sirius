@@ -3,5 +3,5 @@
 
 unsigned stdc_trailing_ones_ui(unsigned x) __unsequenced
 {
-    return x == -1u? 32 : a_ctz(~(size_t)x);
+    return sizeof (size_t) < 8 && x == -1u? 32 : a_ctz(~(size_t)x);
 }
