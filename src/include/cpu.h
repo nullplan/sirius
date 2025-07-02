@@ -216,5 +216,35 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 #ifndef a_pause
 #define a_pause()
 #endif
+
+#ifndef a_popcnt_32
+static inline int a_popcnt_32(uint32_t x)
+{
+    x -= (x >> 1) & 0x55555555;
+    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+    x = (x + (x >> 4)) & 0x0f0f0f0f;
+    return (x * 0x01010101) >> 24;
+}
 #endif
 
+#ifndef a_popcnt_64
+static inline int a_popcnt_64(uint64_t x)
+{
+    /* on 32-bit machines, avoid 64-bit math. */
+    if (sizeof (size_t) == 4) return a_popcnt_32(x) + a_popcnt_32(x >> 32);
+
+    x -= (x >> 1) & 0x5555555555555555;
+    x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+    x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f;
+    return (x * 0x0101010101010101) >> 56;
+}
+#endif
+
+#ifndef a_popcnt
+static inline int a_popcnt(size_t x)
+{
+    if (sizeof (size_t) == 4) return a_popcnt_32(x);
+    return a_popcnt_64(x);
+}
+#endif
+#endif

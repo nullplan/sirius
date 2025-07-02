@@ -81,3 +81,18 @@ static inline void a_stackinvoke(void (*func)(void), void *stack)
     stack = (void *)(((uintptr_t)stack & -16ul) - 32);
     a_stackjmp((void *)func, stack);
 }
+
+#define a_popcnt_32 a_popcnt_32
+static inline int a_popcnt_32(uint32_t x)
+{
+    uint64_t X = x;
+    __asm__("popcntb %0, %1" : "=r"(X) : "r"(X));
+    return (X * 0x01010101) >> 24;
+}
+
+#define a_popcnt_64 a_popcnt_64
+static inline int a_popcnt_64(uint64_t x)
+{
+    __asm__("popcntb %0, %1" : "=r"(x) : "r"(x));
+    return (x * 0x0101010101010101) >> 56;
+}

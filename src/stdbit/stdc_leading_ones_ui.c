@@ -3,5 +3,5 @@
 
 unsigned stdc_leading_ones_ui(unsigned x) __unsequenced
 {
-    return sizeof(size_t) < 8 && x == 0xffffffff? 32 : a_clz(~(size_t)x) - 8 * (sizeof (size_t) - 4);
+    return sizeof(size_t) < 8 && x == 0xffffffff? 32 : a_clz(~((size_t)x << (8 * (sizeof (size_t) - 4))));
 }
