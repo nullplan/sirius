@@ -4,7 +4,7 @@ memmove:
     movl %edi, %eax
     subl %esi, %eax
     cmpl %edx, %eax
-    jb 1f
+    ja 1f
     std
     leaq -1(%rdi, %rdx), %rdi
     leaq -1(%rsi, %rdx), %rsi

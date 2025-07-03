@@ -9,7 +9,7 @@ memmove:
     movl %edi, %eax
     subl %esi, %eax
     cmpl %ecx, %eax
-    jb 1f
+    ja 1f
     std
     leal -1(%edi, %ecx), %edi
     leal -1(%esi, %ecx), %esi
