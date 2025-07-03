@@ -47,6 +47,12 @@ char *realpath(const char *restrict path, char *restrict result)
                 to_be_resolved = end;
                 continue;
             }
+            /* this is a bit sneaky and might require explanation:
+             * I want to append a / to the resolved path if it doesn't already
+             * end in one. So far, so clear. But what if tail==stack?
+             * Turns out that tail==stack always implies known_dir,
+             * so in that case we never get here.
+             */
             if (tail[-1] != '/') {
                 tail[0] = '/';
                 tail[1] = 0;
@@ -66,7 +72,7 @@ char *realpath(const char *restrict path, char *restrict result)
                 tail[1] = 0;
             }
         } else {
-            if (tail[-1] != '/')
+            if (tail > stack && tail[-1] != '/')
                 *tail++ = '/';
             memmove(tail, to_be_resolved, len);
             tail[len] = 0;
@@ -76,13 +82,14 @@ char *realpath(const char *restrict path, char *restrict result)
         if (rv == -1 && errno == EINVAL) { /* file exists and is no symlink */
             if (*tail == '/') { /* this was only a dir test for a . or .. component */
                 *tail = 0; /* so strip off the / we appended */
+                known_dir = 1; /* and record that this really is a directory */
                 if (len == 2) {
                     /* and for .., remove the highest component */
 remove_component:
                     while (tail > stack && tail[-1] != '/')
                         tail--;
+                    if (tail > stack) tail--;
                     *tail = 0;
-                    known_dir = 1;
                 }
             } else { /* this was a normal component */
                 tail += len;
@@ -93,12 +100,15 @@ remove_component:
             errno = ELOOP;
             return 0;
         } else {
+            known_dir = 1;
             if (*buffer == '/') {
                 tail = stack + 1;
                 tail[-1] = '/';
-                known_dir = 1;
-            }
-            tail[0] = 0;
+                tail[0] = 0;
+            } else if (tail > stack) {
+                *--tail = 0;
+            } else
+                *tail = 0;
             if (rv >= to_be_resolved - tail) {
                 errno = ENAMETOOLONG;
                 return 0;
@@ -129,8 +139,9 @@ remove_component:
             errno = ENAMETOOLONG;
             return 0;
         }
-        memmove(stack + (dirtail - buffer), start, (tail - start) + 1);
+        memmove(stack + (dirtail - buffer) + 1, start, (tail - start) + 1);
         memcpy(stack, buffer, dirtail - buffer);
+        stack[dirtail - buffer] = '/';
     }
     return result? memcpy(result, stack, tail - stack + 1) : strdup(stack);
 }
