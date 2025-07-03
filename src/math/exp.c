@@ -35,7 +35,8 @@ double exp(double x)
         k = 0;
     } else {
         if (absx <= 1.5*ln2hi) {
-            hi = copysign(absx - ln2hi, x);
+            hi = absx - ln2hi;
+            if (signbit(x)) hi = -hi;
             lo = copysign(ln2lo, x);
             k = signbit(x)? -1 : 1;
         } else {
