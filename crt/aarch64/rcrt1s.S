@@ -20,7 +20,6 @@
 _start:
     mov x30, sp
     and sp, x30, -16
-    mov fp, 0
     sub sp, sp, (AUX_NUM+DYN_NUM)*8
     mov x0, 0
     mov x1, sp
