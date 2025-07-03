@@ -34,3 +34,33 @@ t² - 2ist - 1 = 0
 t = is ± √(1 - s²)
 
 ln t = ix
+
+
+Inverse trigonometry
+====================
+
+s = sin(x) = (exp(ix) - exp(-ix))/(2i)  | * 2i
+2is = exp(ix) - exp(-ix)                | let t = exp(ix)
+2is = t - t^(-1)                        | * t
+2ist = t² - 1                           | - 2ist
+0 = t² - 2ist - 1
+
+t = is ± √(-s² + 1)
+t₁ = is - √(1 - s²)
+t₂ = is + √(1 - s²)
+
+exp(ix₁) = is - √(1 - s²)               | ln
+ix₁ = ln (is - √(1 - s²))               | * (-i)
+x₁ = -i ln (is - √(1 - s²))
+
+exp(ix₂) = is + √(1 - s²)               | ln
+ix₂ = ln (is + √(1 - s²))               | * (-i)
+x₂ = -i ln (is + √(1 - s²))
+
+
+s = a+bi
+s² = a² - b² + 2abi
+1-s² = 1 - a² + b² - 2abi
+is = ia-b
+-is = -ia+b
+
