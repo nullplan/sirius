@@ -5,7 +5,7 @@ memmove:
     beqlr-
     sub %r0, %r3, %r4
     cmpld %r0, %r5
-    blt 2f
+    bnl 2f
     add %r3, %r3, %r5
     add %r4, %r4, %r5
     mtctr %r5

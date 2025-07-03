@@ -4,7 +4,7 @@ memmove:
     cbz x2, 2f
     sub x3, x0, x1
     cmp x3, x2
-    b.lt 3f
+    b.hs 3f
     add x0, x0, x2
     add x1, x1, x2
 1:
