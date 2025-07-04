@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "cpu.h"
 
 void flockfile(FILE *f)
 {
@@ -6,5 +7,5 @@ void flockfile(FILE *f)
     if (__flockfile(f))
         __register_locked_file(f);
     else
-        f->count++;
+        a_crash(); /* I think this case is impossible. */
 }

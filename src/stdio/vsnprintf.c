@@ -6,17 +6,18 @@ struct string {
     char *p;
     size_t n;
 };
+static void string_write_single(struct string *str, const unsigned char *p, size_t sz)
+{
+    if (sz > str->n) sz = str->n;
+    memcpy(str->p, p, sz);
+    str->p += sz;
+    str->n -= sz;
+}
 static size_t string_write(FILE *f, const void *b, size_t sz)
 {
     struct string *str = f->cookie;
-    size_t tlen = MIN(str->n, f->pos - f->buf);
-    memcpy(str->p, f->buf, tlen);
-    str->p += tlen;
-    str->n -= tlen;
-    tlen = MIN(str->n, sz);
-    memcpy(str->p, b, tlen);
-    str->p += tlen;
-    str->n -= tlen;
+    string_write_single(str, f->buf, f->pos - f->buf);
+    string_write_single(str, b, sz);
     *str->p = 0;
     f->pos = f->buf;
     f->end = f->buf + f->buf_size;

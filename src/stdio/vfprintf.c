@@ -72,10 +72,10 @@ static char *fmt_d(char *z, uintmax_t x)
 
 static void pad(FILE *f, int c, int w, int len, int flags)
 {
-    char buf[256];
+    char buf[64];
     if (len >= w || (flags & (FLG_LEFT | FLG_ZERO))) return;
     len = w - len;
-    memset(buf, c, len);
+    memset(buf, c, MIN(len, sizeof buf));
     while (len > sizeof buf)
         out(f, buf, sizeof buf), len -= sizeof buf;
     out(f, buf, len);

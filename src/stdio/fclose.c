@@ -8,7 +8,6 @@ int fclose(FILE *f)
     int r = fflush(f);
     r |= f->close(f);
 
-
     FILE *head = __ofl_lock();
     if (f->next) f->next->prev = f->prev;
     if (f->prev) f->prev->next = f->next;
