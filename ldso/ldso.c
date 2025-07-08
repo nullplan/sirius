@@ -103,17 +103,23 @@ hidden unsigned long __default_stacksize = DEFAULT_STACK_SIZE;
 
 extern hidden const char __tlsdesc_dynamic[], __tlsdesc_static[];
 
-static int print_error(const char *fmt, ...)
+enum rtld_fail {
+    success = 0,
+    fail = 1,
+    fail_but_continue = 2,
+};
+
+static enum rtld_fail print_error(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
     vdprintf(2, fmt, ap);
     write(2, "\n", 1);
     va_end(ap);
-    return 0;
+    return fail_but_continue;
 }
 
-static int buffer_error(const char *fmt, ...)
+static enum rtld_fail buffer_error(const char *fmt, ...)
 {
     va_list ap;
     pthread_t self = __pthread_self();
@@ -134,7 +140,7 @@ static int buffer_error(const char *fmt, ...)
             self->dlerr_msg = "Out of memory for error message.";
         }
     }
-    return 1;
+    return fail;
 }
 
 static const Phdr *find_phdr_typed(const struct ldso *p, int t)
@@ -168,7 +174,7 @@ static void reclaim_gaps(const struct ldso *dso)
     }
 }
 
-static int enumerate_phdr(struct ldso *start, int (*handle_error)(const char *, ...))
+static enum rtld_fail enumerate_phdr(struct ldso *start, enum rtld_fail (*handle_error)(const char *, ...))
 {
     int cnt = 0;
     for (struct ldso *p = start; p; p = p->next)
@@ -182,12 +188,11 @@ static int enumerate_phdr(struct ldso *start, int (*handle_error)(const char *, 
                 __default_stacksize = ph->p_memsz;
         }
     }
-    if (!cnt) return 0;
+    if (!cnt) return success;
     struct tls_module *tls_mod = __libc_calloc(cnt, sizeof (struct tls_module));
     if (!tls_mod)
     {
-        handle_error("Out of memory for tls module descriptions.");
-        return -1;
+        return handle_error("Out of memory for tls module descriptions.");
     }
 
     for (struct ldso *p = start; p; p = p->next) {
@@ -344,12 +349,12 @@ static struct symdef find_sym(const char *name, struct ldso *ctx, int need_defin
     return (struct symdef){0};
 }
 
-static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, size_t stride, int (*handle_error)(const char *, ...))
+static enum rtld_fail process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, size_t stride, enum rtld_fail (*handle_error)(const char *, ...))
 {
     int skip_rels = dso == &libc;
     int reuse_addends = dso == &libc && stride == 2;
     size_t addend_idx = 0;
-    int rv = 0;
+    enum rtld_fail rv = success;
 
     for (; relsz; relsz -= stride * sizeof (size_t), rel += stride)
     {
@@ -385,8 +390,8 @@ static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, siz
                 tlsval = def.sym->st_value;
             }
             if (!def.sym && (usym->st_info >> 4) != STB_WEAK) {
-                rv = -1;
-                if (handle_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name))
+                rv = handle_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name);
+                if (rv == fail)
                     return rv;
             }
         }
@@ -408,8 +413,8 @@ static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, siz
 
             case REL_COPY:
                 if (usym->st_size != def.sym->st_size) {
-                    rv = -1;
-                    if (handle_error("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size))
+                    rv = handle_error("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size);
+                    if (rv == fail)
                         return rv;
                 } else
                     memcpy(rel_addr, (void *)symval, usym->st_size);
@@ -429,8 +434,8 @@ static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, siz
 
             case REL_TPOFF:
                 if (def.dso->tlsid > static_tls_cnt) {
-                    rv = -1;
-                    if (handle_error("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name))
+                    rv = handle_error("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name);
+                    if (rv == fail)
                         return rv;
                 } else {
 #ifdef TLS_VARIANT_2
@@ -448,8 +453,8 @@ static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, siz
                 if (def.dso->tlsid > static_tls_cnt) {
                     size_t *desc = __libc_malloc(2 * sizeof (size_t));
                     if (!desc) {
-                        rv = -1;
-                        if (handle_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname))
+                        rv = handle_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname);
+                        if (rv == fail)
                             return rv;
                     } else {
                         rel_addr[0] = (size_t)__tlsdesc_dynamic;
@@ -469,8 +474,8 @@ static int process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, siz
 
 
             default:
-                rv = -1;
-                if (handle_error("error relocating `%s': Unknown relocation type %d", dso->shortname, type))
+                rv = handle_error("error relocating `%s': Unknown relocation type %d", dso->shortname, type);
+                if (rv == fail)
                     return rv;
                 break;
         }
@@ -498,14 +503,17 @@ static void process_relr(size_t base, const size_t *rel, size_t sz)
     }
 }
 
-static int relocate(struct ldso *dso, int (*handle_error)(const char *, ...))
+static enum rtld_fail relocate(struct ldso *dso, enum rtld_fail (*handle_error)(const char *, ...))
 {
-    if (dso->relocated) return;
+    if (dso->relocated) return success;
     size_t dyn[DT_RELR + 1] = {0};
     decode_vec(dyn, dso->dynv, DT_RELR + 1);
-    process_relocs(dso, (void *)(dso->base + dyn[DT_REL]), dyn[DT_RELSZ], 2);
-    process_relocs(dso, (void *)(dso->base + dyn[DT_RELA]), dyn[DT_RELASZ], 3);
-    process_relocs(dso, (void *)(dso->base + dyn[DT_JMPREL]), dyn[DT_PLTRELSZ], dyn[DT_PLTREL] == DT_REL? 2 : 3);
+    enum rtld_fail rv = process_relocs(dso, (void *)(dso->base + dyn[DT_REL]), dyn[DT_RELSZ], 2);
+    if (rv == fail) return rv;
+    rv = process_relocs(dso, (void *)(dso->base + dyn[DT_RELA]), dyn[DT_RELASZ], 3);
+    if (rv == fail) return rv;
+    rv = process_relocs(dso, (void *)(dso->base + dyn[DT_JMPREL]), dyn[DT_PLTRELSZ], dyn[DT_PLTREL] == DT_REL? 2 : 3);
+    if (rv == fail) return rv;
     /* relr table is all relative, so we skip it for libc, since it has already been processed. */
     if (dso != &libc)
         process_relr((size_t)dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ]);
@@ -513,14 +521,20 @@ static int relocate(struct ldso *dso, int (*handle_error)(const char *, ...))
     if (dso->relro_start != dso->relro_end
             && mprotect(dso->base + dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
     {
-        print_error("Error relocating `%s': RELRO protection failed: %m", dso->name);
+        rv = handle_error("Error relocating `%s': RELRO protection failed: %m", dso->name);
     }
+    return rv;
 }
 
-static void reloc_all(struct ldso *dso)
+static enum rtld_fail reloc_all(struct ldso *dso)
 {
+    enum rtld_fail rv = success;
     for (; dso; dso = dso->next)
-        relocate(dso);
+    {
+        rv = relocate(dso);
+        if (rv == fail) break;
+    }
+    return rv;
 }
 
 static int prot_from_flags(int flg)
@@ -546,30 +560,24 @@ static ssize_t full_read(int fd, void *buf, size_t len, off_t off)
     }
     return read;
 }
-static void *map_library(int fd, struct ldso *dso)
+static enum rtld_fail map_library(int fd, struct ldso *dso, enum rtld_fail (*handle_error)(const char *, ...))
 {
     union {
         Ehdr eh;
         char b[1024];
     } buf;
     ssize_t rd = full_read(fd, buf.b, sizeof buf, 0);
-    if (rd < 0) {
-        print_error("`%s': Read error: %m", dso->name);
-        return 0;
-    }
+    if (rd < 0)
+        return handle_error("`%s': Read error: %m", dso->name);
 
-    if ((size_t)rd < sizeof (Ehdr)) {
-        print_error("`%s': File too short", dso->name);
-        return 0;
-    }
+    if ((size_t)rd < sizeof (Ehdr))
+        return handle_error("`%s': File too short", dso->name);
 
     if (memcmp(buf.b, "\177ELF", 4)
             || buf.eh.e_ident[EI_CLASS] != ELFCLASS
             || buf.eh.e_machine != ELFMACH
-            || (buf.eh.e_type != ET_DYN && buf.eh.e_type != ET_EXEC)) {
-        print_error("`%s': Bad magic", dso->name);
-        return 0;
-    }
+            || (buf.eh.e_type != ET_DYN && buf.eh.e_type != ET_EXEC))
+        return handle_error("`%s': Bad magic", dso->name);
 
     Phdr *ph0, *ph;
     int elftype = buf.eh.e_type;
@@ -579,10 +587,8 @@ static void *map_library(int fd, struct ldso *dso)
         ph0 = (void *)(buf.b + buf.eh.e_phoff);
     else {
         rd = full_read(fd, buf.b, dso->phent * dso->phnum, buf.eh.e_phoff);
-        if (rd != dso->phent * dso->phnum) {
-            print_error("`%s: Failed to read program headers", dso->name);
-            return 0;
-        }
+        if (rd != dso->phent * dso->phnum)
+            return handle_error("`%s: Failed to read program headers", dso->name);
         ph0 = (void *)buf.b;
     }
 
@@ -608,13 +614,12 @@ static void *map_library(int fd, struct ldso *dso)
     max_address = (max_address + PAGE_SIZE - 1) & -PAGE_SIZE;
 
     void *map = mmap((void *)min_address, max_address - min_address, prot_from_flags(minflags), MAP_PRIVATE, fd, min_offset);
-    if (map == MAP_FAILED) {
-        print_error("Error loading `%s': %m", dso->name);
-        return 0;
-    }
+    if (map == MAP_FAILED)
+        return handle_error("Error loading `%s': %m", dso->name);
 
+    enum rtld_fail rv = success;
     if (elftype == ET_EXEC && map != (void *)min_address) {
-        print_error("Error loading `%s': Non-relocatable object could not be loaded to preferred address", dso->name);
+        rv = handle_error("Error loading `%s': Non-relocatable object could not be loaded to preferred address", dso->name);
         goto out_unmap;
     }
     dso->base = (char *)map - min_address;
@@ -632,7 +637,7 @@ static void *map_library(int fd, struct ldso *dso)
             /* reuse first segment */
             if (this_min != min_address
                     && mmap(dso->base + this_min, this_max - this_min, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_FIXED, fd, this_off) == MAP_FAILED) {
-                print_error("Error loading `%s': %m", dso->name);
+                rv = handle_error("Error loading `%s': %m", dso->name);
                 goto out_unmap;
             }
             if (ph->p_memsz > ph->p_filesz && (ph->p_flags & PF_W)) {
@@ -641,7 +646,7 @@ static void *map_library(int fd, struct ldso *dso)
                 memset(eoi, 0, pagebrk - eoi);
                 if (ph->p_memsz - ph->p_filesz > pagebrk - eoi
                         && mmap(pagebrk, (ph->p_memsz - ph->p_filesz - (pagebrk - eoi) + PAGE_SIZE - 1) & -PAGE_SIZE, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
-                    print_error("Error loading `%s': %m", dso->name);
+                    rv = handle_error("Error loading `%s': %m", dso->name);
                     goto out_unmap;
                 }
             }
@@ -654,16 +659,16 @@ static void *map_library(int fd, struct ldso *dso)
     process_dynv(dso);
     if (!dso->symtab || !dso->strtab || (!dso->hashtab && !dso->ghashtab))
     {
-        print_error("Error loading `%s': Library lacks vital data.", dso->name);
+        rv = handle_error("Error loading `%s': Library lacks vital data.", dso->name);
         goto out_unmap;
     }
     dso->map = map;
     dso->map_len = max_address - min_address;
-    return map;
+    return success;
 
 out_unmap:
     munmap(map, max_address - min_address);
-    return 0;
+    return rv;
 }
 
 static const char *const libc_alias[] = {
@@ -800,7 +805,7 @@ static struct ldso *load_library(const char *name, const char *search_path, int 
     tail->next = dso;
     tail = dso;
 
-    if (ldd_mode) dprintf(1, "\t%s%s%s (0x%0*p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, 2 * (int)sizeof (size_t), (void *)dso->base);
+    if (ldd_mode) dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, dso->base);
 
     /* if we are at startup, this library will not be unmapped again.
      * If an error occurs, we will exit.
