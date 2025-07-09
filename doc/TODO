@@ -418,7 +418,6 @@ char *mkdtemp(char *);
 int mkostemp(char *, int);
 int mkstemp(char *);
 int posix_memalign(void **, size_t, size_t);
-void *reallocarray(void *, size_t, size_t);
 long a64l(const char *);
 char *l64a(long);
 int grantpt(int);
