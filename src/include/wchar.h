@@ -12,4 +12,5 @@ extern hidden const unsigned __utftab[UTF_END - UTF_START + 1];
 
 extern hidden int __is_in_set(wint_t, const unsigned char *, size_t);
 extern hidden unsigned __read_uleb128(const unsigned char **);
+extern hidden size_t __wcsidx(const wchar_t *, wchar_t);
 #endif

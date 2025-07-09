@@ -10,6 +10,7 @@
 #define __NEED_FILE
 #define __NEED_WCHAR_MIN
 #define __NEED_mbstate_t
+#define __NEED_WEOF
 #ifdef _POSIX_C_SOURCE
 #define __NEED_locale_t
 #endif
@@ -59,7 +60,7 @@ int wcscmp(const wchar_t *, const wchar_t *);
 int wcscoll(const wchar_t *, const wchar_t *);
 int wcsncmp(const wchar_t *, const wchar_t *, size_t);
 size_t wcsxfrm(wchar_t *__restrict, const wchar_t *__restrict, size_t);
-int wmemcmp(const wchar_t *, const wchar_t, size_t);
+int wmemcmp(const wchar_t *, const wchar_t *, size_t);
 wchar_t *wcschr(const wchar_t *, wchar_t);
 size_t wcscspn(const wchar_t *, const wchar_t *);
 wchar_t *wcspbrk(const wchar_t *, const wchar_t *);
