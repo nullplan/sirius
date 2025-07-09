@@ -28,6 +28,8 @@ FILE *freopen(const char *restrict name, const char *restrict mode, FILE *restri
                 oldf->seek = new->seek;
                 oldf->close = new->close;
                 oldf->cookie = new->cookie;
+                oldf->orientation = 0;
+                oldf->locale = 0;
                 fclose(new);
                 rv = oldf;
             }

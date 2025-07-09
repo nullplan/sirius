@@ -4,6 +4,7 @@
 #include "../../include/stdio.h"
 #include <stdint.h>
 
+struct __localedef;
 struct __file {
     int fd;                                             /* file descriptor */
     int flags;                                          /* F_ flags */
@@ -27,6 +28,8 @@ struct __file {
     off_t shlim;                                        /* limit for the scan-helper functions. */
     off_t shcnt;                                        /* number of read characters since last shlim */
     unsigned char *shend;                               /* pointer to end for scan helpers */
+    int orientation;                                    /* orientation for fwide() */
+    const struct __localedef *locale;                   /* locale for MB functions */
 };
 
 #define UNGET       8       /* number of bytes for ungetc(), reserved in front of buffer */

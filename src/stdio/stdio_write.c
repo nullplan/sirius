@@ -12,6 +12,8 @@ hidden size_t __stdio_write(FILE *f, const void *buf, size_t len)
     int iovlen = 2;
     size_t rv = 0;
 
+    f->orientation |= f->orientation - 1;
+
     f->pos = f->buf;
     f->end = f->buf + f->buf_size;
     for (;;)

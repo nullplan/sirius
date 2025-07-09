@@ -11,6 +11,8 @@ hidden ssize_t __stdio_read(FILE *f, void *buf, size_t len)
     struct iovec *pio = iov;
     int iovcnt = 2;
 
+    f->orientation |= f->orientation - 1;
+
     if (!pio->iov_len) {
         pio++;
         iovcnt--;
