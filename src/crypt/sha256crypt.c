@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 static void repeated_add(struct sha256_ctx *ctx, const unsigned char *hash, size_t len)
 {
@@ -22,6 +23,7 @@ static char *sha256crypt(const char *pass, const char *salt, char *buf)
     int rounds = 5000;
     int rounds_given = 0;
     if (!memcmp(salt, "rounds=", 7)) {
+        if (!isdigit(salt[7])) return 0;
         char *endp;
         unsigned long lrounds = strtoul(salt + 7, &endp, 10);
         if (*endp == '$') {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 struct sha512_ctx {
     uint64_t h[8];
@@ -200,6 +201,7 @@ static char *sha512crypt(const char *pass, const char *salt, char *buf)
     int rounds = 5000;
     int rounds_given = 0;
     if (!memcmp(salt, "rounds=", 7)) {
+        if (!isdigit(salt[7])) return 0;
         char *endp;
         unsigned long lrounds = strtoul(salt + 7, &endp, 10);
         if (*endp == '$') {
