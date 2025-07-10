@@ -21,6 +21,10 @@ int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struc
         }
         if (buflen == capacity) {
             capacity = capacity < 11? 16 : capacity + capacity/2;
+            if (capacity < buflen) {
+                errno = EOVERFLOW;
+                goto error;
+            }
             void *p = realloc(buffer, capacity * sizeof (struct dirent *));
             if (!p) goto error;
             buffer = p;
@@ -29,6 +33,7 @@ int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struc
         if (!buffer[buflen]) goto error;
         memcpy(buffer[buflen++], de, de->d_reclen);
     }
+    closedir(d);
 
     if (cmp)
         qsort(buffer, buflen, sizeof (struct dirent *), (int (*)(const void *, const void *))cmp);
@@ -39,5 +44,6 @@ error:
     for (size_t i = 0; i < buflen; i++)
         free(buffer[i]);
     free(buffer);
+    closedir(d);
     return -1;
 }
