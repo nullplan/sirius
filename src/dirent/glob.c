@@ -269,6 +269,7 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
 
     char **final = realloc(g->gl_pathv, (off + g->gl_pathc + result->n + 1) * sizeof (char *));
     if (!final) {
+        freelist(result);
         return GLOB_NOSPACE;
     }
     g->gl_pathv = final;
