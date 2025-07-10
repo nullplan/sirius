@@ -3,6 +3,7 @@
 
 #include "../../include/stdio.h"
 #include <stdint.h>
+#include <stdbool.h>
 
 struct __localedef;
 struct __file {
@@ -88,4 +89,22 @@ extern hidden uintmax_t __intscan(FILE *, int, uintmax_t);
 extern hidden long double __floatscan(FILE *, int, int, int);
 
 extern hidden void __register_locked_file(FILE *);
+
+enum format {
+    fmt_float,
+    fmt_double,
+    fmt_ldouble
+};
+
+/* Serendipity: All flags characters are within 32 code points of the space */
+#define FLG(x)  (1ul << ((x) - ' '))
+#define FLG_THOU    FLG('\'')
+#define FLG_LEFT    FLG('-')
+#define FLG_SIGN    FLG('+')
+#define FLG_MARK    FLG(' ')
+#define FLG_ZERO    FLG('0')
+#define FLG_ALT     FLG('#')
+#define ALL_FLAGS (FLG_THOU | FLG_LEFT | FLG_SIGN | FLG_MARK | FLG_ZERO | FLG_ALT)
+
+extern hidden size_t __fmt_fp(FILE *f, long double x, int width, int prec, int flags, int c, enum format);
 #endif

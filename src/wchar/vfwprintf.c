@@ -28,15 +28,6 @@ static int getint(const wchar_t **ps)
     return rv;
 }
 
-#define FLG(x) (1 << ((x) - ' '))
-#define FLG_THOU FLG('\'')
-#define FLG_LEFT FLG('-')
-#define FLG_SIGN FLG('+')
-#define FLG_MARK FLG(' ')
-#define FLG_ALT FLG('#')
-#define FLG_ZERO FLG('0')
-#define ALL_FLAGS (FLG_THOU | FLG_LEFT | FLG_SIGN | FLG_MARK | FLG_ALT | FLG_ZERO)
-
 static char *print_flags(char *p, int flags)
 {
     if (flags & FLG_THOU)
