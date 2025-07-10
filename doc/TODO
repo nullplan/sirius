@@ -415,12 +415,6 @@ char *mkdtemp(char *);
 int mkostemp(char *, int);
 int mkstemp(char *);
 long a64l(const char *);
-char *l64a(long);
-int grantpt(int);
-int unlockpt(int);
-int posix_openpt(int);
-char *ptsname(int);
-int ptsname_r(int, char *, size_t);
 
 /* sys/ipc.h */
 key_t ftok(const char *, int);
