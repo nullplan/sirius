@@ -410,9 +410,6 @@ void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, cons
 FILE *open_memstream(char **, size_t *);
 
 /* stdlib.h */
-int strfromd(char *__restrict, size_t, const char *__restrict, double);
-int strfromf(char *__restrict, size_t, const char *__restrict, float);
-int strfroml(char *__restrict, size_t, const char *__restrict, long double);
 int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
 char *mkdtemp(char *);
 int mkostemp(char *, int);
