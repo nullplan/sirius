@@ -306,6 +306,9 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             c = *fmt++;
         }
 
+        if ((flags & FLG_ZERO) && (flags & FLG_LEFT))
+            flags -= FLG_ZERO;
+
         if (c - '0' < 10u) {
             fmt--;
             width = getint(&fmt);
