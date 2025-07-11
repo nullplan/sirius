@@ -254,6 +254,9 @@ if __name__ == "__main__":
     tryccflag("-Werror=incompatible-pointer-types", cflags)
     tryccflag("-Werror=discarded-qualifiers", cflags)
     tryccflag("-Werror=discarded-array-qualifiers", cflags)
+    # GCC is really getting on my nerves with this one though:
+    if flavor == "gcc": tryccflag("-Wno-abi", cflags)
+
     # Clang warns about LDFLAGS in the compilation step.
     # But user's CFLAGS may include linker flags, so this
     # shuts up the compiler
