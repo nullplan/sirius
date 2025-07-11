@@ -415,16 +415,6 @@ char *mkdtemp(char *);
 int mkostemp(char *, int);
 int mkstemp(char *);
 
-/* sys/mman.h */
-int mlock(const void *, size_t);
-int mlockall(int);
-int msync(void *, size_t, int);
-int munlock(const void *, size_t);
-int munlockall(void);
-int posix_madvise(void *, size_t, int);
-int shm_open(const char *, int, mode_t);
-int shm_unlink(const char *);
-
 /* sys/resource.h */
 int getrlimit(int, struct rlimit *);
 int setrlimit(int, const struct rlimit *);
