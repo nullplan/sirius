@@ -76,7 +76,8 @@ void __init_libc(char *pn, char **envp)
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     __global_locale = __c_locale;
 
-    if ((aux[0] & 0x7800) == 0x7800 && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
+    const int mask = 1<<AT_UID | 1<<AT_EUID | 1<<AT_GID | 1<<AT_EGID;
+    if ((aux[0] & mask) == mask && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
         return;
 
     __elevated = 1;
