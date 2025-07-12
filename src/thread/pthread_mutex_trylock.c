@@ -9,10 +9,13 @@
 
 static int futex_pi(volatile int *fut, int priv, int op)
 {
-    if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
+    if (priv) priv = FUTEX_PRIVATE_FLAG;
     int rv;
-    do rv = __syscall(SYS_futex, fut, op);
-    while (rv == -EINTR || rv == -EAGAIN);
+    do {
+        rv = __syscall(SYS_futex, fut, op | priv);
+        if (rv == -ENOSYS && priv)
+            rv = __syscall(SYS_futex, fut, op);
+    } while (rv == -EINTR || rv == -EAGAIN);
     return rv;
 }
 
@@ -50,8 +53,7 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
         self->robust.head = (void *)&self->robust.head;
         self->robust.off = offsetof(struct __mtx, __lock);
         self->robust.pending = 0;
-        if (__robust_list_works)
-            __syscall(SYS_set_robust_list, &self->robust, sizeof self->robust);
+        __syscall(SYS_set_robust_list, &self->robust, sizeof self->robust);
     }
 
     int rv = -1;

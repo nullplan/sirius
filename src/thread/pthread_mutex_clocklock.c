@@ -9,10 +9,13 @@
 
 static int futex_pi(volatile int *fut, int priv, int op, const struct timespec *restrict ts)
 {
-    if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
+    if (priv) priv = FUTEX_PRIVATE_FLAG;
     int rv;
-    do rv = __syscall(SYS_futex, fut, op, 0, ts);
-    while (rv == -EINTR || rv == -EAGAIN);
+    do {
+        rv = __syscall(SYS_futex, fut, op | priv, 0, ts);
+        if (rv == -ENOSYS && priv)
+            rv = __syscall(SYS_futex, fut, op, 0, ts);
+    } while (rv == -EINTR || rv == -EAGAIN);
     return rv;
 }
 static int do_futex_pi_lock(pthread_mutex_t *restrict m, clockid_t clk, const struct timespec *restrict ts)

@@ -27,9 +27,6 @@ hidden int __elevated;
 hidden int __thread_list_lock;
 hidden unsigned long __page_size;
 hidden int __threaded;
-hidden int __robust_list_works;
-hidden int __pi_futex_works;
-hidden int __private_futex_works;
 
 char **__environ;
 weak_alias(environ, __environ);
@@ -99,24 +96,6 @@ void __init_libc(char *pn, char **envp)
 
 static _Noreturn void start_main_stage2(int argc, char **argv, char **envp, int (*main)(int, char **, char **))
 {
-    pthread_t tp = __pthread_self();
-    tp->robust.head = (void *)&tp->robust.head;
-    tp->robust.off = offsetof(struct __mtx, __lock);
-    tp->robust.pending = 0;
-    if (!__syscall(SYS_set_robust_list, &tp->robust, sizeof tp->robust))
-        __robust_list_works = 1;
-    /* According to the manpage, PI futexes were added in 2.6.18 and private
-     * ones in 2.6.22.
-     * So there are kernels with PI futexes but without private ones, but no
-     * kernels with private futexes and no PI futexes.
-     */
-    if (__syscall(SYS_futex, &(int){0}, FUTEX_UNLOCK_PI | FUTEX_PRIVATE_FLAG) != -ENOSYS) {
-        __pi_futex_works = 1;
-        __private_futex_works = 1;
-    } else if (__syscall(SYS_futex, &(int){0}, FUTEX_UNLOCK_PI) != -ENOSYS) {
-        __pi_futex_works = 1;
-    }
-
     __stdio_list_init();
     __init_tsd();
     __init_sigs();
