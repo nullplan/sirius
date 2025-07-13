@@ -551,6 +551,7 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
             oldbuf = f->buf;
             f->buf = tmpbuf;
             f->buf_size = sizeof tmpbuf;
+            f->dir = 0;
         }
         ret = printf_core(f, fmt, &ap2, nl_type, nl_arg);
         if (f->buf == tmpbuf) {
