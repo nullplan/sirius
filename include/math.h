@@ -147,7 +147,7 @@ int __signbitl(long double);
 #define iscanonical(x) (__discard(x), 1)
 
 #define isunordered(x, y) (isnan(x) || isnan(y))
-#define __iscmp(x, y, c) (!isunordered(x) && (x) c (y))
+#define __iscmp(x, y, c) (!isunordered((x), (y)) && (x) c (y))
 #define isgreater(x, y)         __iscmp(x, y, >)
 #define isgreaterequal(x, y)    __iscmp(x, y, >=)
 #define isless(x, y)            __iscmp(x, y, <)
