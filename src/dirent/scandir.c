@@ -4,6 +4,12 @@
 #include <limits.h>
 #include <errno.h>
 
+static int wrap_cmp(const void *a, const void *b, void *c)
+{
+    int (*cmp)(const struct dirent **, const struct dirent **) = c;
+    return cmp((void *)a, (void *)b);
+}
+
 int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struct dirent *), int (*cmp)(const struct dirent **, const struct dirent **))
 {
     struct dirent **buffer = 0;
@@ -36,7 +42,7 @@ int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struc
     closedir(d);
 
     if (cmp)
-        qsort(buffer, buflen, sizeof (struct dirent *), (int (*)(const void *, const void *))cmp);
+        qsort_r(buffer, buflen, sizeof (struct dirent *), wrap_cmp, cmp);
     *retbuf = buffer;
     return buflen;
 
