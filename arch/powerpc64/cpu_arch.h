@@ -72,7 +72,8 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 
 static inline void a_stackjmp(void *func, void *stack)
 {
-    __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(func), "r"(stack));
+    register long r12 __asm__("r12") = func;
+    __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(r12), "r"(stack));
     for (;;);
 }
 
