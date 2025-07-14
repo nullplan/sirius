@@ -19,7 +19,9 @@ int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struc
     if (!d) return -1;
 
     struct dirent *de;
-    while ((de = readdir(d))) {
+    int saved_errno = errno;
+    while ((errno = 0), (de = readdir(d))) {
+        errno = saved_errno;
         if (filter && !filter(de)) continue;
         if (buflen == INT_MAX) {
             errno = EOVERFLOW;
@@ -39,17 +41,22 @@ int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struc
         if (!buffer[buflen]) goto error;
         memcpy(buffer[buflen++], de, de->d_reclen);
     }
+    int err = errno;
     closedir(d);
+    if (err) goto error;
 
+    errno = saved_errno;
     if (cmp)
         qsort_r(buffer, buflen, sizeof (struct dirent *), wrap_cmp, cmp);
     *retbuf = buffer;
     return buflen;
 
 error:
+    err = errno;
     for (size_t i = 0; i < buflen; i++)
         free(buffer[i]);
     free(buffer);
     closedir(d);
+    errno = err;
     return -1;
 }
