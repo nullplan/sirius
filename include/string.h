@@ -64,6 +64,11 @@ char *strsignal(int);
 char *strtok_r(char *__restrict, const char *__restrict, char **__restrict);
 size_t strxfrm_l(char *__restrict, const char *__restrict, size_t, locale_t);
 #endif
+
+#ifdef _GNU_SOURCE
+int strverscmp(const char *, const char *);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
