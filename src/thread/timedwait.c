@@ -13,6 +13,7 @@ static void cleanup(void *p)
 hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, int priv, const struct timespec *absto, int clockid)
 {
     int rv;
+    if (priv) priv = FUTEX_PRIVATE_FLAG;
     do {
         struct timespec relto = {0}, *to = 0;
         if (absto) {
@@ -32,8 +33,9 @@ hidden int __timedwait_cp(volatile int *fut, volatile int *waiters, int val, int
         a_inc(waiters);
         pthread_cleanup_push(cleanup, (void *)waiters);
         int op = FUTEX_WAIT;
-        if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
-        rv = __syscall_cp(SYS_futex, fut, op, val, to);
+        rv = __syscall_cp(SYS_futex, fut, op | priv, val, to);
+        if (rv == -ENOSYS && priv)
+            rv = __syscall_cp(SYS_futex, fut, op, val, to);
         pthread_cleanup_pop(1);
     } while (rv == -ETIMEDOUT || (rv == -EINTR && !__eintr_valid));
     return rv;

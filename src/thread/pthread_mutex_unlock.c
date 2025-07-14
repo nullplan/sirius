@@ -10,8 +10,11 @@
 static int futex_unlock_pi(volatile int *fut, int priv)
 {
     int op = FUTEX_UNLOCK_PI;
-    if (priv && __private_futex_works) op |= FUTEX_PRIVATE_FLAG;
-    return __syscall(SYS_futex, fut, op);
+    if (priv) priv = FUTEX_PRIVATE_FLAG;
+    int rv = __syscall(SYS_futex, fut, op | priv);
+    if (rv == -ENOSYS && priv)
+        rv = __syscall(SYS_futex, fut, op);
+    return rv;
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *m)
