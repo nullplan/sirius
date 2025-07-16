@@ -8,11 +8,11 @@ hidden size_t __strridx(const char *s, int c)
     c &= 0xff;
 #ifdef __GNUC__
     typedef size_t __attribute__((may_alias)) word_t;
-    while ((uintptr_t)(s + i) & (sizeof (size_t) - 1)) {
-        if ((unsigned char)s[i] == c)
+    size_t lim = (-(uintptr_t)s) & (sizeof (size_t) - 1);
+    for (; i < lim; i++) {
+        if (s[i] == c)
             rv = i;
         if (s[i] == 0) return rv;
-        i++;
     }
     const word_t *ws = (const void *)(s + i);
     const size_t ones = -1ul / 255;
