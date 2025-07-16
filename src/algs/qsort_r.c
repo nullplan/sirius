@@ -151,7 +151,7 @@ hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, 
             set(p, order + 2);
             order += 2;
         } else {
-            if (end - head - leo[0] > leo[order - 1])
+            if (end - head - sz > leo[order - 1])
                 heapify(head, order, leo, cmp, ctx);
             else
                 order_roots(head, p, order, leo, cmp, ctx, 0);
@@ -178,6 +178,5 @@ hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, 
             order -= 2;
         }
     }
-
 }
 weak_alias(qsort_r, __qsort_r);
