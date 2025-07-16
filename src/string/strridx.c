@@ -5,7 +5,7 @@ hidden size_t __strridx(const char *s, int c)
 {
     size_t rv = 0;
     size_t i = 0;
-    c &= 0xff;
+    c = (char)c;
 #ifdef __GNUC__
     typedef size_t __attribute__((may_alias)) word_t;
     size_t lim = (-(uintptr_t)s) & (sizeof (size_t) - 1);
@@ -17,7 +17,7 @@ hidden size_t __strridx(const char *s, int c)
     const word_t *ws = (const void *)(s + i);
     const size_t ones = -1ul / 255;
     const size_t highs = ones << 7;
-    const size_t wmask = c * ones;
+    const size_t wmask = (c & 0xff) * ones;
     for (;;) {
         size_t w = *ws;
         if (~w & (w-ones) & highs) break;
