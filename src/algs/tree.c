@@ -141,7 +141,7 @@ void *tdelete(const void *restrict key, posix_tnode **restrict pr, int (*cmp)(co
 static void inner_twalk(const struct node *n, void (*cb)(const posix_tnode *, VISIT, int), int level)
 {
     if (!n) return;
-    if (!n->left && !n->right) cb(n, leaf, level);
+    if (!n->right) cb(n, leaf, level);
     else {
         cb(n, preorder, level);
         inner_twalk(n->left, cb, level + 1);
