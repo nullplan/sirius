@@ -73,7 +73,7 @@ _start:
     cbz x1, 1f
     ldr x0, [sp, (AUX_NUM+DT_RELR)*8]
     add x0, x0, x28
-    bl do_rel
+    bl do_relr
 1:
 
     add sp, sp, (AUX_NUM+DYN_NUM)*8
@@ -134,7 +134,7 @@ do_rela:
     cmp w3, R_AARCH64_RELATIVE
     b.ne 2f
     ldr x3, [x0]
-    ldr x4, [x0, 8]
+    ldr x4, [x0, 16]
     add x4, x4, x28
     str x4, [x3, x28]
 2:
