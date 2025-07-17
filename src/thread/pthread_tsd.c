@@ -22,7 +22,7 @@ hidden void __pthread_tsd_destroy(void)
     for (int i = 0; i < PTHREAD_DESTRUCTOR_ITERATIONS; i++)
     {
         int data_found = 0;
-        if (pthread_rwlock_rdlock(&dtors_lock)) return;
+        if (__pthread_rwlock_rdlock(&dtors_lock)) return;
         for (size_t j = 0; j < PTHREAD_KEYS_MAX; j++)
         {
             if (self->tsd[j] && dtors[j] != sentinel) {
@@ -30,21 +30,21 @@ hidden void __pthread_tsd_destroy(void)
                 void *data = self->tsd[j];
                 void (*dtor)(void *) = dtors[j];
                 self->tsd[j] = 0;
-                pthread_rwlock_unlock(&dtors_lock);
+                __pthread_rwlock_unlock(&dtors_lock);
                 dtor(data);
-                pthread_rwlock_rdlock(&dtors_lock);
+                __pthread_rwlock_rdlock(&dtors_lock);
             }
         }
-        pthread_rwlock_unlock(&dtors_lock);
+        __pthread_rwlock_unlock(&dtors_lock);
         if (!data_found) break;
     }
 }
 
-int pthread_key_create(pthread_key_t *k, void (*dtor)(void*))
+hidden int __pthread_key_create(pthread_key_t *k, void (*dtor)(void*))
 {
     int rv = EAGAIN;
     if (!dtor) dtor = sentinel;
-    pthread_rwlock_wrlock(&dtors_lock);
+    __pthread_rwlock_wrlock(&dtors_lock);
     for (size_t i = 0; i < PTHREAD_KEYS_MAX; i++)
         if (!dtors[i]) {
             k->__v = i;
@@ -52,14 +52,15 @@ int pthread_key_create(pthread_key_t *k, void (*dtor)(void*))
             rv = 0;
             break;
         }
-    pthread_rwlock_unlock(&dtors_lock);
+    __pthread_rwlock_unlock(&dtors_lock);
     return rv;
 }
+weak_alias(pthread_key_create, __pthread_key_create);
 
-int pthread_key_delete(pthread_key_t k)
+hidden int __pthread_key_delete(pthread_key_t k)
 {
     sigset_t ss;
-    pthread_rwlock_wrlock(&dtors_lock);
+    __pthread_rwlock_wrlock(&dtors_lock);
     assert(dtors[k.__v]);
     dtors[k.__v] = 0;
     __block_usr_sigs(&ss);
@@ -70,17 +71,20 @@ int pthread_key_delete(pthread_key_t k)
     while ((td = td->next) != self);
     __tl_unlock();
     __restore_sigs(&ss);
-    pthread_rwlock_unlock(&dtors_lock);
+    __pthread_rwlock_unlock(&dtors_lock);
     return 0;
 }
+weak_alias(pthread_key_delete, __pthread_key_delete);
 
-void *pthread_getspecific(pthread_key_t k)
+hidden void *__pthread_getspecific(pthread_key_t k)
 {
     return __pthread_self()->tsd[k.__v];
 }
+weak_alias(pthread_getspecific, __pthread_getspecific);
 
-int pthread_setspecific(pthread_key_t k, const void *d)
+hidden int __pthread_setspecific(pthread_key_t k, const void *d)
 {
     __pthread_self()->tsd[k.__v] = (void *)d;
     return 0;
 }
+weak_alias(pthread_setspecific, __pthread_setspecific);

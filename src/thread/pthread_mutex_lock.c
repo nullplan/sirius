@@ -1,7 +1,8 @@
 #include <pthread.h>
 #include <time.h>
 
-int pthread_mutex_lock(pthread_mutex_t *m)
+int __pthread_mutex_lock(pthread_mutex_t *m)
 {
-    return pthread_mutex_clocklock(m, CLOCK_REALTIME, 0);
+    return __pthread_mutex_clocklock(m, CLOCK_REALTIME, 0);
 }
+weak_alias(pthread_mutex_lock, __pthread_mutex_lock);

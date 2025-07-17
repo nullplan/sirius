@@ -3,7 +3,7 @@
 #include "cpu.h"
 #include "futex.h"
 
-int pthread_rwlock_clockwrlock(pthread_rwlock_t *restrict rw, clockid_t clk, const struct timespec *restrict to)
+hidden int __pthread_rwlock_clockwrlock(pthread_rwlock_t *restrict rw, clockid_t clk, const struct timespec *restrict to)
 {
     for (;;)
     {
@@ -16,3 +16,4 @@ int pthread_rwlock_clockwrlock(pthread_rwlock_t *restrict rw, clockid_t clk, con
         }
     }
 }
+weak_alias(pthread_rwlock_clockwrlock, __pthread_rwlock_clockwrlock);

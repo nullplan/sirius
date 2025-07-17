@@ -59,6 +59,7 @@ void tss_delete(tss_t);
 void *tss_get(tss_t);
 int tss_set(tss_t, void *);
 
+#define thrd_equal(a, b) ((a) == (b))
 
 #ifdef __cplusplus
 }

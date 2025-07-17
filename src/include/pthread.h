@@ -117,5 +117,23 @@ extern hidden void __synccall(void (*)(void *), void *);
 
 /* arg == -1 for preparations, arg == 0 for parent handlers, arg == 1 for child handlers. */
 extern hidden void __atfork_run(int);
+
 extern hidden int __pthread_setcancelstate(int, int *);
+extern hidden int __pthread_cond_clockwait(pthread_cond_t *restrict, pthread_mutex_t *restrict, clockid_t, const struct timespec *restrict);
+extern hidden int __pthread_mutex_init(pthread_mutex_t *restrict, const pthread_mutexattr_t *restrict);
+extern hidden int __pthread_mutex_lock(pthread_mutex_t *);
+extern hidden int __pthread_mutex_unlock(pthread_mutex_t *);
+extern hidden int __pthread_mutex_clocklock(pthread_mutex_t *restrict, clockid_t, const struct timespec *restrict);
+extern hidden int __pthread_mutex_trylock(pthread_mutex_t *);
+extern hidden int __pthread_rwlock_clockwrlock(pthread_rwlock_t *restrict, clockid_t, const struct timespec *restrict);
+extern hidden int __pthread_rwlock_timedwrlock(pthread_rwlock_t *restrict, const struct timespec *restrict);
+extern hidden int __pthread_rwlock_wrlock(pthread_rwlock_t *);
+extern hidden int __pthread_rwlock_unlock(pthread_rwlock_t *);
+extern hidden int __pthread_rwlock_clockrdlock(pthread_rwlock_t *restrict, clockid_t, const struct timespec *restrict);
+extern hidden int __pthread_rwlock_timedrdlock(pthread_rwlock_t *restrict, const struct timespec *restrict);
+extern hidden int __pthread_rwlock_rdlock(pthread_rwlock_t *);
+extern hidden int __pthread_key_create(pthread_key_t *, void (*)(void*));
+extern hidden int __pthread_key_delete(pthread_key_t);
+extern hidden void *__pthread_getspecific(pthread_key_t);
+extern hidden int __pthread_setspecific(pthread_key_t, const void *);
 #endif

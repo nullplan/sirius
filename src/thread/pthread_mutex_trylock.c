@@ -19,7 +19,7 @@ static int futex_pi(volatile int *fut, int priv, int op)
     return rv;
 }
 
-int pthread_mutex_trylock(pthread_mutex_t *m)
+hidden int __pthread_mutex_trylock(pthread_mutex_t *m)
 {
     if (!(m->__flg & ~PTHREAD_PROCESS_SHARED)) {
         int v;
@@ -104,3 +104,4 @@ int pthread_mutex_trylock(pthread_mutex_t *m)
     self->robust.pending = 0;
     return rv;
 }
+weak_alias(pthread_mutex_trylock, __pthread_mutex_trylock);

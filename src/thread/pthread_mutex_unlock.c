@@ -17,7 +17,7 @@ static int futex_unlock_pi(volatile int *fut, int priv)
     return rv;
 }
 
-int pthread_mutex_unlock(pthread_mutex_t *m)
+hidden int __pthread_mutex_unlock(pthread_mutex_t *m)
 {
     if ((m->__flg & 3) == PTHREAD_MUTEX_RECURSIVE && m->__ctr) {
         m->__ctr--;
@@ -71,3 +71,4 @@ int pthread_mutex_unlock(pthread_mutex_t *m)
     self->robust.pending = 0;
     return 0;
 }
+weak_alias(pthread_mutex_unlock, __pthread_mutex_unlock);
