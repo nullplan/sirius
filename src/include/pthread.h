@@ -136,4 +136,11 @@ extern hidden int __pthread_key_create(pthread_key_t *, void (*)(void*));
 extern hidden int __pthread_key_delete(pthread_key_t);
 extern hidden void *__pthread_getspecific(pthread_key_t);
 extern hidden int __pthread_setspecific(pthread_key_t, const void *);
+extern hidden int __pthread_detach(pthread_t);
+extern hidden void __pthread_testcancel(void);
+extern hidden int __pthread_join(pthread_t, void **);
+extern hidden _Noreturn void __pthread_exit(void *);
+extern hidden int __pthread_create(pthread_t *restrict, const pthread_attr_t *restrict, void *(*)(void*), void *restrict);
+
+#define __PTHREAD_ATTR_C11 0x80000000u
 #endif

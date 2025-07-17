@@ -37,7 +37,7 @@ static void unlock_mutex(struct __mtx *p, int tid)
     }
 }
 
-_Noreturn void pthread_exit(void *result)
+hidden _Noreturn void __pthread_exit(void *result)
 {
     pthread_t self = __pthread_self();
     self->cancelstate = PTHREAD_CANCEL_DISABLE;
@@ -127,3 +127,4 @@ _Noreturn void pthread_exit(void *result)
     for (;;)
         __syscall(SYS_exit, 0);
 }
+weak_alias(pthread_exit, __pthread_exit);

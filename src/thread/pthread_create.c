@@ -51,10 +51,23 @@ static int startup(void *a)
     __restore_sigs(args->old_ss);
     a_swap(&args->control, 3);
     __futex_wake(&args->control, 1, 1);
-    pthread_exit(f(a));
+    __pthread_exit(f(a));
 }
 
-int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, void *(*func)(void*), void *restrict arg)
+static int startup_c11(void *a)
+{
+    struct startup_args *args = a;
+    int (*f)(void *);
+
+    f = (int (*)(void *))args->func;
+    a = args->arg;
+    __restore_sigs(args->old_ss);
+    a_swap(&args->control, 3);
+    __futex_wake(&args->control, 1, 1);
+    __pthread_exit((void *)(uintptr_t)f(a));
+}
+
+hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, void *(*func)(void*), void *restrict arg)
 {
     const int flags = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_PARENT | CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
     struct tls_data tls_data = __get_tls_data();
@@ -64,6 +77,10 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
     void *thread_mem;
     size_t *tsd;
     pthread_t new_td = 0;
+    int (*start)(void *) = startup;
+
+    if (a && (a->__flags & __PTHREAD_ATTR_C11))
+        start = startup_c11;
 
     if (a && a->__addr) {
         if (tls_data.size + tls_data.align + __pthread_tsd_size <= a->__ss / 8) {
@@ -85,10 +102,10 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
     if (alloc) {
         guardsize = (guardsize + PAGE_SIZE - 1) & -PAGE_SIZE;
         size_t map_size = guardsize + alloc;
-        void *map = mmap(0, map_size, guardsize? PROT_NONE : PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        void *map = __mmap(0, map_size, guardsize? PROT_NONE : PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (map == MAP_FAILED) return EAGAIN;
-        if (guardsize && mprotect((char *)map + guardsize, alloc, PROT_READ | PROT_WRITE)) {
-            munmap(map, guardsize + alloc);
+        if (guardsize && __mprotect((char *)map + guardsize, alloc, PROT_READ | PROT_WRITE)) {
+            __munmap(map, guardsize + alloc);
             return EAGAIN;
         }
         thread_mem = (void *)(((uintptr_t)map + guardsize + alloc - tls_data.size) & -tls_data.align);
@@ -150,6 +167,7 @@ int pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, voi
 out_unlock:
     __tl_unlock();
     __restore_sigs(&ss);
-    if (rv && new_td->map) munmap(new_td->map, new_td->map_size);
+    if (rv && new_td->map) __munmap(new_td->map, new_td->map_size);
     return rv;
 }
+weak_alias(pthread_create, __pthread_create);

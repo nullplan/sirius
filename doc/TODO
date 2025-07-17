@@ -436,13 +436,6 @@ void openlog(const char *, int, int);
 int setlogmask(int);
 void syslog(int, const char *, ...);
 
-/* threads.h */
-int thrd_create(thrd_t *, thrd_start_t, void *);
-int thrd_detach(thrd_t);
-_Noreturn void thrd_exit(int);
-int thrd_join(thrd_t, int *);
-
-
 /* time.h */
 size_t strftime(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
 size_t strftime_l(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict, locale_t);
