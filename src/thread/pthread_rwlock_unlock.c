@@ -4,7 +4,7 @@
 #include "futex.h"
 #include "cpu.h"
 
-int pthread_rwlock_unlock(pthread_rwlock_t *rw)
+hidden int __pthread_rwlock_unlock(pthread_rwlock_t *rw)
 {
     for (;;)
     {
@@ -20,3 +20,4 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rw)
             return EINVAL;
     }
 }
+weak_alias(pthread_rwlock_unlock, __pthread_rwlock_unlock);

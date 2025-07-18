@@ -110,14 +110,14 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                 memcpy(pattern, name, n);
                 pattern[n] = 0;
                 int saved_errno = errno;
-                errno = 0;
-                while ((de = readdir(d))) {
+                while ((errno = 0), (de = readdir(d))) {
                     if (strcmp(de->d_name, ".") && strcmp(de->d_name, "..") && !fnmatch(pattern, de->d_name, fnm_flags)) {
                         size_t cl = strlen(candidates->paths[i]);
                         size_t nl = strlen(de->d_name);
                         char *path = malloc(cl + nl + 3);
                         if (!path) {
                             closedir(d);
+                            errno = ENOMEM;
                             return GLOB_NOSPACE;
                         }
                         if (cl) {
@@ -129,13 +129,16 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                         if (push_back_path(out, path)) {
                             free(path);
                             closedir(d);
+                            errno = ENOMEM;
                             return GLOB_NOSPACE;
                         }
                     }
                 }
+                int err = errno;
                 closedir(d);
-                if (errno) {
-                    int rv = errfunc(candidates->paths[i], errno);
+                if (err) {
+                    errno = err;
+                    int rv = errfunc(candidates->paths[i], err);
                     if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
                 }
                 errno = saved_errno;

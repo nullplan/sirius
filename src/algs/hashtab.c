@@ -1,6 +1,8 @@
 #include <search.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+#include "cpu.h"
 
 static ENTRY *tab;
 static size_t mask;
@@ -8,17 +10,19 @@ static size_t n;
 
 int hcreate(size_t x)
 {
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    if (sizeof (size_t) > 4)
-        x |= x >> 32;
-    ENTRY *p = calloc(x+1, sizeof (ENTRY));
+    const int nbit = 8 * sizeof (size_t);
+    int ilogb = nbit - a_clz(x);
+
+    if (ilogb == nbit) {
+        errno = EOVERFLOW;
+        return 0;
+    }
+    x = 1ul << (ilogb + 1);
+
+    ENTRY *p = calloc(x, sizeof (ENTRY));
     if (!p) return 0;
     tab = p;
-    mask = x;
+    mask = x - 1;
     n = 0;
     return 1;
 }

@@ -10,7 +10,7 @@ hidden int __is_in_set(wint_t x, const unsigned char *set, size_t len)
         if (x - num < block)
             return res;
         num += block;
-        res = 1 - res;
+        res ^= 1;
     }
     return 0;
 }

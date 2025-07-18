@@ -18,6 +18,7 @@ static int futex_pi(volatile int *fut, int priv, int op, const struct timespec *
     } while (rv == -EINTR || rv == -EAGAIN);
     return rv;
 }
+
 static int do_futex_pi_lock(pthread_mutex_t *restrict m, clockid_t clk, const struct timespec *restrict ts)
 {
     /* respect the minimum system requirements.
@@ -57,11 +58,12 @@ static int do_futex_pi_lock(pthread_mutex_t *restrict m, clockid_t clk, const st
     }
     return rv;
 }
-int pthread_mutex_clocklock(pthread_mutex_t *restrict m, clockid_t clk, const struct timespec *restrict ts)
+
+hidden int __pthread_mutex_clocklock(pthread_mutex_t *restrict m, clockid_t clk, const struct timespec *restrict ts)
 {
     if (clk != CLOCK_REALTIME && clk != CLOCK_MONOTONIC) return EINVAL;
 
-    int rv = pthread_mutex_trylock(m);
+    int rv = __pthread_mutex_trylock(m);
     if (rv != EBUSY) return rv;
 
     if (m->__flg & PTHREAD_PRIO_INHERIT) {
@@ -93,3 +95,4 @@ int pthread_mutex_clocklock(pthread_mutex_t *restrict m, clockid_t clk, const st
     }
     return rv;
 }
+weak_alias(pthread_mutex_clocklock, __pthread_mutex_clocklock);

@@ -3,7 +3,7 @@
 #include "syscall.h"
 #include "cpu.h"
 
-int pthread_mutex_init(pthread_mutex_t *restrict m, const pthread_mutexattr_t *restrict ma)
+hidden int __pthread_mutex_init(pthread_mutex_t *restrict m, const pthread_mutexattr_t *restrict ma)
 {
     static int robust_list_works; /* ternary switch */
     if (ma && (ma->__flg & (PTHREAD_PROCESS_SHARED | PTHREAD_MUTEX_ROBUST)) == (PTHREAD_PROCESS_SHARED | PTHREAD_MUTEX_ROBUST))
@@ -27,3 +27,4 @@ int pthread_mutex_init(pthread_mutex_t *restrict m, const pthread_mutexattr_t *r
         m->__flg = ma->__flg;
     return 0;
 }
+weak_alias(pthread_mutex_init, __pthread_mutex_init);

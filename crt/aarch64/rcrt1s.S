@@ -18,8 +18,8 @@
 .global _start
 .type _start, @function
 _start:
-    mov x30, sp
-    and sp, x30, -16
+    mov x28, sp
+    and sp, x28, -16
     sub sp, sp, (AUX_NUM+DYN_NUM)*8
     mov x0, 0
     mov x1, sp
@@ -29,10 +29,10 @@ _start:
     subs x2, x2, 1
     b.ne 1b
     .hidden _DYNAMIC
-    adrp x29, _DYNAMIC
-    add x29, x29, :lo12:_DYNAMIC
-    ldr x1, [x30]
-    add x1, x30, x1, lsl 3
+    adrp x27, _DYNAMIC
+    add x27, x27, :lo12:_DYNAMIC
+    ldr x1, [x28]
+    add x1, x28, x1, lsl 3
     add x1, x1, 16
 1:
     ldr x0, [x1], 8
@@ -42,7 +42,7 @@ _start:
     bl decode_vec
 
     add x0, sp, AUX_NUM*8
-    mov x1, x29
+    mov x1, x27
     mov x2, DYN_NUM
     bl decode_vec
 
@@ -53,34 +53,34 @@ _start:
     ldr x2, [sp, AT_PHENT*8]
     bl find_base
 1:
-    mov x28, x0
+    mov x26, x0
 
     ldr x1, [sp, (AUX_NUM+DT_RELSZ)*8]
     cbz x1, 1f
     ldr x0, [sp, (AUX_NUM+DT_REL)*8]
-    add x0, x0, x28
+    add x0, x0, x26
     bl do_rel
 1:
 
     ldr x1, [sp, (AUX_NUM+DT_RELASZ)*8]
     cbz x1, 1f
     ldr x0, [sp, (AUX_NUM+DT_RELA)*8]
-    add x0, x0, x28
+    add x0, x0, x26
     bl do_rela
 1:
 
     ldr x1, [sp, (AUX_NUM+DT_RELRSZ)*8]
     cbz x1, 1f
     ldr x0, [sp, (AUX_NUM+DT_RELR)*8]
-    add x0, x0, x28
-    bl do_rel
+    add x0, x0, x26
+    bl do_relr
 1:
 
     add sp, sp, (AUX_NUM+DYN_NUM)*8
     mov fp, 0
-    mov x0, x30
-    mov x1, x29
-    mov x2, x28
+    mov x0, x28
+    mov x1, x27
+    mov x2, x26
 .hidden _start_c
     b _start_c
 .size _start, . - _start
@@ -110,7 +110,7 @@ find_base:
     udf 0
 2:
     ldr x0, [x0, 16]
-    sub x0, x29, x0
+    sub x0, x27, x0
     ret
 
 do_rel:
@@ -119,9 +119,9 @@ do_rel:
     cmp w3, R_AARCH64_RELATIVE
     b.ne 2f
     ldr x3, [x0]
-    ldr x4, [x3, x28]
-    add x4, x4, x28
-    str x4, [x3, x28]
+    ldr x4, [x3, x26]
+    add x4, x4, x26
+    str x4, [x3, x26]
 2:
     add x0, x0, 16
     subs x1, x1, 16
@@ -134,9 +134,9 @@ do_rela:
     cmp w3, R_AARCH64_RELATIVE
     b.ne 2f
     ldr x3, [x0]
-    ldr x4, [x0, 8]
-    add x4, x4, x28
-    str x4, [x3, x28]
+    ldr x4, [x0, 16]
+    add x4, x4, x26
+    str x4, [x3, x26]
 2:
     add x0, x0, 24
     subs x1, x1, 24
@@ -148,9 +148,9 @@ do_relr:
 1:
     ldr x4, [x0], 8
     tbnz x4, 0, 2f
-    add x3, x4, x28
+    add x3, x4, x26
     ldr x4, [x3]
-    add x4, x4, x28
+    add x4, x4, x26
     str x4, [x3], #8
     b 3f
 2:
@@ -159,7 +159,7 @@ do_relr:
 10:
     tbz x4, 0, 11f
     ldr x6, [x3]
-    add x6, x28, x6
+    add x6, x26, x6
     str x6, [x3]
 11:
     add x3, x3, 8

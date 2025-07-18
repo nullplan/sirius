@@ -5,19 +5,19 @@ hidden size_t __strridx(const char *s, int c)
 {
     size_t rv = 0;
     size_t i = 0;
-    c &= 0xff;
+    c = (char)c;
 #ifdef __GNUC__
     typedef size_t __attribute__((may_alias)) word_t;
-    while ((uintptr_t)(s + i) & (sizeof (size_t) - 1)) {
-        if ((unsigned char)s[i] == c)
+    size_t lim = (-(uintptr_t)s) & (sizeof (size_t) - 1);
+    for (; i < lim; i++) {
+        if (s[i] == c)
             rv = i;
         if (s[i] == 0) return rv;
-        i++;
     }
     const word_t *ws = (const void *)(s + i);
     const size_t ones = -1ul / 255;
     const size_t highs = ones << 7;
-    const size_t wmask = c * ones;
+    const size_t wmask = (c & 0xff) * ones;
     for (;;) {
         size_t w = *ws;
         if (~w & (w-ones) & highs) break;

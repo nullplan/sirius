@@ -56,6 +56,9 @@ void seekdir(DIR *, long);
 long telldir(DIR *);
 #endif
 
+#ifdef _GNU_SOURCE
+int versionsort(const struct dirent **, const struct dirent **);
+#endif
 
 #ifdef __cplusplus
 }
