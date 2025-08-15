@@ -93,7 +93,7 @@ struct termios {
 #define PARODD  0x2000
 #define HUPCL   0x4000
 #define CLOCAL  0x8000
-#define CIBAUD  0x00ff0000
+#define CIBAUD  0x100f0000
 
 #define ECHOKE  0x00000001
 #define ECHOE   0x00000002

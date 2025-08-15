@@ -96,7 +96,7 @@ struct termios {
 #define PARODD  0x200
 #define HUPCL   0x400
 #define CLOCAL  0x800
-#define CIBAUD  0x100f0000
+#define CIBAUD  0x00ff0000
 
 #define ISIG    0x00000001
 #define ICANON  0x00000002
