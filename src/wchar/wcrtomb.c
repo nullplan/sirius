@@ -4,46 +4,38 @@
 
 size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict mbs)
 {
-    unsigned char *us = (void *)s;
-    if (wc < 0x80) {
-        *us = wc;
+    char buf[4];
+    if (!s) {
+        s = buf;
+        wc = 0;
+    }
+    if (wc < 0x80u || (MB_CUR_MAX == 1 && IS_CODEUNIT(wc))) {
+        *s = wc;
         return 1;
     }
 
-    if (MB_CUR_MAX == 1) {
-        if (IS_CODEUNIT(wc)) {
-            *us = FROM_CODEUNIT(wc);
-            return 1;
-        } else {
-            errno = EILSEQ;
-            return -1;
-        }
-    }
+    if (MB_CUR_MAX == 1) goto ilseq;
 
-    /* UTF-8 encodings:
-     * 1-byte:  0xxx xxxx: 7 value bits, max CP: 0x7f
-     * 2-byte:  110x xxxx 10xx xxxx: 11 value bits, max CP: 0x7ff
-     * 3-byte:  1110 xxxx 10xx xxxx 10xx xxxx: 16 value bits, max CP: 0xffff
-     * 4-byte:  1111 0xxx 10xx xxxx 10xx xxxx 10xx xxxx: 21 value bits
-     */
-    if (wc < 0x800) {
-        us[0] = 0xC0 | (wc >> 6);
-        us[1] = 0x80 | (wc & 0x3f);
+    if (wc < 0x800u) {
+        s[0] = 0xc0 | (wc >> 6);
+        s[1] = 0x80 | (wc & 0x3f);
         return 2;
     }
-    if (wc < 0x10000) {
-        us[0] = 0xE0 | (wc >> 12);
-        us[1] = 0x80 | ((wc >> 6) & 0x3f);
-        us[2] = 0x80 | (wc & 0x3f);
+    if (wc < 0x10000u) {
+        s[0] = 0xe0 | (wc >> 12);
+        s[1] = 0x80 | ((wc >> 6) & 0x3f);
+        s[2] = 0x80 | (wc & 0x3f);
         return 3;
     }
-    if (wc < 0x110000) {
-        us[0] = 0xF0 | (wc >> 18);
-        us[1] = 0x80 | ((wc >> 12) & 0x3f);
-        us[2] = 0x80 | ((wc >> 6) & 0x3f);
-        us[3] = 0x80 | (wc & 0x3f);
+    if (wc < 0x110000u) {
+        s[0] = 0xf0 | (wc >> 18);
+        s[1] = 0x80 | ((wc >> 12) & 0x3f);
+        s[2] = 0x80 | ((wc >> 6) & 0x3f);
+        s[3] = 0x80 | (wc & 0x3f);
         return 4;
     }
+
+ilseq:
     errno = EILSEQ;
     return -1;
 }
