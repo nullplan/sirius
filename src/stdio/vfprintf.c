@@ -543,7 +543,9 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
     va_list ap2;
     __FLOCK(f);
     va_copy(ap2, ap);
-    ret = printf_core(0, fmt, &ap2, nl_type, nl_arg);
+    ret = __towrite(f);
+    if (!ret)
+        ret = printf_core(0, fmt, &ap2, nl_type, nl_arg);
     if (ret != -1) {
         unsigned char tmpbuf[80];
         unsigned char *oldbuf;
@@ -552,6 +554,7 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
             f->buf = tmpbuf;
             f->buf_size = sizeof tmpbuf;
             f->dir = 0;
+            __towrite(f);
         }
         ret = printf_core(f, fmt, &ap2, nl_type, nl_arg);
         if (f->buf == tmpbuf) {
