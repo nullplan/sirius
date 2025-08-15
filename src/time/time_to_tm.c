@@ -40,6 +40,7 @@ hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
     tm->tm_min = (second / 60) % 60;
     tm->tm_sec = second % 60;
     tm->tm_wday = (t / 86400 + 3) % 7;
+    if (tm->tm_wday < 0) tm->tm_wday += 7;
     tm->tm_isdst = tz->isdst;
     tm->__tm_gmtoff = tz->gmtoff;
     tm->__tm_tzname = tz->name;
