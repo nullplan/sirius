@@ -56,12 +56,12 @@ void *__libc_malloc(size_t x)
 
 void *__libc_calloc(size_t a, size_t b)
 {
-    if (a > PTRDIFF_MAX/b) {
-        errno = ENOMEM;
-        return 0;
-    }
     if (!a || !b) {
         errno = EINVAL;
+        return 0;
+    }
+    if (a > PTRDIFF_MAX/b) {
+        errno = ENOMEM;
         return 0;
     }
     return __libc_calloc_impl(a, b);
