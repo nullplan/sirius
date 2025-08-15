@@ -212,7 +212,7 @@ void __libc_free(void *p)
 
 void *__libc_realloc(void *p, size_t new)
 {
-    if (!p) return malloc(new);
+    if (!p) return __libc_malloc(new);
     if (!new) {
         errno = EINVAL;
         return 0;
