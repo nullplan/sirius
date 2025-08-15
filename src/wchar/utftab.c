@@ -24,7 +24,7 @@
  * Encoding     Value bits      Code point range    Lowest encoding Highest encoding
  * =================================================================================
  * 1 byte       7               00 - 7F             00              7F
- * 2 byte       11              80 - 7FF            C2 00           DF BF
+ * 2 byte       11              80 - 7FF            C2 80           DF BF
  * 3 byte       16              800 - FFFF          E0 A0 80        EF BF BF
  * 4 byte       21              10000 - 10FFFF      F0 90 80 80     F4 8F BF BF
  *
