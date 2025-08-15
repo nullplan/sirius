@@ -122,24 +122,9 @@ static void bcrypt_core(const unsigned char salt[static 16], const unsigned char
 
     uint32_t keywords[18];
     size_t i = 0;
-    keywords[0] = streamword(key, keylen, &i);
-    keywords[1] = streamword(key, keylen, &i);
-    keywords[2] = streamword(key, keylen, &i);
-    keywords[3] = streamword(key, keylen, &i);
-    keywords[4] = streamword(key, keylen, &i);
-    keywords[5] = streamword(key, keylen, &i);
-    keywords[6] = streamword(key, keylen, &i);
-    keywords[7] = streamword(key, keylen, &i);
-    keywords[8] = streamword(key, keylen, &i);
-    keywords[9] = streamword(key, keylen, &i);
-    keywords[10] = streamword(key, keylen, &i);
-    keywords[11] = streamword(key, keylen, &i);
-    keywords[12] = streamword(key, keylen, &i);
-    keywords[13] = streamword(key, keylen, &i);
-    keywords[14] = streamword(key, keylen, &i);
-    keywords[15] = streamword(key, keylen, &i);
-    keywords[16] = streamword(key, keylen, &i);
-    keywords[17] = streamword(key, keylen, &i);
+    for (size_t j = 0; j < 18; j++)
+        keywords[j] = streamword(key, keylen, &i);
+
     bf_init_ctx(&ctx);
     bf_expand(&ctx, saltwords, keywords);
     for (size_t i = 0; i < rounds; i++) {
