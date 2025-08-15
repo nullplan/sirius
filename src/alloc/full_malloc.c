@@ -40,7 +40,7 @@ static void *mem_from_chunk(struct chunk *c) {
 
 #define LINE(x) x, x * 5 / 4, x * 6 / 4, x * 7 / 4
 static size_t high_bin_low_limits[] = {
-    LINE(32), LINE(64), LINE(128), LINE(256),
+    LINE(33), LINE(64), LINE(128), LINE(256),
     LINE(512), LINE(1024), LINE(2048), LINE(4096),
 };
 
@@ -60,7 +60,7 @@ static size_t bin_index_up(size_t x) {
     x /= ALLOC_ALIGN;
     if (x <= 32) return x - 1;
     for (size_t i = 0; i < 31; i++)
-        if (high_bin_low_limits[i] > x)
+        if (high_bin_low_limits[i] >= x)
             return i + 32;
     abort();
 }
@@ -212,7 +212,7 @@ void __libc_free(void *p)
 
 void *__libc_realloc(void *p, size_t new)
 {
-    if (!p) return malloc(new);
+    if (!p) return __libc_malloc(new);
     if (!new) {
         errno = EINVAL;
         return 0;

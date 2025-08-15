@@ -12,7 +12,7 @@ _Noreturn void abort(void)
     __lock(&__abort_lock);
     __libc_sigaction(SIGABRT, &(struct sigaction){.sa_handler = SIG_DFL}, 0);
     __syscall(SYS_tkill, __pthread_self()->tid, SIGABRT);
-    long mask[4] ={0};
+    long mask[4] = {0};
     BITOP(mask, |=, SIGABRT-1);
     __syscall(SYS_rt_sigprocmask, SIG_UNBLOCK, mask, 0, _NSIG/8);
 

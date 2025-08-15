@@ -91,10 +91,10 @@ enum {
 #define htonl(x)    __bswap32(x)
 #define ntohl(x)    __bswap32(x)
 #else
-#define htons(x)    ((uint16_t)(x))
-#define ntohs(x)    ((uint16_t)(x))
-#define htonl(x)    ((uint32_t)(x))
-#define ntohl(x)    ((uint32_t)(x))
+#define htons(x)    ((uint16_t)((x) * 1))
+#define ntohs(x)    ((uint16_t)((x) * 1))
+#define htonl(x)    ((uint32_t)((x) * 1))
+#define ntohl(x)    ((uint32_t)((x) * 1))
 #endif
 
 #define IPV6_ADDRFORM           1
