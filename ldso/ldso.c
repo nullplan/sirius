@@ -934,8 +934,6 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     /* we set up a temporary thread pointer to use for holding errno, hwcap, and sysinfo */
     /* also, cause it's on the way, we set __environ for use with getenv() later. */
     size_t aux[AUX_CNT] = {0};
-    struct __pthread tp = {0};
-    tp.self = tp.next = tp.prev = &tp;
     size_t *auxv = (void *)(sp + 2 + *sp);
     __environ = (void *)auxv;
     while (*auxv++);
