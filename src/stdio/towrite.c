@@ -13,7 +13,4 @@ hidden int __towrite(FILE *f)
     return 0;
 }
 
-hidden void __towrite_needs_stdio_exit(void)
-{
-    __stdio_exit_needed();
-}
+hidden void (*__towrite_needs_stdio_exit)(void) = __stdio_exit_needed;
