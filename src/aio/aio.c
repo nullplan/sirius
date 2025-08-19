@@ -202,10 +202,11 @@ static void *worker_thread(void *ctx)
     struct aiocb *cb = a->cb;
     int fd = cb->aio_fildes;
     int seekable, append;
+    int op = a->op;
     sem_post(&a->sem);
     pthread_mutex_lock(&q->lock);
 
-    t->op = a->op;
+    t->op = op;
     t->err = ECANCELED;
     t->result = -1;
     t->running = 1;
@@ -224,7 +225,6 @@ static void *worker_thread(void *ctx)
     seekable = q->seekable;
     append = q->append;
 
-    int op = t->op;
     if (op == O_SYNC || op == O_DSYNC || (op == LIO_WRITE && q->append)) {
         while (has_write_operation(t->next))
             pthread_cond_wait(&q->task_done, &q->lock);

@@ -12,7 +12,4 @@ hidden int __toread(FILE *f)
     return 0;
 }
 
-hidden void __toread_needs_stdio_exit(void)
-{
-    __stdio_exit_needed();
-}
+hidden void (*__toread_needs_stdio_exit)(void) = __stdio_exit_needed;
