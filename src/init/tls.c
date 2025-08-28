@@ -63,10 +63,10 @@ hidden struct __pthread *__copy_tls(void *mem)
     {
 #ifdef TLS_VARIANT_2
         memcpy((char *)tp - p->off, p->image, p->len);
-        dtv[i++] = p->off + DTV_OFFSET;
+        dtv[i++] = (uintptr_t)tp - p->off;
 #else
         memcpy((char *)tp + p->off, p->image, p->len);
-        dtv[i++] = p->off - sizeof (struct __pthread) + DTV_OFFSET;
+        dtv[i++] = (uintptr_t)tp + p->off + DTV_OFFSET;
 #endif
     }
     tp->dtv = dtv;
