@@ -41,7 +41,7 @@ hidden size_t __stdio_write(FILE *f, const void *buf, size_t len)
             iovlen--;
         }
 
-        rv += wr;
+        if (iovlen == 1) rv += wr;
         pio->iov_base = (char *)pio->iov_base + wr;
         pio->iov_len -= wr;
     }
