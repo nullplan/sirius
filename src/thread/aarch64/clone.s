@@ -9,8 +9,7 @@ __clone:
     cbz x1, 1f
     and x1, x1, -16
     add x1, x1, -16
-    str x0, [x1]
-    str x3, [x1, 8]
+    stp x0, x3, [x1]
 1:
     mov x8, 220
     mov x0, x2
@@ -25,8 +24,7 @@ __clone:
 
 2:
     mov fp, 0
-    ldr x0, [sp, 8]
-    ldr x1, [sp]
+    ldp x1, x0, [sp]
     blr x1
 1:
     mov x8, 93
