@@ -8,9 +8,9 @@ size_t strlen(const char *s)
     typedef size_t __attribute__((may_alias)) word_t;
     const size_t ones = -1ul/255;
     const size_t highs = ones << 7;
-    while (((uintptr_t)s + rv) & (sizeof (size_t) - 1)) {
+    size_t max = (-(uintptr_t)s) & (sizeof (size_t) - 1);
+    for (; rv < max; rv++) {
         if (!s[rv]) return rv;
-        rv++;
     }
     const word_t *ws = (const word_t *)(s + rv);
     for (;;) {
@@ -25,4 +25,3 @@ size_t strlen(const char *s)
     return rv;
 
 }
-
