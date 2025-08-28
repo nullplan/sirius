@@ -17,3 +17,4 @@ memmove:
 2:
 .hidden __memcpy_fwd
     b __memcpy_fwd
+.size memmove, . - memmove
