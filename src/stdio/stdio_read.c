@@ -26,7 +26,7 @@ hidden ssize_t __stdio_read(FILE *f, void *buf, size_t len)
             f->flags |= F_EOF;
         return -1;
     }
-    if (rd >= len) {
+    if (f->buf_size && rd >= len) {
         f->end += rd - len + 1;
         ((unsigned char *)buf)[len - 1] = *f->pos++;
         return len;
