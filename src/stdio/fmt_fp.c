@@ -53,13 +53,13 @@ static size_t fmt_hexfloat(FILE *f, long double x, int width, int prec, int flag
     } while (x);
 
     if (prec < 0) prec = (LDBL_MANT_DIG + 3) / 4;
-    if (prec < 8 * (z - a)) {
+    if (prec < 8 * (z - a - 1)) {
         uint32_t *r = a + 1 + prec/8;
         uint32_t mask = (1ul << (4 * (8 - prec % 8) - 1) << 1) - 1;
         uint32_t away = *r & mask;
         *r -= away;
         long double large = 1/LDBL_EPSILON;
-        if ((*r & (mask << 1)) || (mask == UINT32_MAX && r > a && (r[-1] & 1)))
+        if ((*r & (mask << 1)) || (mask == UINT32_MAX && (r[-1] & 1)))
             large += 1.0;
         long double small;
         if (away == 0 && z == r + 1)
