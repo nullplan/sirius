@@ -30,7 +30,7 @@ static char *threebyte_strstr(const unsigned char *hs, const unsigned char *ns)
 static char *fourbyte_strstr(const unsigned char *hs, const unsigned char *ns)
 {
     uint32_t n = ns[0] << 24 | ns[1] << 16 | ns[2] << 8 | ns[3];
-    uint32_t h = hs[0] << 16 | hs[1] << 8 << hs[2];
+    uint32_t h = hs[0] << 16 | hs[1] << 8  | hs[2];
     hs += 3;
     while (*hs) {
         h = h << 8 | *hs++;
@@ -117,14 +117,14 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
             mem = 0;
             continue;
         }
-        for (k = crit.ms; k > mem && h[k] == n[k]; k--);
+        for (k = crit.ms; k > mem && h[k-1] == n[k-1]; k--);
         if (k <= mem) return (char *)h;
         h += crit.p;
         mem = mem0;
     }
 }
 
-char *strstr(const char *h, const char *n)
+char *(strstr)(const char *h, const char *n)
 {
     if (!*n) return (char *)h;
     h = strchr(h, *n);
