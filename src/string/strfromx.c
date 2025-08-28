@@ -24,6 +24,7 @@ static size_t string_write(FILE *f, const void *b, size_t len)
     struct string *s = f->cookie;
     string_copy(s, f->buf, f->pos - f->buf);
     string_copy(s, b, len);
+    f->pos = f->buf;
     *s->s = 0;
     return len;
 }
