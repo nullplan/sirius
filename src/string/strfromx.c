@@ -82,9 +82,12 @@ static int strfromx(char *restrict s, size_t n, const char *restrict fmt, long d
     f.lock = -1;
     f.orientation = 0;
 
-    int rv = __fmt_fp(&f, val, 0, prec, 0, c, type);
-    if (rv >= 0)
-        string_write(&f, 0, 0);
+    size_t rv = __fmt_fp(&f, val, 0, prec, 0, c, type);
+    string_write(&f, 0, 0);
+    if (rv > INT_MAX) {
+        errno = EOVERFLOW;
+        return -1;
+    }
     return rv;
 }
 
