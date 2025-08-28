@@ -5,7 +5,7 @@
 int pthread_getschedparam(pthread_t t, int *restrict pol, struct sched_param *restrict prio)
 {
     sigset_t oss;
-    __block_usr_sigs(&oss);
+    __block_all_sigs(&oss);
     __lock(&t->killlock);
     int rv = ESRCH; /* not quite correct, but the best I can do right now. */
     if (t->tid)

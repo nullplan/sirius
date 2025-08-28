@@ -6,7 +6,7 @@ int pthread_setschedprio(pthread_t t, int prio)
 {
     int rv = ESRCH;
     sigset_t ss;
-    __block_usr_sigs(&ss);
+    __block_all_sigs(&ss);
     __lock(&t->killlock);
     if (t->tid)
         rv = -__syscall(SYS_sched_setparam, t->tid, &prio);
