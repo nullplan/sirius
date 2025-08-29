@@ -8,3 +8,5 @@ TYPEDEF int int_fast32_t;
 TYPEDEF unsigned uint_fast16_t;
 TYPEDEF unsigned uint_fast32_t;
 TYPEDEF long wchar_t;
+TYPEDEF unsigned size_t;
+TYPEDEF int ptrdiff_t;

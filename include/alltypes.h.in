@@ -63,9 +63,7 @@ TYPEDEF unsigned            uint32_t;
 TYPEDEF unsigned long long  uint64_t;
 TYPEDEF long intptr_t;
 TYPEDEF long ssize_t;
-TYPEDEF long ptrdiff_t;
 TYPEDEF unsigned long uintptr_t;
-TYPEDEF unsigned long size_t;
 
 TYPEDEF struct __file FILE;
 TYPEDEF unsigned long long blkcnt_t;
