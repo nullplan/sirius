@@ -20,17 +20,6 @@ def cleanup(signum, frame):
     signal.signal(signum, SIG_DFL)
     signal.raise_signal(signum)
 
-def trycpp(text, condition):
-    print("Testing %s... " % text, end='')
-    with open(tmpc, mode='w') as f:
-        print("#if !(%s)\n#error fail\n#endif" % condition, file=f)
-    if subprocess.run(cc + cflags + ["-c", tmpc, "-o", "/dev/null"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-        print("yes")
-        return True
-    else:
-        print("no")
-        return False
-
 def trycc(text, source):
     print("Testing %s... " % text, end='')
     with open(tmpc, mode='w') as f:
@@ -41,6 +30,9 @@ def trycc(text, source):
     else:
         print("no")
         return False
+
+def trycpp(text, condition):
+    return trycc(text, "#if !(%s)\n#error fail\n#endif" % condition)
 
 ldflags_try=[]
 def tryldflag(flag, lst):
