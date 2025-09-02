@@ -84,15 +84,12 @@ def find_src(base, arch):
 
 if __name__ == "__main__":
     os.environ['LC_ALL'] = 'C'
-    cc = os.getenv("CC", default="").split()
-    ar = os.getenv("AR")
+    cc = os.getenv("CC", default="cc").split()
+    ar = os.getenv("AR", default="ar")
     arch = os.getenv("ARCH")
-    cflags = os.getenv("CFLAGS", default="").split()
+    cflags = os.getenv("CFLAGS", default="-O3").split()
     do_static = True
     do_shared = True
-
-    if cc == []: cc = ["cc"]
-    if ar == None: ar = "ar"
 
     srcdir = os.path.dirname(sys.argv[0])
     if srcdir == "": srcdir="."
@@ -135,7 +132,6 @@ if __name__ == "__main__":
     signal.signal(signal.SIGQUIT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
 
-    if cflags == []: cflags = ["-O3"]
     if arch == "x86_64" and trycpp("if we are actually ILP32", "__ILP32__"): arch = "x32"
     if arch == "powerpc64":
         if not trycpp("if correct ABI is in use", "_CALL_ELF==2"): sys.exit(1)
