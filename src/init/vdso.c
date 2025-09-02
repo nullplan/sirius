@@ -25,6 +25,23 @@ static const uint16_t *versym;
 static size_t base;
 static size_t numsyms;
 
+static size_t count_ghashtab(const uint32_t *gh)
+{
+    size_t nbuckets = gh[0];
+    size_t symoffset = gh[1];
+    size_t bloom_size = gh[2];
+    const size_t *bloom = (void *)(gh + 4);
+    const uint32_t *buckets = (void *)(bloom + bloom_size);
+    const uint32_t *chain = buckets + nbuckets;
+    size_t maxbucket = 0;
+    for (size_t i = 0; i < nbuckets; i++)
+        if (buckets[i] > maxbucket)
+            maxbucket = buckets[i];
+    size_t count = maxbucket;
+    while (!(chain[count - symoffset] & 1))
+        count++;
+    return count + 1;
+}
 hidden void __init_vdso(const void *p)
 {
     if (!p) return;
@@ -33,6 +50,7 @@ hidden void __init_vdso(const void *p)
     const Phdr *ph = ph0;
     const size_t *dyn = 0;
     const uint32_t *hashtab = 0;
+    const uint32_t *ghashtab = 0;
     size_t phnum = eh->e_phnum, phent = eh->e_phentsize;
     for (; phnum; phnum--, ph = (void *)((const char *)ph + phent)) {
         if (ph->p_type == PT_DYNAMIC) {
@@ -48,12 +66,14 @@ hidden void __init_vdso(const void *p)
             case DT_STRTAB: strtab = dp; break;
             case DT_SYMTAB: symtab = dp; break;
             case DT_HASH:   hashtab = dp; break;
+            case DT_GNU_HASH: ghashtab = dp; break;
             case DT_VERDEF: verdef = dp; break;
             case DT_VERSYM: versym = dp; break;
         }
     }
     if (!versym) verdef = 0;
     if (hashtab) numsyms = hashtab[1];
+    else if (ghashtab) numsyms = count_ghashtab(ghashtab);
 }
 
 static int match_version(uint16_t versym, const char *ver)
