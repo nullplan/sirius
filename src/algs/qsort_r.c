@@ -82,7 +82,7 @@ static int ctz(const size_t p[static 2])
 
 static int test(const size_t p[static 2], size_t x)
 {
-    return p[x / (8 * sizeof (size_t))] & (1ul << (x % (8 * sizeof (size_t))));
+    return (p[x / (8 * sizeof (size_t))] >> (x % (8 * sizeof (size_t)))) & 1;
 }
 
 static void set(size_t p[static 2], size_t x)
