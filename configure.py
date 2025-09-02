@@ -93,8 +93,7 @@ if __name__ == "__main__":
 
     srcdir = os.path.dirname(sys.argv[0])
     if srcdir == "": srcdir="."
-    for i in range(1, len(sys.argv)):
-        arg = sys.argv[i]
+    for arg in sys.argv[1:]:
         if arg[:3] == "CC=": cc = arg[3:].split()
         elif arg[:3] == "AR=": ar = arg[3:]
         elif arg[:5] == "ARCH=": arch = arg[5:]
@@ -177,7 +176,7 @@ if __name__ == "__main__":
 
     # Link every internal reference internally, except for the symbols on the
     # list. Global data symbols must remain overridable to support copy relocs.
-    # I will later add malloc &c. to the list to allow malloc replacement libs
+    # I have also added malloc &c. to the list to allow malloc replacement libs
     # to work.
     tryldflag(f"-Wl,--dynamic-list={srcdir}/dynamic.list", ldflags)
 
@@ -220,7 +219,7 @@ if __name__ == "__main__":
     tryccflag("-ffunction-sections", cflags)
     tryccflag("-fdata-sections", cflags)
 
-    # on i386, set default -march to i486, because i36 doesn't have cmpxchg,
+    # on i386, set default -march to i486, because i386 doesn't have cmpxchg,
     # and is therefore not supportable.
     if arch == "i386":
         if not any(flg.startswith("-march=") for flg in cc + cflags):
