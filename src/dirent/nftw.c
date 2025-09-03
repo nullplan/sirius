@@ -31,17 +31,14 @@ static int recurse(char *buf, int len, int (*cb)(const char *, const struct stat
         type = FTW_NS;
     } else if (S_ISLNK(st.st_mode)) {
         type = FTW_SL;
-    } else if (S_ISDIR(st.st_mode)) {
-        type = FTW_D;
-    } else {
-        type = FTW_F;
-    }
-
-    if (type == FTW_SL) {
         struct stat discard;
         if (stat(buf, &discard)) {
             type = FTW_SLN;
         }
+    } else if (S_ISDIR(st.st_mode)) {
+        type = FTW_D;
+    } else {
+        type = FTW_F;
     }
 
     if (type != FTW_D) return cb(buf, &st, type, &(struct FTW){.base = len, .level = level});
@@ -102,6 +99,7 @@ static int recurse(char *buf, int len, int (*cb)(const char *, const struct stat
     }
     return rv;
 }
+
 int nftw(const char *dir, int (*cb)(const char *, const struct stat *, int, struct FTW *), int lim, int flags)
 {
     char buf[PATH_MAX];
