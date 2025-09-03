@@ -127,9 +127,9 @@ int __signbitl(long double);
 
 
 #define fpclassify(x) (sizeof (x) == sizeof (float)? __fpclassifyf(__float_bits(x) & 0x7fffffff) : sizeof (x) == sizeof (double)? __fpclassifyd(__double_bits(x) & 0x7fffffffffffffffULL) : __fpclassifyl(x))
-#define isfinite(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) < (0xff << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) < (0x7ffULL << 53) : __fpclassifyl(x) < FP_INFINITE)
-#define isinf(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) == (0xff << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) == (0x7ffULL << 53) : __fpclassifyl(x) == FP_INFINITE)
-#define isnan(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) > (0xff << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) > (0x7ffULL << 53) : __fpclassifyl(x) > FP_INFINITE)
+#define isfinite(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) < (0xffu << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) < (0x7ffULL << 53) : __fpclassifyl(x) < FP_INFINITE)
+#define isinf(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) == (0xffu << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) == (0x7ffULL << 53) : __fpclassifyl(x) == FP_INFINITE)
+#define isnan(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) > (0xffu << 24) : sizeof (x) == sizeof (double)? (__double_bits(x) << 1) > (0x7ffULL << 53) : __fpclassifyl(x) > FP_INFINITE)
 #define isnormal(x) (sizeof (x) == sizeof (float)? (__float_bits(x) << 1) - (1u << 24) < (0xffu << 24) - (1u << 24) : \
         sizeof (x) == sizeof (double)? (__double_bits(x) << 1) - (1ull << 53) < (0x7ffULL << 53) - (1ull << 53) : __fpclassifyl(x) == FP_NORMAL)
 #define signbit(x) (sizeof (x) == sizeof (float)? (int)(__float_bits(x) >> 31) : sizeof (x) == sizeof (double)? (int)(__double_bits(x) >> 63) : __signbitl(x))

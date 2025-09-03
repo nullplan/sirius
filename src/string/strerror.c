@@ -21,6 +21,7 @@ static const struct errtab errtab = {
     #undef E
 };
 
+_Static_assert(sizeof errtab < 0xffff, "");
 static const uint16_t erroff[] = {
     #define E(code, str) [code] = offsetof(struct errtab, str_##code) + 1,
     #include "strerror.h"

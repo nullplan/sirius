@@ -1,9 +1,11 @@
 #include <aio.h>
 #include <time.h>
 #include <errno.h>
+#include <limits.h>
 #include "futex.h"
 #include "cpu.h"
 
+extern hidden int __aio_notify;
 int aio_suspend(const struct aiocb *const cbs[], int ncbs, const struct timespec *to)
 {
     struct timespec absto;
@@ -37,6 +39,11 @@ int aio_suspend(const struct aiocb *const cbs[], int ncbs, const struct timespec
         }
 
     for (;;) {
+        int serial;
+        if (nonzerocb > 1) {
+            serial = __aio_notify;
+            a_barrier();
+        }
         for (int i = 0; i < ncbs; i++)
             if (cbs[i] && aio_error((void *)cbs[i]) != EINPROGRESS)
                 return 0;
@@ -53,11 +60,13 @@ int aio_suspend(const struct aiocb *const cbs[], int ncbs, const struct timespec
                 continue;
             val |= 0x80000000u;
         } else {
-            int tid = __pthread_self()->tid;
-            extern hidden int __aio_notify;
             fut = &__aio_notify;
-            val = a_swap(&__aio_notify, tid);
-            if (!val) val = tid;
+            if (serial >= 0) {
+                if (a_cas(&__aio_notify, serial, serial + INT_MIN) != serial)
+                    continue;
+                serial += INT_MIN;
+            }
+            val = serial;
         }
         int rv = __timedwait_cp(fut, &(int){0}, val, 1, to, CLOCK_MONOTONIC);
         if (rv == -ETIMEDOUT || rv == -EINTR) {

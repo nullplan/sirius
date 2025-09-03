@@ -35,7 +35,7 @@ static void *fourbyte_memmem(const unsigned char *hs, size_t hl,
         const unsigned char *ns)
 {
     uint32_t n = ns[0] << 24 | ns[1] << 16 | ns[2] << 8 | ns[3];
-    uint32_t h = hs[0] << 16 | hs[1] << 8 << hs[2];
+    uint32_t h = hs[0] << 16 | hs[1] << 8  | hs[2];
     hs += 3;
     hl -= 3;
     while (hl--) {
@@ -117,7 +117,7 @@ static char *twoway_memmem(const unsigned char *h, size_t hl,
             mem = 0;
             continue;
         }
-        for (k = crit.ms; k > mem && h[k] == n[k]; k--);
+        for (k = crit.ms; k > mem && h[k-1] == n[k-1]; k--);
         if (k <= mem) return (char *)h;
         h += crit.p;
         hl -= crit.p;
@@ -125,7 +125,7 @@ static char *twoway_memmem(const unsigned char *h, size_t hl,
     }
 }
 
-void *memmem(const void *h, size_t hl, const void *n, size_t nl)
+void *(memmem)(const void *h, size_t hl, const void *n, size_t nl)
 {
     if (!nl) return (void *)h;
     const char *p = memchr(h, *(unsigned char *)n, hl);

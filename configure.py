@@ -20,17 +20,6 @@ def cleanup(signum, frame):
     signal.signal(signum, SIG_DFL)
     signal.raise_signal(signum)
 
-def trycpp(text, condition):
-    print("Testing %s... " % text, end='')
-    with open(tmpc, mode='w') as f:
-        print("#if !(%s)\n#error fail\n#endif" % condition, file=f)
-    if subprocess.run(cc + cflags + ["-c", tmpc, "-o", "/dev/null"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-        print("yes")
-        return True
-    else:
-        print("no")
-        return False
-
 def trycc(text, source):
     print("Testing %s... " % text, end='')
     with open(tmpc, mode='w') as f:
@@ -41,6 +30,9 @@ def trycc(text, source):
     else:
         print("no")
         return False
+
+def trycpp(text, condition):
+    return trycc(text, "#if !(%s)\n#error fail\n#endif" % condition)
 
 ldflags_try=[]
 def tryldflag(flag, lst):
@@ -92,20 +84,16 @@ def find_src(base, arch):
 
 if __name__ == "__main__":
     os.environ['LC_ALL'] = 'C'
-    cc = os.getenv("CC", default="").split()
-    ar = os.getenv("AR")
+    cc = os.getenv("CC", default="cc").split()
+    ar = os.getenv("AR", default="ar")
     arch = os.getenv("ARCH")
-    cflags = os.getenv("CFLAGS", default="").split()
+    cflags = os.getenv("CFLAGS", default="-O3").split()
     do_static = True
     do_shared = True
 
-    if cc == []: cc = ["cc"]
-    if ar == None: ar = "ar"
-
     srcdir = os.path.dirname(sys.argv[0])
     if srcdir == "": srcdir="."
-    for i in range(1, len(sys.argv)):
-        arg = sys.argv[i]
+    for arg in sys.argv[1:]:
         if arg[:3] == "CC=": cc = arg[3:].split()
         elif arg[:3] == "AR=": ar = arg[3:]
         elif arg[:5] == "ARCH=": arch = arg[5:]
@@ -143,7 +131,6 @@ if __name__ == "__main__":
     signal.signal(signal.SIGQUIT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
 
-    if cflags == []: cflags = ["-O3"]
     if arch == "x86_64" and trycpp("if we are actually ILP32", "__ILP32__"): arch = "x32"
     if arch == "powerpc64":
         if not trycpp("if correct ABI is in use", "_CALL_ELF==2"): sys.exit(1)
@@ -189,7 +176,7 @@ if __name__ == "__main__":
 
     # Link every internal reference internally, except for the symbols on the
     # list. Global data symbols must remain overridable to support copy relocs.
-    # I will later add malloc &c. to the list to allow malloc replacement libs
+    # I have also added malloc &c. to the list to allow malloc replacement libs
     # to work.
     tryldflag(f"-Wl,--dynamic-list={srcdir}/dynamic.list", ldflags)
 
@@ -232,7 +219,7 @@ if __name__ == "__main__":
     tryccflag("-ffunction-sections", cflags)
     tryccflag("-fdata-sections", cflags)
 
-    # on i386, set default -march to i486, because i36 doesn't have cmpxchg,
+    # on i386, set default -march to i486, because i386 doesn't have cmpxchg,
     # and is therefore not supportable.
     if arch == "i386":
         if not any(flg.startswith("-march=") for flg in cc + cflags):
@@ -313,12 +300,8 @@ rule cc
     command = $cc $cflags -MD -MF $out.d -c $in -o $out
     depfile = $out.d
 
-rule ccas
-    command = $cc $cflags -Wa,--noexecstack -D__ASSEMBLER__ -MD -MF $out.d -c $in -o $out
-    depfile = $out.d
-
 rule as
-    command = $cc -Wa,--noexecstack -c $in -o $out
+    command = $cc $cflags -c $in -o $out
 
 rule ldr
     command = $cc -r -o $out $in
@@ -341,7 +324,7 @@ build obj/include: md
 build lib/crti.o: as {srcdir}/crt/crti.s
 build lib/crtn.o: as {srcdir}/crt/crtn.s
 build obj/include/alltypes.h: mkalltypes {srcdir}/arch/{arch}/alltypes.h.in {srcdir}/include/alltypes.h.in || obj/include
-build obj/rcrt1s.o: ccas {srcdir}/crt/{arch}/rcrt1s.S || obj
+build obj/rcrt1s.o: cc {srcdir}/crt/{arch}/rcrt1s.S || obj
 ''')
         if do_static:
             f.write(f'''
@@ -357,12 +340,9 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
         if do_static or pic_default: f.write(f"build obj/crt1c.o: cc {srcdir}/crt/crt1c.c || obj\n")
         if do_shared:
             f.write(f"build lib/Scrt1.o: ldr {crt1pic} obj/crt1s.o || lib\n")
-            if pic_default:
-                f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
-            else:
-                f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
+            f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
         if os.path.exists(f"{srcdir}/crt/{arch}/crt1s.S"):
-            f.write(f"build obj/crt1s.o: ccas {srcdir}/crt/{arch}/crt1s.S || obj\n")
+            f.write(f"build obj/crt1s.o: cc {srcdir}/crt/{arch}/crt1s.S || obj\n")
         else:
             f.write(f"build obj/crt1s.o: as {srcdir}/crt/{arch}/crt1s.s || obj\n")
 
@@ -374,7 +354,7 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
                 f.write(f"build {o}: cc {i} | obj/include/alltypes.h || {d}\n")
                 if do_shared and not pic_default:
                     f.write(f"build {o[:-2]}.lo: ccpic {i} | obj/include/alltypes.h || {d}\n")
-            elif i.endswith(".S"): f.write(f"build {o}: ccas {i} || {d}\n")
+            elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n")
             elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")
 
         for i in libsrc:
@@ -382,5 +362,5 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
             d = os.path.dirname(o)
             if i.endswith(".c"):
                 f.write(f"build {o}: {'cc' if pic_default else 'ccpic'} {i} | obj/include/alltypes.h || {d}\n")
-            elif i.endswith(".S"): f.write(f"build {o}: ccas {i} || {d}\n")
+            elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n")
             elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")

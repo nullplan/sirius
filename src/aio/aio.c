@@ -158,7 +158,12 @@ static void cleanup(void *ctx)
     t->cb->__res = t->result;
     if (a_swap(&t->cb->__err, t->err) != EINPROGRESS)
         __futex_wake(&t->cb->__err, 1, INT_MAX);
-    if (a_swap(&__aio_notify, 0))
+    int val, nval;
+    do {
+        val = __aio_notify;
+        nval = (val + 1u) & INT_MAX;
+    } while (a_cas(&__aio_notify, val, nval) != val);
+    if (val < 0)
         __futex_wake(&__aio_notify, 1, INT_MAX);
 
     pthread_mutex_lock(&q->lock);
@@ -218,7 +223,7 @@ static void *worker_thread(void *ctx)
     q->head = t;
 
     if (!q->init) {
-        q->seekable = lseek(fd, 0, SEEK_SET) >= 0;
+        q->seekable = lseek(fd, 0, SEEK_CUR) >= 0;
         q->append = q->seekable && (fcntl(fd, F_GETFL) & O_APPEND);
         q->init = 1;
     }

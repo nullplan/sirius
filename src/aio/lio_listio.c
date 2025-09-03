@@ -88,6 +88,7 @@ int lio_listio(int mode, struct aiocb *restrict const cbs[restrict], int n, stru
     int rv = pthread_create(&td, &a, waiter, w);
     pthread_attr_destroy(&a);
     if (rv) {
+        free(w);
         errno = EAGAIN;
         return -1;
     }
