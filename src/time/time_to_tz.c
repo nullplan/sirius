@@ -149,16 +149,13 @@ static int parse_posix_form(const char *s)
     s = getoff(s, &__timezone);
     if (!s) return -1;
     __tzname[0] = tzbuf[0];
-    if (!*s) {
-        __daylight = 0;
-        return 0;
-    }
+    __daylight = 0;
+    if (!*s) return 0;
     s = getname(s, tzbuf[1], TZNAME_MAX + 1);
     if (!s) return 0;   /* implementation definition: if no rule is given, dst is ignored (std is observed the whole year) */
     __tzname[1] = tzbuf[1];
     const char *p = getoff(s, &dstzone);
-    if (!p)
-        dstzone = __timezone - 3600;
+    if (!p) dstzone = __timezone - 3600;
     else s = p;
     if (*s != ',') return 0;
     s = getrule(s + 1, &rules[0]);
