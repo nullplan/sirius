@@ -36,4 +36,8 @@ extern hidden size_t __get_sysinfo(const size_t *);
 
 #define PROCFD_LEN  (15 + 3 * sizeof (int))
 extern hidden char *__procfdname(int, char *);
+
+extern char *__progname;
+extern char *__progname_short;
+extern hidden void __init_progname(char *);
 #endif

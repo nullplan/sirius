@@ -29,4 +29,9 @@ calloc;
 realloc;
 free;
 aligned_alloc;
+
+__progname;
+__progname_short;
+program_invocation_name;
+program_invocation_short_name;
 };

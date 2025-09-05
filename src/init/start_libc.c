@@ -23,6 +23,9 @@ static void dummy1(void) {}
 weak_alias(__stdio_list_init, dummy1);
 weak_alias(__init_tsd, dummy1);
 
+static void dummy2(char *p) {}
+weak_alias(__init_progname, dummy2);
+
 hidden int __elevated;
 hidden int __thread_list_lock;
 hidden unsigned long __page_size;
@@ -72,6 +75,9 @@ void __init_libc(char *pn, char **envp)
     __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT], aux[AT_HWCAP], __get_sysinfo(aux));
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     __global_locale = __c_locale;
+    if (!pn || !*pn) pn = (void *)aux[AT_EXECFN];
+    if (!pn) pn = "";
+    __init_progname(pn);
 
     const int mask = 1<<AT_UID | 1<<AT_EUID | 1<<AT_GID | 1<<AT_EGID;
     if ((aux[0] & mask) == mask && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
