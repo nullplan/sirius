@@ -13,25 +13,32 @@ extern "C" {
 #define LOG_NOWAIT      16
 
 #define LOG_KERN        0
-#define LOG_USER        1
-#define LOG_MAIL        2
-#define LOG_NEWS        3
-#define LOG_UUCP        4
-#define LOG_DAEMON      5
-#define LOG_AUTH        6
-#define LOG_CRON        7
-#define LOG_LPR         8
-#define LOG_LOCAL0      9
-#define LOG_LOCAL1      10
-#define LOG_LOCAL2      11
-#define LOG_LOCAL3      12
-#define LOG_LOCAL4      13
-#define LOG_LOCAL5      14
-#define LOG_LOCAL6      15
-#define LOG_LOCAL7      16
+#define LOG_USER        8
+#define LOG_MAIL        16
+#define LOG_DAEMON      24
+#define LOG_AUTH        32
+#define LOG_SYSLOG      40
+#define LOG_LPR         48
+#define LOG_NEWS        56
+#define LOG_UUCP        64
+#define LOG_CRON        72
+#define LOG_AUTHPRIV    80
+#define LOG_FTP         88
+
+#define LOG_LOCAL0      128
+#define LOG_LOCAL1      136
+#define LOG_LOCAL2      144
+#define LOG_LOCAL3      152
+#define LOG_LOCAL4      160
+#define LOG_LOCAL5      168
+#define LOG_LOCAL6      176
+#define LOG_LOCAL7      184
+
+#define LOG_FACMASK     0xf8
 
 #define LOG_MASK(p)     (1 << (p))
 #define LOG_UPTO(p)     (LOG_MASK((p) + 1) - 1)
+#define LOG_PRI(x)      ((x) & 7)
 
 #define LOG_EMERG       0
 #define LOG_ALERT       1
