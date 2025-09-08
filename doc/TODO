@@ -429,12 +429,6 @@ int utimes(const char *, const struct timeval [2]);
 /* sys/times.h */
 clock_t times(struct tms *);
 
-/* syslog.h */
-void closelog(void);
-void openlog(const char *, int, int);
-int setlogmask(int);
-void syslog(int, const char *, ...);
-
 /* time.h */
 size_t strftime(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
 size_t strftime_l(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict, locale_t);

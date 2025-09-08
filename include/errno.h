@@ -149,6 +149,12 @@ int *__errno_location(void)
 #define EHWPOISON       133     /* Memory page has hardware error */
 
 #include <bits/errno.h>
+
+#ifdef _GNU_SOURCE
+extern char *program_invocation_name;
+extern char *program_invocation_short_name;
+#endif
+
 #ifdef __cplusplus
 }
 #endif

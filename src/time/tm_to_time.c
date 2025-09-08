@@ -3,20 +3,19 @@
 static int month_to_time(int m, int isleap)
 {
     static const unsigned short yday_from_mon[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-    return yday_from_mon[m] + (isleap && m > 1);
+    return (yday_from_mon[m] + (isleap && m > 1)) * 86400;
 }
 
 hidden time_t __tm_to_time(const struct tm *tm)
 {
     long long y = tm->tm_year;
     int m = tm->tm_mon;
-    int adj = m / 12;
+    y += m / 12;
     m %= 12;
     if (m < 0) {
         m += 12;
-        adj--;
+        y--;
     }
-    y += adj;
 
     int isleap;
     time_t rv = __year_to_time(y, &isleap);
