@@ -139,7 +139,7 @@ hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restri
     struct startup_args startup_args = {func, arg, &ss, 0};
     if (!a || !(a->__flags & PTHREAD_EXPLICIT_SCHED))
         startup_args.control = 2;
-    int tid = __clone(startup, sp, flags, &startup_args, &new_td->tid, __tp_adjust(new_td), &__thread_list_lock);
+    int tid = __clone(start, sp, flags, &startup_args, &new_td->tid, __tp_adjust(new_td), &__thread_list_lock);
     int rv = EAGAIN;
     if (tid < 0) goto out_unlock;
     rv = 0;
