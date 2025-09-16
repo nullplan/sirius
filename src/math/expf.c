@@ -27,7 +27,7 @@ float expf(float x)
 
     float absx = fabsf(x);
     if (absx <= 0x1p-13) {
-        FORCE_EVAL(1 + x * x);
+        FORCE_EVAL(0x1p54f + x);
         return 1 + x;
     }
     if (absx <= ln2hi/2) {
