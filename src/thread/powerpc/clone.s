@@ -32,11 +32,16 @@ __clone:
     mr %r6, %r8
     mr %r7, %r9
     sc
+    bso 3f
     cmpwi %r3, 0
     bne 1f
     cmpwi %r31, 0
     bne 2f
 1:
+    lwz %r31, 4(%r1)
+    blr
+3:
+    neg %r3, %r3
     lwz %r31, 4(%r1)
     blr
 .size __clone, . - __clone
