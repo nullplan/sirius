@@ -11,6 +11,12 @@ static void out(FILE *f, const void *p, size_t l)
 {
     if (f && l) __fwritex(p, l, f);
 }
+static int set_errno(int e)
+{
+    errno = e;
+    return -1;
+}
+
 static int addo(int *x, size_t a)
 {
     if (a > INT_MAX || *x > INT_MAX - a) return 1;
@@ -104,10 +110,8 @@ static const unsigned char state_machine[END]['z'-'0'+1] = {
         S('a') = DBL, S('e') = DBL, S('f') = DBL, S('g') = DBL,
         S('A') = DBL, S('E') = DBL, S('F') = DBL, S('G') = DBL,
 
-        S('c') = INT, S('s') = PCHAR,
-
         S('p') = PVOID, S('m') = NOTHING,
-        S('C') = WINT, S('S') = PWCHAR,
+        S('c') = INT, S('s') = PCHAR, S('C') = WINT, S('S') = PWCHAR,
     },
     [HPRE] = {
         S('h') = HHPRE,
@@ -215,7 +219,6 @@ static const unsigned char state_machine[END]['z'-'0'+1] = {
         S('u') = UINT_FAST64, S('x') = UINT_FAST64, S('X') = UINT_FAST64,
         S('b') = UINT_FAST64, S('B') = UINT_FAST64,
     },
-
 };
 
 static union arg pop_arg(va_list *ap, int type)
@@ -283,7 +286,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
         const char *a, *z;
         a = fmt + __stridx(fmt, '%');
         for (z = a; z[0] == '%' && z[1] == '%'; a++, z += 2);
-        if (addo(&rv, a - fmt)) goto overflow;
+        if (addo(&rv, a - fmt)) return set_errno(EOVERFLOW);
         out(f, fmt, a - fmt);
         fmt = z;
         if (*fmt != '%') continue;
@@ -314,7 +317,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             c = *fmt++;
         } else if (c == '*') {
             if (*fmt - '1' < 9u && fmt[1] == '$') {
-                if (i18n < 0) goto inval;
+                if (i18n < 0) return set_errno(EINVAL);
                 i18n = 1;
                 int t = fmt[0] - '1';
                 if (!f) nl_type[t] = INT;
@@ -322,7 +325,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                 c = fmt[2];
                 fmt += 3;
             } else {
-                if (i18n > 0) goto inval;
+                if (i18n > 0) return set_errno(EINVAL);
                 i18n = -1;
                 if (f) width = va_arg(*ap, int);
                 c = *fmt++;
@@ -331,7 +334,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
         if (c == '.') {
             if (*fmt == '*') {
                 if (fmt[1] - '1' < 9u && fmt[2] == '$') {
-                    if (i18n < 0) goto inval;
+                    if (i18n < 0) return set_errno(EINVAL);
                     i18n = 1;
                     int t = fmt[1] - '1';
                     if (!f) nl_type[t] = INT;
@@ -339,7 +342,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                     c = fmt[3];
                     fmt += 4;
                 } else {
-                    if (i18n > 0) goto inval;
+                    if (i18n > 0) return set_errno(EINVAL);
                     i18n = -1;
                     if (f) prec = va_arg(*ap, int);
                     c = fmt[1];
@@ -353,17 +356,17 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
 
         while (c - '0' < 'z' - '0' + 1u) {
             st = state_machine[st][c - '0'];
-            if (!st) goto inval;
+            if (!st) return set_errno(EINVAL);
             if (st > END) break;
             c = *fmt++;
         }
-        if (st < END) goto inval;
+        if (st < END) return set_errno(EINVAL);
 
         union arg arg;
         if (st != NOTHING) {
             if ((argpos != -1 && i18n < 0)
                     || (argpos == -1 && i18n > 0))
-                goto inval;
+                return set_errno(EINVAL);
             if (argpos != -1) {
                 i18n = 1;
                 if (!f) nl_type[argpos] = st;
@@ -372,7 +375,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
         }
 
         if (!f) {
-            if (addo(&rv, MAX(width, prec))) goto overflow;
+            if (addo(&rv, MAX(width, prec))) return set_errno(EOVERFLOW);
             continue;
         }
 
@@ -392,11 +395,11 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                     size_t n = 0;
                     for (; ws[n]; n++) {
                         size_t mbl = wcrtomb(buf, ws[n], &state);
-                        if (mbl == -1) goto ilseq;
+                        if (mbl == -1) return set_errno(EILSEQ);
                         if (prec >= 0 && mbslen + mbl > prec) break;
                         mbslen += mbl;
                     }
-                    if (addo(&rv, MAX(width, mbslen))) goto overflow;
+                    if (addo(&rv, MAX(width, mbslen))) return set_errno(EOVERFLOW);
                     pad(f, ' ', width, mbslen, flags);
                     memset(&state, 0, sizeof state);
                     for (size_t i = 0; i < n; i++) {
@@ -421,7 +424,7 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
                 if (st == WINT) {
                     mbstate_t state = {0};
                     size_t mblen = wcrtomb(buf, arg.i, &state);
-                    if (mblen == -1) goto ilseq;
+                    if (mblen == -1) return set_errno(EILSEQ);
                     a = buf;
                     z = buf + mblen;
                 } else {
@@ -496,16 +499,16 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             case 'A': case 'E': case 'F': case 'G':
             case 'a': case 'e': case 'f': case 'g':
                 if (addo(&rv, __fmt_fp(f, arg.f, width, prec, flags, c, st == LDBL? fmt_ldouble : fmt_double)))
-                    goto overflow;
+                    return set_errno(EOVERFLOW);
                 continue;
         }
 
         if (prec < 0) prec = 1;
-        if (z - a > INT_MAX) goto overflow;
+        if (z - a > INT_MAX) return set_errno(EOVERFLOW);
         if (prec < z - a) prec = z - a;
         if (c == 'o' && (flags & FLG_ALT) && prec == z - a) prec++;
-        if (prec > INT_MAX - preflen) goto overflow;
-        if (addo(&rv, MAX(width, prec+preflen))) goto overflow;
+        if (prec > INT_MAX - preflen) return set_errno(EOVERFLOW);
+        if (addo(&rv, MAX(width, prec+preflen))) return set_errno(EOVERFLOW);
         pad(f, ' ', width, prec+preflen, flags);
         out(f, prefix, preflen);
         pad(f, '0', width, prec+preflen, flags ^ FLG_ZERO);
@@ -519,19 +522,9 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
             nl_arg[i] = pop_arg(ap, nl_type[i]);
         for (; i < NL_ARGMAX; i++)
             if (nl_type[i])
-                goto inval;
+                return set_errno(EINVAL);
     }
     return rv;
-
-ilseq:
-    errno = EILSEQ;
-    return -1;
-overflow:
-    errno = EOVERFLOW;
-    return -1;
-inval:
-    errno = EINVAL;
-    return -1;
 }
 
 int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
