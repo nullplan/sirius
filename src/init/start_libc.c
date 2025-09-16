@@ -28,7 +28,7 @@ weak_alias(__init_progname, dummy2);
 
 hidden int __elevated;
 hidden int __thread_list_lock;
-hidden unsigned long __page_size;
+hidden size_t __page_size;
 hidden int __threaded;
 
 char **__environ;
