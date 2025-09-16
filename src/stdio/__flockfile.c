@@ -5,7 +5,7 @@
 hidden int __flockfile(FILE *f)
 {
     pthread_t self = __pthread_self();
-    if (f->lock == -1 || (f->lock & FUTEX_TID_MASK) == self->tid) return 0;
+    if (f->lock == -1 || (f->lock & FUTEX_NR_TID_MASK) == self->tid) return 0;
     for (;;) {
         int v = a_cas(&f->lock, 0, self->tid);
         if (!v) return 1;

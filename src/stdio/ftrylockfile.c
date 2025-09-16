@@ -22,7 +22,7 @@ int ftrylockfile(FILE *f)
         return 0;
     }
 
-    if ((v & FUTEX_TID_MASK) == tid) {
+    if ((v & FUTEX_NR_TID_MASK) == tid) {
         f->count++;
         return 0;
     }
