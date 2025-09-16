@@ -23,7 +23,7 @@ double exp(double x)
     int k;
     double hi, lo, r, z, R;
     if (x >= othresh) return scalbln(x, 1024);
-    if (x < uthresh) return scalbln(-1/x, -1024);
+    if (x < uthresh) return scalbln(-1/x, -1074);
 
     double absx = fabs(x);
     if (absx <= 0x1p-28) {
