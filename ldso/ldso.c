@@ -404,7 +404,7 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
 #ifdef TLS_VARIANT_2
                     *rel_addr = tlsval - def.dso->tlsoff + addend;
 #else
-                    *rel_addr = tlsval + def.dso->tlsoff - TP_OFFSET + addend;
+                    *rel_addr = tlsval + def.dso->tlsoff - sizeof (struct __pthread) - TP_OFFSET + addend;
 #endif
                 }
                 break;
@@ -428,7 +428,7 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
 #ifdef TLS_VARIANT_2
                     rel_addr[1] = tlsval - def.dso->tlsoff + addend;
 #else
-                    rel_addr[1] = tlsval + def.dso->tlsoff - TP_OFFSET + addend;
+                    rel_addr[1] = tlsval + def.dso->tlsoff - sizeof (struct __pthread) - TP_OFFSET + addend;
 #endif
                 }
                 break;
@@ -940,7 +940,7 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
     decode_vec(aux, auxv, AUX_CNT);
     __page_size = aux[AT_PAGESZ];
     __elevated = (aux[0] & 0x7800) != 0x7800 || aux[AT_UID] != aux[AT_EUID] || aux[AT_GID] != aux[AT_EGID] || aux[AT_SECURE];
-    __init_tp(__copy_tls(&builtin_tls), aux[AT_HWCAP], __get_sysinfo(aux));
+    __init_tp(__copy_tls(&builtin_tls, sizeof builtin_tls), aux[AT_HWCAP], __get_sysinfo(aux));
 
     /* initialize libc relro pointers here, because it is after stage 2 and we
      * must not load PAGE_SIZE before processing symbolic rels.
@@ -1059,6 +1059,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
     enumerate_phdr(head);
     static_tls_cnt = tls_cnt;
     char *tls = 0;
+    size_t tls_size = sizeof builtin_tls;
     if (tls_cnt) {
         struct tls_data data = __get_tls_data();
         char *p = (char *)(((uintptr_t)&builtin_tls + data.align - 1) & -data.align);
@@ -1066,6 +1067,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
             tls = p;
         else {
             tls = aligned_alloc(data.align, data.size);
+            tls_size = data.size;
             if (!tls) {
                 print_error("Out of memory allocating initial TLS\n");
                 a_crash();
@@ -1088,7 +1090,7 @@ static _Noreturn void load_run_remaining(long *sp, const size_t *dynv, const siz
     if (early_error) _Exit(1);
     if (ldd_mode) _Exit(0);
 
-    if (tls) __init_tp(__copy_tls(tls), aux[AT_HWCAP], __get_sysinfo(aux));
+    if (tls) __init_tp(__copy_tls(tls, tls_size), aux[AT_HWCAP], __get_sysinfo(aux));
 
     if (find_sym("malloc", head, 1).dso != &libc)
         malloc_replaced = 1;
