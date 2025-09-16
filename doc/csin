@@ -23,19 +23,6 @@ i(a+bi) = ia - b
 
 tan(x) = sin(x)/cos(x) = (exp(ix) - exp(-ix))/(i (exp(ix) + exp(-ix))) = -i ((exp(ix) - exp(-ix))/(exp(ix) + exp(-ix)))
 
-
-s = (exp(ix) - exp(-ix))/(2i)
-2is = exp(ix) - exp(-ix)
-2is exp(ix) = exp(2ix) - 1
-
-Let t = exp(ix)
-2ist = t² - 1
-t² - 2ist - 1 = 0
-t = is ± √(1 - s²)
-
-ln t = ix
-
-
 Inverse trigonometry
 ====================
 
@@ -64,3 +51,63 @@ s² = a² - b² + 2abi
 is = ia-b
 -is = -ia+b
 
+x₁ = -i ln (ia - b - √(1 - a² + b² - 2abi))
+x₂ = -i ln (ia - b + √(1 - a² + b² - 2abi))
+
+In a sample calculation, x₁ (the negative route) gave a wrong result.
+Therefore, x₁ is rejected, and x₂ is accepted.
+
+Now for cosine:
+
+c = cos(x) = (exp(ix) + exp(-ix))/2     | * 2
+2c = exp(ix) + exp(-ix)                 | let t = exp(ix)
+2c = t + t⁻¹                            | * t
+2ct = t² + 1                            | - 2ct
+0 = t² - 2ct + 1
+
+t = c ± √(c² - 1)
+t₁ = c - √(c² - 1)
+t₂ = c + √(c² - 1)
+
+exp(ix₁) = c - √(c² - 1)                | ln
+ix₁ = ln (c - √(c² - 1))                | * (-i)
+x₁ = -i ln (c - √(c² - 1))
+
+exp(ix₂) = c + √(c² - 1)                | ln
+ix₂ = ln (c + √(c² - 1))                | * (-i)
+x₂ = -i ln (c + √(c² - 1))
+
+c = a+bi
+c² = a² - b² + 2abi
+c² - 1 = a² - b² - 1 + 2abi
+-ic = -ia + b
+
+Therefore
+
+x₁ = -i ln (a + bi - √(a² - b² - 1 + 2abi))
+x₂ = -i ln (a + bi + √(a² - b² - 1 + 2abi))
+
+Ex.: c=1/2
+x₁ = -i ln (1/2 - √(1/4 - 1)) = -i ln (1/2 - √3/2i) = -i ln (exp(-iπ/3)) = -i (-iπ/3) = -π/3
+x₂ = -i ln (1/2 + √(1/4 - 1)) = -i ln (1/2 + √3/2i) = π/3
+
+Again, we reject the negative path for producing wrong results, and accept the positive path.
+
+Finally, the tangent:
+t = -i ((exp(ix) - exp(-ix))/(exp(ix) + exp(-ix)))      | let z = exp(ix)
+t = -i ((z - z⁻¹)/(z + z⁻¹))                            | (z + z⁻¹)
+t (z + z⁻¹) = -i (z - z⁻¹)                              | * z
+t (z² + 1) = -i (z² - 1)
+tz² + t = -iz² + i
+(t+i)z² = i - t
+z² = (i-t)/(t+i)
+z² = -(t-i)²/(t²+1)
+z² = (-t² + 2it + 1)/(t² + 1)
+
+ (-t² + 2it + 1) : (t² + 1) = -1
+-(-t² + 0t  - 1)
+-----------------
+        2it + 2
+
+z² = -1 + (2it + 2)/(t² + 1)
+z = ±√((2it + 2)/(t² + 1) - 1)

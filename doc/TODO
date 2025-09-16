@@ -1,6 +1,4 @@
 /* complex.h */
-complex double  casin(complex double);
-complex double  cacos(complex double);
 complex double  catan(complex double);
 complex double  csinh(complex double);
 complex double  ccosh(complex double);
@@ -9,8 +7,6 @@ complex double casinh(complex double);
 complex double cacosh(complex double);
 complex double catanh(complex double);
 
-complex float  casinf(complex float);
-complex float  cacosf(complex float);
 complex float  catanf(complex float);
 complex float  csinhf(complex float);
 complex float  ccoshf(complex float);
@@ -19,7 +15,6 @@ complex float casinhf(complex float);
 complex float cacoshf(complex float);
 complex float catanhf(complex float);
 
-complex long double  casinl(complex long double);
 complex long double  cacosl(complex long double);
 complex long double  catanl(complex long double);
 complex long double  csinhl(complex long double);
