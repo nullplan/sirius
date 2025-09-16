@@ -8,11 +8,12 @@ void *(memchr)(const void *s, int c, size_t n)
 #ifdef __GNUC__
     typedef size_t __attribute__((may_alias)) word_t;
     if (n >= 2 * sizeof (size_t)) {
-        while ((uintptr_t)us & (sizeof (size_t) - 1)) {
-            if (*us++ == c)
+        size_t max = (-(uintptr_t)us) & (sizeof (size_t) - 1);
+        for (size_t i = 0; i < max; i++)
+            if (us[i] == c)
                 return (void *)(us - 1);
-            n--;
-        }
+        n -= max;
+        us += max;
         const word_t *ws = (const void *)us;
         const size_t ones = -1ul/255;
         const size_t highs = ones << 7;
