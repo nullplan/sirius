@@ -232,7 +232,6 @@ if __name__ == "__main__":
     # on GCC, -w disables all warnings forever.
     if flavor == "clang": tryccflag("-w", cflags)
     # these are generally useful/necessary to have
-    tryccflag("-Wno-pointer-to-int-cast", cflags)
     tryccflag("-Werror=implicit-function-declaration", cflags) # especially this one
     tryccflag("-Werror=implicit-int", cflags)
     tryccflag("-Werror=pointer-sign", cflags)
