@@ -6,6 +6,8 @@
 
 pid_t _Fork(void)
 {
+    sigset_t ss;
+    __block_all_sigs(&ss);
     #ifdef SYS_fork
     pid_t rv = syscall(SYS_fork);
     #else
@@ -18,5 +20,6 @@ pid_t _Fork(void)
         __threaded = 0;
         __thread_list_lock = 0;
     }
+    __restore_sigs(&ss);
     return rv;
 }
