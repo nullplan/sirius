@@ -55,7 +55,6 @@ static char *fmt_d(char *z, uintmax_t x)
     for (       ; x > ULONG_MAX; x /= 10) *--z = '0' + (x % 10);
     for (unsigned long y = x; y; y /= 10) *--z = '0' + (y % 10);
     return z;
-
 }
 
 static void pad(FILE *f, int c, int w, int len, int flags)
