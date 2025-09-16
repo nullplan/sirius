@@ -88,7 +88,7 @@ hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restri
             tsd = (void *)(((uintptr_t)thread_mem - __pthread_tsd_size) & -alignof(size_t));
             sp = (void *)((uintptr_t)tsd & -16ul);
             memset(tsd, 0, (uintptr_t)thread_mem + tls_data.size - (uintptr_t)tsd);
-            new_td = __copy_tls(thread_mem);
+            new_td = __copy_tls(thread_mem, tls_data.size);
         } else {
             sp = (void *)(((uintptr_t)a->__addr + a->__ss) & -16);
             alloc = tls_data.size + __pthread_tsd_size;
@@ -108,10 +108,10 @@ hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restri
             __munmap(map, guardsize + alloc);
             return EAGAIN;
         }
-        thread_mem = (void *)(((uintptr_t)map + guardsize + alloc - tls_data.size) & -tls_data.align);
+        thread_mem = (void *)(((uintptr_t)map + map_size - tls_data.size) & -tls_data.align);
         tsd = (void *)(((uintptr_t)thread_mem - __pthread_tsd_size) & -alignof(size_t));
         if (!sp) sp = (void *)((uintptr_t)tsd & -16ul);
-        new_td = __copy_tls(thread_mem);
+        new_td = __copy_tls(thread_mem, tls_data.size);
         new_td->map = map;
         new_td->map_size = map_size;
     }
