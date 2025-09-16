@@ -73,6 +73,6 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
 #endif
         tlsbase = (void *)__syscall(SYS_mmap, 0, tls_data.size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     }
-    __init_tp(__copy_tls(tlsbase), hwcap, sysinfo);
+    __init_tp(__copy_tls(tlsbase, tls_data.size), hwcap, sysinfo);
 }
 weak_alias(__init_from_phdrs, static_init_from_phdrs);

@@ -45,17 +45,16 @@ hidden void __add_tls(struct tls_module *new)
     tail = new;
 }
 
-hidden struct __pthread *__copy_tls(void *mem)
+hidden struct __pthread *__copy_tls(void *mem, size_t sz)
 {
     if (!tls_cnt) return mem;
 
-    struct tls_data data = __get_tls_data();
 #ifdef TLS_VARIANT_2
-    pthread_t tp = (void *)(((uintptr_t)mem + data.size - sizeof (struct __pthread) - GAP_ABOVE_TP) & -alignof (struct __pthread));
+    pthread_t tp = (void *)(((uintptr_t)mem + sz - sizeof (struct __pthread) - GAP_ABOVE_TP) & -alignof (struct __pthread));
     size_t *dtv = mem;
 #else
     pthread_t tp = mem;
-    size_t *dtv = (void *)(((uintptr_t)mem + data.size - (tls_cnt + 1) * sizeof (size_t)) & -alignof (size_t));
+    size_t *dtv = (void *)(((uintptr_t)mem + sz - (tls_cnt + 1) * sizeof (size_t)) & -alignof (size_t));
 #endif
     size_t i = 1;
     dtv[0] = tls_cnt;

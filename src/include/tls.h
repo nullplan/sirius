@@ -24,6 +24,6 @@ hidden struct tls_data __get_tls_data(void);
  * However, TSD is not part of this and might need to be allocated separately.
  */
 struct __pthread;
-hidden struct __pthread *__copy_tls(void *);
+hidden struct __pthread *__copy_tls(void *, size_t);
 
 #endif
