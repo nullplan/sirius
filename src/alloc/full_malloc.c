@@ -76,6 +76,7 @@ static void bin_chunk(struct chunk *c)
     c->prev = 0;
     if (c->next) c->next->prev = c;
     bins[i] = c;
+    binmap |= 1ull << i;
 }
 
 static void unbin_chunk(struct chunk *c, size_t i)
@@ -88,7 +89,7 @@ static void unbin_chunk(struct chunk *c, size_t i)
     if (c->prev) c->prev->next = c->next;
     else {
         bins[i] = c->next;
-        if (!c->next) binmap &= 1ull << i;
+        if (!c->next) binmap &= ~(1ull << i);
     }
 }
 
