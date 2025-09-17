@@ -71,6 +71,12 @@ static int default_errfunc(const char *path, int err)
     return 1;
 }
 
+/* definitions for extra-byte: */
+#define UNKNOWN_EXISTANCE       0
+#define KNOWN_EXISTS            1
+#define KNOWN_NONDIR            2
+#define KNOWN_DIR               3
+
 static int process_name(struct pathlist *out, const struct pathlist *candidates, int (*errfunc)(const char *, int), int flags, const char *name, size_t n)
 {
     out->paths = 0;
@@ -94,6 +100,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
             }
             memcpy(out->paths[out->n] + cl, unescaped, len);
             out->paths[out->n][cl + len] = 0;
+            out->paths[out->n][cl + len + 1] = UNKNOWN_EXISTANCE;
             out->n++;
         }
     } else {
@@ -126,6 +133,7 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                                 path[cl++] = '/';
                         }
                         memcpy(path + cl, de->d_name, nl + 1);
+                        path[cl + nl + 1] = de->d_type == DT_DIR? KNOWN_DIR : de->d_type != DT_UNKNOWN? KNOWN_NONDIR : KNOWN_EXISTS;
                         if (push_back_path(out, path)) {
                             free(path);
                             closedir(d);
@@ -218,25 +226,48 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
         if (result != &noalloc) freelist(result);
         return rv;
     }
-    for (size_t i = 0; i < result->n; ) {
-        struct stat st;
-        if (lstat(result->paths[i], &st)) {
-            if (errfunc(result->paths[i], errno) || (flags & GLOB_ERR)) {
-                if (result != &noalloc)
-                    freelist(result);
-                return GLOB_ABORTED;
-            }
-            if (result != &noalloc) free(result->paths[i]);
-            result->paths[i] = result->paths[--(result->n)];
-        } else {
-            if ((flags & GLOB_MARK) && S_ISDIR(st.st_mode)) {
-                size_t len = strlen(result->paths[i]);
-                if (result->paths[i][len - 1] != '/') {
-                    result->paths[i][len] = '/';
-                    result->paths[i][len + 1] = 0;
+    /* the only way we get here with result == &noalloc is for empty pattern (then result->n == 0),
+     * or for pattern consisting solely of '/' (then result->n == 1, result->paths[0] == "/").
+     * In either case, all paths of the set exist and are properly marked as requested. No need
+     * to do anything.
+     */
+    if (result != &noalloc) {
+        for (size_t i = 0; i < result->n; ) {
+            size_t len = strlen(result->paths[i]);
+            int type = result->paths[i][len-1] == '/'? UNKNOWN_EXISTANCE :
+                result->paths[i][len+1];
+            /* UNKNOWN_EXISTANCE -> have to lstat() and cull the string if it doesn't exist.
+             * KNOWN_EXISTS -> only need lstat() for GLOB_MARK
+             * KNOWN_DIR, KNOWN_NONDIR -> don't need lstat
+             */
+            if (type == UNKNOWN_EXISTANCE
+                    || (type == KNOWN_EXISTS && (flags & GLOB_MARK))) {
+                struct stat st;
+                if (lstat(result->paths[i], &st)) {
+                    if (errfunc(result->paths[i], errno) || (flags & GLOB_ERR)) {
+                        if (result != &noalloc)
+                            freelist(result);
+                        return GLOB_ABORTED;
+                    }
+                    free(result->paths[i]);
+                    result->n--;
+                    result->paths[i] = result->paths[result->n];
+                } else {
+                    if ((flags & GLOB_MARK) && S_ISDIR(st.st_mode)) {
+                        if (result->paths[i][len - 1] != '/') {
+                            result->paths[i][len] = '/';
+                            result->paths[i][len + 1] = 0;
+                        }
+                    }
+                    i++;
                 }
+            } else {
+                if (type == KNOWN_DIR && (flags & GLOB_MARK) && result->paths[i][len - 1] != '/') {
+                    result->paths[i][len] = '/';
+                    result->paths[i][len+1] = 0;
+                }
+                i++;
             }
-            i++;
         }
     }
     if (result->n == 0) {
