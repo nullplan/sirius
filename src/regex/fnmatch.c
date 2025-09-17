@@ -151,7 +151,7 @@ static int next_token(const char *pattern, size_t plen, size_t *tlen, int flags)
             }
             len++;
         }
-        if (pattern[len] == ']') {
+        if (len < plen && pattern[len] == ']') {
             *tlen = len + 1;
             return BRACKET;
         }
