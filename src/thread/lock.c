@@ -30,10 +30,8 @@ hidden void __lock(struct lock *lck)
     int v = a_cas(&lck->l, 0, INT_MIN + 1);
     if (!v) return;
 
-    do v = lck->l;
-    while (a_cas(&lck->l, v, v + 1) != v);
-
-    v++;
+    a_inc(&lck->l);
+    v = lck->l;
 
     for (;;) {
         if (v < 0) {
