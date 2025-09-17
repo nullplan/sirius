@@ -123,7 +123,7 @@ static int child(void *args)
     {
         if (sig == SIGTSTP)
         {
-            if (!is_sig_ignored(sig))
+            if (sigismember((sigset_t *)a->psa.__dfl, SIGTSTP) || !is_sig_ignored(sig))
             {
                 set_handler(sig, SIG_IGN);
                 tstp_default = 1;
