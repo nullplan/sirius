@@ -501,23 +501,35 @@ int vfwprintf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
     va_list ap2;
     __FLOCK(f);
     va_copy(ap2, ap);
-    int rv = wprintf_core(0, fmt, &ap2, nl_type, nl_arg);
-    if (rv >= 0) {
-        unsigned char *orig_buf = 0;
-        unsigned char tempbuf[80];
-        if (!f->buf_size) {
-            orig_buf = f->buf;
-            f->buf = tempbuf;
-            f->buf_size = sizeof tempbuf;
+    int rv = -1;
+    if (__towrite(f) || fwide(f, 1) < 0) {
+        errno = EBADF;
+    } else {
+        locale_t *ploc = &__pthread_self()->locale;
+        locale_t oldloc = *ploc;
+        *ploc = f->locale;
+        rv = wprintf_core(0, fmt, &ap2, nl_type, nl_arg);
+        if (rv >= 0) {
+            unsigned char *orig_buf = 0;
+            unsigned char tempbuf[80];
+            if (!f->buf_size) {
+                orig_buf = f->buf;
+                f->buf = tempbuf;
+                f->buf_size = sizeof tempbuf;
+                f->dir = 0;
+                __towrite(f);
+            }
+            rv = wprintf_core(f, fmt, &ap2, nl_type, nl_arg);
+            if (orig_buf) {
+                if (fflush(f))
+                    rv = -1;
+                f->buf = orig_buf;
+                f->buf_size = 0;
+            }
         }
-        rv = wprintf_core(f, fmt, &ap2, nl_type, nl_arg);
-        if (orig_buf) {
-            if (fflush(f))
-                rv = -1;
-            f->buf = orig_buf;
-            f->buf_size = 0;
-        }
+        *ploc = oldloc;
     }
+    va_end(ap2);
     __FUNLOCK(f);
     return rv;
 }
