@@ -171,6 +171,7 @@ hidden int __spawn(pid_t *restrict ppid, const char *restrict name,
         unsigned long align;
         char buf[PATH_MAX+1024];
     } stack;
+    int cs;
     a.name = name;
     a.args = args;
     a.env = env;
@@ -185,6 +186,7 @@ hidden int __spawn(pid_t *restrict ppid, const char *restrict name,
     int rv = pipe2(a.p, O_CLOEXEC);
     if (rv == -1)
         return errno;
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
     __block_all_sigs(pmask);
     pid_t pid = __clone(child, stack.buf + sizeof stack, SIGCHLD | CLONE_VM,
             &a, 0, 0, 0);
@@ -202,6 +204,7 @@ hidden int __spawn(pid_t *restrict ppid, const char *restrict name,
     }
     else
         rv = pid;
+    pthread_setcancelstate(cs, 0);
     __syscall(SYS_close, a.p[0]);
     return -rv;
 }
