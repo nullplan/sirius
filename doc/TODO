@@ -15,7 +15,6 @@ complex float casinhf(complex float);
 complex float cacoshf(complex float);
 complex float catanhf(complex float);
 
-complex long double  cacosl(complex long double);
 complex long double  catanl(complex long double);
 complex long double  csinhl(complex long double);
 complex long double  ccoshl(complex long double);
@@ -47,10 +46,6 @@ void endgrent(void);
 size_t iconv(iconv_t, char **__restrict, size_t *__restrict, char *__restrict, size_t *__restrict);
 int iconv_close(iconv_t);
 iconv_t iconv_open(const char *, const char *);
-
-/* inttypes.h */
-intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
-uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
 
 /* langinfo.h */
 char *nl_langinfo(nl_item);
@@ -460,10 +455,6 @@ int vwscanf(const wchar_t *__restrict, va_list);
 double wcstod(const wchar_t *__restrict, wchar_t **__restrict);
 float wcstof(const wchar_t *__restrict, wchar_t **__restrict);
 long double wcstold(const wchar_t *__restrict, wchar_t **__restrict);
-long wcstol(const wchar_t *__restrict, wchar_t **__restrict, int);
-long long wcstoll(const wchar_t *__restrict, wchar_t **__restrict, int);
-unsigned long wcstoul(const wchar_t *__restrict, wchar_t **__restrict, int);
-unsigned long long wcstoull(const wchar_t *__restrict, wchar_t **__restrict, int);
 size_t wcsftime(wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict);
 FILE *open_wmemstream(wchar_t **, size_t *);
 
