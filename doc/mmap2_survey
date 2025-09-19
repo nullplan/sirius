@@ -1,0 +1,16 @@
+mmap2 takes the offset as some unit of bytes. But what unit?
+
+arc: pagesize
+arm: 4kB
+csky: 4kB
+hexagon: pagesize
+m86k: pagesize
+microblaze: 4kB
+mips: 4kB
+nios2: pagesize
+openrisc: pagesize
+parisc: 4kB
+powerpc: 4kB
+riscv: 4kB
+sh: 4kB
+sparc: 4kB
