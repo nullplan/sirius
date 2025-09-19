@@ -4,6 +4,7 @@ static void a_barrier(void)
     __asm__("dmb ish" ::: "memory");
 }
 
+#define a_ll a_ll
 static inline int a_ll(volatile int *p)
 {
     int r;
@@ -11,6 +12,7 @@ static inline int a_ll(volatile int *p)
     return r;
 }
 
+#define a_sc a_sc
 static inline int a_sc(volatile int *p, int v)
 {
     int r;
@@ -18,6 +20,7 @@ static inline int a_sc(volatile int *p, int v)
     return r;
 }
 
+#define a_ll_p a_ll_p
 static inline void *a_ll_p(void *volatile *p)
 {
     void *r;
@@ -25,6 +28,7 @@ static inline void *a_ll_p(void *volatile *p)
     return r;
 }
 
+#define a_sc_p a_sc_p
 static inline int a_sc_p(void *volatile *p, void *v)
 {
     int r;
