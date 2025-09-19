@@ -20,12 +20,9 @@
 _start:
     mov x28, sp
     and sp, x28, -16
-    sub sp, sp, (AUX_NUM+DYN_NUM)*8
-    mov x0, 0
-    mov x1, sp
     mov x2, AUX_NUM+DYN_NUM
 1:
-    str x0, [x1], 8
+    str xzr, [sp, -8]!
     subs x2, x2, 1
     b.ne 1b
     .hidden _DYNAMIC
