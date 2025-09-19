@@ -126,7 +126,7 @@ static void *alloc_region(yescrypt_region_t *region, size_t size)
     size_t base_size = size;
     uint8_t *base, *aligned;
     int flags = MAP_ANONYMOUS | MAP_PRIVATE;
-    base = (void *)mmap(NULL, size, PROT_READ | PROT_WRITE, flags, -1, 0);
+    base = mmap(NULL, size, PROT_READ | PROT_WRITE, flags, -1, 0);
     if (base == MAP_FAILED)
         base = NULL;
     aligned = base;
