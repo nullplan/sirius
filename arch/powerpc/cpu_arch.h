@@ -27,7 +27,6 @@ static inline int a_sc(volatile int *p, int v)
 
 static inline void a_crash(void) {
     __asm__(".long 0" ::: "memory");
-    for (;;);
 }
 
 #define a_clz a_clz
@@ -47,7 +46,6 @@ static inline int a_ctz(size_t x) {
 static inline void a_stackjmp(void *func, void *stack)
 {
     __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(func), "r"(stack));
-    for (;;);
 }
 
 static inline void a_stackinvoke(void (*func)(void), void *stack)

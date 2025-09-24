@@ -33,7 +33,6 @@ static inline void a_dec(volatile int *p)
 
 static inline void a_crash(void) {
     __asm__("ud2" ::: "memory");
-    for (;;);
 }
 
 #define a_ctz a_ctz
@@ -62,7 +61,6 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 static inline void a_stackjmp(void *func, void *stack)
 {
     __asm__("movq %1, %%rsp; jmpq *%0" :: "r"(func), "r"(stack));
-    for (;;);
 }
 
 static inline void a_stackinvoke(void (*func)(void), void *stack)
