@@ -11,7 +11,7 @@
 
 hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
 {
-    if (t + (1ull << 56) >= 1ull << 57) {
+    if (t + (1ull << 55) >= 1ull << 56) {
         errno = EOVERFLOW;
         return -1;
     }
