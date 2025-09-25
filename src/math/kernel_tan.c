@@ -18,7 +18,10 @@ static const double T[] = {
 hidden double __kernel_tan(double x, double y, int isodd)
 {
     int e = (__double_bits(x) >> 52) & 0x3ff;
-    if (e < 0x3ff-27) return isodd? -1.0/(x+y) : x;
+    if (e < 0x3ff-27) {
+        FORCE_EVAL(0x1p54 + x); /* raise inexact if x != 0 */
+        return isodd? -1.0/(x+y) : x;
+    }
     double x2 = x * x;
     double t = T[11];
     for (int i = 10; i-- > 0;)

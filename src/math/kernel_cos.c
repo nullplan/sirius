@@ -10,7 +10,10 @@ static const double C7 = -1.0/87178291200.0;
 double __kernel_cos(double x, double y)
 {
     int e = (__double_bits(x) >> 52) & 0x7ff;
-    if (e < 0x3ff-27) return 1.0;
+    if (e < 0x3ff-27) {
+        FORCE_EVAL(0x1p54 + x); /* raise inexact if x != 0 */
+        return 1.0;
+    }
     double x2 = x * x;
     double r = x2 * x2 * (C2 + x2 * (C3 + x2 * (C4 + x2 * (C5 + x2 * (C6 + x2 * C7)))));
     return 1 - (0.5 * x2 - (r - x * y));
