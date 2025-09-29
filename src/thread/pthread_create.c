@@ -86,11 +86,11 @@ hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restri
         if (tls_data.size + tls_data.align + __pthread_tsd_size <= a->__ss / 8) {
             thread_mem = (void *)(((uintptr_t)a->__addr + a->__ss - tls_data.size) & -tls_data.align);
             tsd = (void *)(((uintptr_t)thread_mem - __pthread_tsd_size) & -alignof(size_t));
-            sp = (void *)((uintptr_t)tsd & -16ul);
+            sp = tsd;
             memset(tsd, 0, (uintptr_t)thread_mem + tls_data.size - (uintptr_t)tsd);
             new_td = __copy_tls(thread_mem, tls_data.size);
         } else {
-            sp = (void *)(((uintptr_t)a->__addr + a->__ss) & -16);
+            sp = (char *)a->__addr + a->__ss;
             alloc = tls_data.size + __pthread_tsd_size;
             guardsize = 0;
         }
@@ -101,16 +101,17 @@ hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restri
 
     if (alloc) {
         guardsize = (guardsize + PAGE_SIZE - 1) & -PAGE_SIZE;
+        alloc = (alloc + PAGE_SIZE - 1) & -PAGE_SIZE;
         size_t map_size = guardsize + alloc;
         void *map = __mmap(0, map_size, guardsize? PROT_NONE : PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (map == MAP_FAILED) return EAGAIN;
         if (guardsize && __mprotect((char *)map + guardsize, alloc, PROT_READ | PROT_WRITE)) {
-            __munmap(map, guardsize + alloc);
+            __munmap(map, map_size);
             return EAGAIN;
         }
         thread_mem = (void *)(((uintptr_t)map + map_size - tls_data.size) & -tls_data.align);
         tsd = (void *)(((uintptr_t)thread_mem - __pthread_tsd_size) & -alignof(size_t));
-        if (!sp) sp = (void *)((uintptr_t)tsd & -16ul);
+        if (!sp) sp = tsd;
         new_td = __copy_tls(thread_mem, tls_data.size);
         new_td->map = map;
         new_td->map_size = map_size;
