@@ -24,9 +24,10 @@ hidden int __pthread_mutex_unlock(pthread_mutex_t *m)
         return 0;
     }
     if (!(m->__flg & ~PTHREAD_PROCESS_SHARED)) {
+        int priv = !(m->__flg & PTHREAD_PROCESS_SHARED);
         int waiters = m->__waiters;
         if ((a_swap(&m->__lock, 0) & FUTEX_WAITERS) || waiters)
-            __futex_wake(&m->__lock, !(m->__flg & PTHREAD_PROCESS_SHARED), 1);
+            __futex_wake(&m->__lock, priv, 1);
         return 0;
     }
 
