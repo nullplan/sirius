@@ -6,7 +6,7 @@
  * than the calculations in __year_to_time().
  *
  * 365*86400 is a 25 bit number. tm_year is a 31 bit number.
- * Therefore we just reject all input times outside of ±2^56.
+ * Therefore we just reject all input times outside of ±2^55.
  */
 
 hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
@@ -39,7 +39,7 @@ hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
     tm->tm_hour = second / 3600;
     tm->tm_min = (second / 60) % 60;
     tm->tm_sec = second % 60;
-    tm->tm_wday = (t / 86400 + 3) % 7;
+    tm->tm_wday = (t / 86400 + 4) % 7;
     if (tm->tm_wday < 0) tm->tm_wday += 7;
     tm->tm_isdst = tz->isdst;
     tm->__tm_gmtoff = tz->gmtoff;
