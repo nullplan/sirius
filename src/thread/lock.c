@@ -48,8 +48,12 @@ hidden void __unlock(struct lock *lck)
 {
     int v;
 
-    do v = lck->l;
-    while (a_cas(&lck->l, v, v - (INT_MIN + 1)) != v);
+    v = lck->l;
+    for (;;) {
+        int n = a_cas(&lck->l, v, v - (INT_MIN + 1));
+        if (n == v) break;
+        v = n;
+    }
 
     if (v != INT_MIN + 1)
         __futex_wake(&lck->l, 1, 1);
