@@ -23,9 +23,7 @@ __clone:
     mr %r6, %r8
     mr %r7, %r9
     sc
-    bns 1f
-    neg %r3, %r3
-1:
+    bso 3f
     cmpwi %r3, 0
     bne 1f
     cmpldi %r31, 0
@@ -33,6 +31,9 @@ __clone:
 1:
     ld %r31, 40(%r1)
     addi %r1, %r1, 48
+    blr
+3:
+    neg %r3, %r3
     blr
 .size __clone, . - __clone
 
