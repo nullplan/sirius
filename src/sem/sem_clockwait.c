@@ -25,8 +25,9 @@ int sem_clockwait(sem_t *restrict sem, clockid_t clk,
             }
             val = INT_MIN;
         }
-        int rv = __timedwait(&sem->__ctr, &sem->__waiters, val,
-                !sem->__pshared, to, clk);
+        a_inc(&sem->__waiters);
+        int rv = __timedwait(&sem->__ctr, val, !sem->__pshared, to, clk);
+        a_dec(&sem->__waiters);
         if (rv == -EINTR || rv == -ETIMEDOUT) {
             errno = -rv;
             return -1;

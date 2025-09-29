@@ -13,7 +13,9 @@ hidden int __pthread_rwlock_clockrdlock(pthread_rwlock_t *restrict rw, clockid_t
         if (val >= 0) {
             if (a_cas(&rw->__lock, val, val + 1) == val) return 0;
         } else {
-            int rv = __timedwait(&rw->__lock, &rw->__waiters, val, !rw->__ps, to, clk);
+            a_inc(&rw->__waiters);
+            int rv = __timedwait(&rw->__lock, val, !rw->__ps, to, clk);
+            a_dec(&rw->__waiters);
             if (rv == -ETIMEDOUT) return ETIMEDOUT;
         }
     }

@@ -52,7 +52,7 @@ static int do_futex_pi_lock(pthread_mutex_t *restrict m, clockid_t clk, const st
             rv = EOWNERDEAD;
         else {
             futex_pi(&m->__lock, priv, FUTEX_UNLOCK_PI, 0);
-            do rv = -__timedwait(&(int){0}, &(int){0}, 0, 1, ts, clk);
+            do rv = -__timedwait(&(int){0}, 0, 1, ts, clk);
             while (rv == EINTR);
         }
     }
@@ -90,7 +90,9 @@ hidden int __pthread_mutex_clocklock(pthread_mutex_t *restrict m, clockid_t clk,
             if (a_cas(&m->__lock, v, v | FUTEX_WAITERS) != v) continue;
             v |= FUTEX_WAITERS;
         }
-        rv = -__timedwait(&m->__lock, &m->__waiters, v, priv, ts, clk);
+        a_inc(&m->__waiters);
+        rv = -__timedwait(&m->__lock, v, priv, ts, clk);
+        a_dec(&m->__waiters);
         if (rv != 0 && rv != EAGAIN) break;
     }
     return rv;

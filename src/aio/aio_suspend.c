@@ -68,7 +68,7 @@ int aio_suspend(const struct aiocb *const cbs[], int ncbs, const struct timespec
             }
             val = serial;
         }
-        int rv = __timedwait_cp(fut, &(int){0}, val, 1, to, CLOCK_MONOTONIC);
+        int rv = __timedwait_cp(fut, val, 1, to, CLOCK_MONOTONIC);
         if (rv == -ETIMEDOUT || rv == -EINTR) {
             if (rv == -ETIMEDOUT)
                 rv = -EAGAIN;
