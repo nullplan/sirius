@@ -78,7 +78,7 @@ double erand48(unsigned short xs[3])
     return todouble(rand48_ostep(xs));
 }
 
-static int to32(uint64_t x)
+static int32_t to32(uint64_t x)
 {
     return x >> 16;
 }
@@ -93,7 +93,7 @@ long mrand48(void)
     return to32(rand48_istep());
 }
 
-static int to31(uint64_t x)
+static int32_t to31(uint64_t x)
 {
     return x >> 17;
 }
