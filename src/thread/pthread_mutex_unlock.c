@@ -33,14 +33,14 @@ hidden int __pthread_mutex_unlock(pthread_mutex_t *m)
     pthread_t self = __pthread_self();
     int pi = m->__flg & PTHREAD_PRIO_INHERIT;
     int robust = m->__flg & PTHREAD_MUTEX_ROBUST;
-    int msk = robust? FUTEX_TID_MASK : FUTEX_NR_TID_MASK;
+    int mask = robust? FUTEX_TID_MASK : FUTEX_NR_TID_MASK;
     int v = m->__lock;
 
     /* POSIX specifies this only for errorcheck, recursive, or robust mutexes.
      * Technically not for default PI mutexes. But for those, this is undefined behavior.
      * So may as well.
      */
-    if ((v & msk) != self->tid)
+    if ((v & mask) != self->tid)
         return EPERM;
 
     self->robust.pending = m;

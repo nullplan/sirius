@@ -32,9 +32,9 @@ hidden int __pthread_mutex_trylock(pthread_mutex_t *m)
     }
 
     pthread_t self = __pthread_self();
-    int msk = m->__flg & PTHREAD_MUTEX_ROBUST? FUTEX_TID_MASK : FUTEX_NR_TID_MASK;
+    int mask = m->__flg & PTHREAD_MUTEX_ROBUST? FUTEX_TID_MASK : FUTEX_NR_TID_MASK;
     /* handle re-lock case */
-    if ((m->__lock & msk) == self->tid) {
+    if ((m->__lock & mask) == self->tid) {
         switch (m->__flg & 3) {
             case PTHREAD_MUTEX_ERRORCHECK:
                 return EDEADLK;
@@ -85,7 +85,7 @@ hidden int __pthread_mutex_trylock(pthread_mutex_t *m)
             if ((m->__flg & PTHREAD_MUTEX_ROBUST)
                     && (v & FUTEX_NR_TID_MASK) == FUTEX_NR_TID_MASK)
                 rv = ENOTRECOVERABLE;
-            else if (!(v & msk)) {
+            else if (!(v & mask)) {
                 rv = (m->__flg & PTHREAD_MUTEX_ROBUST) && (v & FUTEX_OWNER_DIED)? EOWNERDEAD : 0;
                 if (a_cas(&m->__lock, v, v | self->tid) != v)
                     rv = -1;
