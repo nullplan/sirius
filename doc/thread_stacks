@@ -22,7 +22,7 @@ There is no maximum stack size.
 
 If an explicit stack is provided, it is always used to house stack, static TLS,
 and TD. Since that means the minimum can change between setting the stack and
-creating the process, if the stack is too small for the entire thing and a "rest
+creating the thread, if the stack is too small for the entire thing and a "rest
 stack" (the size of which is arch-dependent, but 2k seems to be a popular
 choice), EINVAL is returned from pthread_create().
 
@@ -61,7 +61,7 @@ It sems obvious to me that PTHREAD_STACK_MIN should be large enough for both
 whatever the threading implementation needs plus the deepest stack a single call
 to an implementation function can take. An application may be able to roughly
 gauge its own stack consumption (though in some ABIs this may be harder than in
-outhers), but it has absolutely no way of doing so with libc functions.
+others), but it has absolutely no way of doing so with libc functions.
 
 glibc is not much better, in worst case leaving only 2k, and that depends on
 what libraries are linked at load time. glibc's realpath() takes roughly 4k of
