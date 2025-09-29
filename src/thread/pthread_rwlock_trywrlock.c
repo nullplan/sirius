@@ -4,9 +4,6 @@
 
 int pthread_rwlock_trywrlock(pthread_rwlock_t *rw)
 {
-    for (;;) {
-        int val = rw->__lock;
-        if (val) return EBUSY;
-        if (!a_cas(&rw->__lock, 0, -1)) return 0;
-    }
+    if (a_cas(&rw->__lock, 0, -1)) return EBUSY;
+    return 0;
 }

@@ -22,13 +22,7 @@ static int futex_pi(volatile int *fut, int priv, int op)
 hidden int __pthread_mutex_trylock(pthread_mutex_t *m)
 {
     if (!(m->__flg & ~PTHREAD_PROCESS_SHARED)) {
-        int v;
-        for (;;) {
-            v = m->__lock;
-            if ((v & FUTEX_NR_TID_MASK) || !a_cas(&m->__lock, v, v | EBUSY))
-                break;
-        }
-        return v & FUTEX_NR_TID_MASK;
+        return a_cas(&m->__lock, 0, EBUSY) & FUTEX_NR_TID_MASK;
     }
 
     pthread_t self = __pthread_self();
