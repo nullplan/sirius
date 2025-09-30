@@ -96,6 +96,7 @@ int asprintf(char **__restrict, const char *__restrict, ...);
 int vasprintf(char **__restrict, const char *__restrict, va_list);
 FILE *fdopen(int, const char *);
 int fileno(FILE *);
+FILE *fmemopen(void *restrict, size_t, const char *restrict);
 int fseeko(FILE *, off_t, int);
 off_t ftello(FILE *);
 void flockfile(FILE *);
