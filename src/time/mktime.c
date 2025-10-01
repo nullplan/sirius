@@ -16,5 +16,5 @@ time_t mktime(struct tm *tm)
     }
     if (__time_to_tm(tm, local, &tz))
         return -1;
-    return local + tz.gmtoff;
+    return local - tz.gmtoff;
 }
