@@ -1,6 +1,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <errno.h>
+#include <assert.h>
 
 /* Turns out the year being 32 bits is the bigger limitation
  * than the calculations in __year_to_time().
@@ -9,6 +10,18 @@
  * Therefore we just reject all input times outside of ±2^55.
  */
 
+static int days_in_month(int m, int isleap)
+{
+    /* long month mask:
+     * JFMAMJJASOND
+     * 101010110101
+     *
+     * reversed and grouped into fours:
+     * 1010 1101 0101
+     */
+    if (m == 1) return 28 + isleap;
+    return 30 + ((0xad5 >> m) & 1);
+}
 hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
 {
     if (t + (1ull << 55) >= 1ull << 56) {
@@ -20,22 +33,12 @@ hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
     int second_in_year = t - __year_to_time(y, &is_leap);
     tm->tm_year = y;
 
-    static const unsigned short month_start[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
     int d = second_in_year / 86400;
     int second = second_in_year % 86400;
-    if (second < 0) {
-        d--;
-        second += 86400;
-    }
+    assert(second >= 0);
     tm->tm_yday = d;
-    if (is_leap && d == 60) {
-        tm->tm_mon = 1;
-        tm->tm_mday = 29;
-    } else {
-        if (is_leap && d > 60) d--;
-        for (tm->tm_mon = 0; month_start[tm->tm_mon+1] < d; tm->tm_mon++);
-        tm->tm_mday = d - month_start[tm->tm_mon] + 1;
-    }
+    for (tm->tm_mon = 0; d >= days_in_month(tm->tm_mon, is_leap); d -= days_in_month(tm->tm_mon, is_leap), tm->tm_mon++);
+    tm->tm_mday = d + 1;
     tm->tm_hour = second / 3600;
     tm->tm_min = (second / 60) % 60;
     tm->tm_sec = second % 60;
