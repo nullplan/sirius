@@ -20,6 +20,6 @@ hidden time_t __tm_to_time(const struct tm *tm)
     int isleap;
     time_t rv = __year_to_time(y, &isleap);
     rv += month_to_time(m, isleap);
-    rv += tm->tm_mday * 86400ll + tm->tm_hour * 3600ll + tm->tm_min * 60ll + tm->tm_sec;
+    rv += (tm->tm_mday - 1) * 86400ll + tm->tm_hour * 3600ll + tm->tm_min * 60ll + tm->tm_sec;
     return rv;
 }
