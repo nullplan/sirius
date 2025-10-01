@@ -171,6 +171,7 @@ static void freelist(struct pathlist *l)
     l->paths = 0;
 }
 
+static const char *const root = "/";
 int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int), glob_t *restrict g)
 {
     if (!errfunc) errfunc = default_errfunc;
@@ -185,7 +186,7 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     struct pathlist *result = &noalloc;
     noalloc.n = 0;
     int rv = GLOB_NOMATCH;
-    char *p = "/";
+    char *p = (char *)root;
     if (*pat) {
         noalloc.n = 1;
         noalloc.paths = &p;
@@ -282,20 +283,11 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     }
 
     if (result == &noalloc) {
-        a1.paths = malloc(result->n * sizeof (char *));
-        if (!a1.paths)
-            return GLOB_NOSPACE;
-
-        for (a1.n = 0; a1.n < result->n; a1.n++)
-        {
-            a1.paths[a1.n] = strdup(result->paths[a1.n]);
-            if (!a1.paths[a1.n]) break;
-        }
-        if (a1.n < result->n) {
-            freelist(&a1);
-            return GLOB_NOSPACE;
-        }
-        result = &a1;
+        /* this ought to now only be possible for pat=="/",
+         * in which case result->n = 1, result->paths[0] = "/".
+         */
+        assert(result->n == 1);
+        noalloc.paths = (void *)&root;
     }
 
     if (!(flags & GLOB_NOSORT) && result->n > 1)
@@ -303,7 +295,8 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
 
     char **final = realloc(g->gl_pathv, (off + g->gl_pathc + result->n + 1) * sizeof (char *));
     if (!final) {
-        freelist(result);
+        if (result != &noalloc)
+            freelist(result);
         return GLOB_NOSPACE;
     }
     g->gl_pathv = final;
@@ -311,6 +304,15 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
     memcpy(g->gl_pathv + off + g->gl_pathc, result->paths, result->n * sizeof (char *));
     g->gl_pathv[off + g->gl_pathc + result->n] = 0;
     g->gl_pathc += result->n;
-    free(result->paths);
+    if (result->paths != (void *)&root)
+        free(result->paths);
     return 0;
+}
+
+void globfree(glob_t *g)
+{
+    for (size_t i = 0; i < g->gl_pathc; i++)
+        if (g->gl_pathv[g->gl_offs + i] != root)
+            free(g->gl_pathv[g->gl_offs + i]);
+    free(g->gl_pathv);
 }
