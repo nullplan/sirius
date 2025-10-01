@@ -320,14 +320,14 @@ static size_t find_transtype(long long time, int islocal)
 
 static void get_std_tz_unlocked(struct tz *tz)
 {
-    tz->gmtoff = __timezone;
+    tz->gmtoff = -__timezone;
     tz->isdst = 0;
     tz->name = __tzname[0];
 }
 
 static void get_dst_tz_unlocked(struct tz *tz)
 {
-    tz->gmtoff = dstzone;
+    tz->gmtoff = -dstzone;
     tz->isdst = 1;
     tz->name = __tzname[1];
 }
