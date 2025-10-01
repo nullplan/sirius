@@ -306,8 +306,8 @@ static size_t find_transtype(long long time, int islocal)
     size_t n = (transtypes - transitions)/8;
     size_t start = 0;
     size_t end = n;
-    while (end > start) {
-        size_t mid = (end - start) / 2;
+    while (end > start + 1) {
+        size_t mid = (end + start) / 2;
         t = read_i64(transitions + mid * 8);
         if (islocal) t += (int32_t)read_i32(lttypes + 6 * transtypes[mid]);
         if (time < t) end = mid;
