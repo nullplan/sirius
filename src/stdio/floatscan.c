@@ -130,7 +130,7 @@ static long double hexfloat(FILE *f, int pseudo, int bits, int emin, int sign)
             radix += e2.val;
     } else if (c != EOF)
         shungetc(f);
-    if (radix < emin - bits || radix > -emin)
+    if (radix < emin - bits - 32 * (int)idx || radix > -emin - 32 * (int)idx)
     {
         if (pseudo) errno = ERANGE;
         return scalblnl(sign, radix);
