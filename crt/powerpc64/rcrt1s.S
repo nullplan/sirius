@@ -19,7 +19,7 @@
 .type _start, @function
 _start:
     addis %r2, %r12, .TOC. - _start@ha
-    addi %r2, %r12, .TOC. - _start@l
+    addi %r2, %r2, .TOC. - _start@l
     li %r3, AUX_NUM+DYN_NUM
     mr %r31,%r1
     clrrdi %r1,%r1,4
@@ -30,7 +30,7 @@ _start:
     bdnz 1b
 
     addis %r30,%r12,_DYNAMIC-_start@ha
-    addi %r30,%r12,_DYNAMIC-_start@l
+    addi %r30,%r30,_DYNAMIC-_start@l
     ld %r3, 0(%r31)    /* argc */
     sldi %r3, %r3, 3
     add %r3, %r31, %r3
@@ -73,7 +73,9 @@ _start:
     add %r3, %r3, %r29
     bl do_relr
 
-    addi %r1, %r1, (AUX_NUM+DYN_NUM)*8-32
+    li %r0, 0
+    stdu %r0, %r1, (AUX_NUM+DYN_NUM)*8-32
+    mtlr %r0
     mr %r3, %r31
     mr %r4, %r30
     mr %r5, %r29
