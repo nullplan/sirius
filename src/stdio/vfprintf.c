@@ -88,6 +88,8 @@ enum {
     UINT_FAST8, UINT_FAST16, UINT_FAST32, UINT_FAST64,
     DBL, LDBL,
     PSCHAR, PSHORT, PINT, PLONG, PLLONG, PPTRDIFF, PWCHAR, PCHAR,
+    PINT8, PINT16, PINT32, PINT64,
+    PINT_FAST8, PINT_FAST16, PINT_FAST32, PINT_FAST64,
     PVOID, PINTMAX,
 };
 
@@ -164,6 +166,7 @@ static const unsigned char state_machine[END]['z'-'0'+1] = {
     [W8PRE] = {
         S('d') = INT8, S('i') = INT8, S('o') = UINT8, S('u') = UINT8,
         S('x') = UINT8, S('X') = UINT8, S('b') = UINT8, S('B') = UINT8,
+        S('n') = PINT8,
     },
     [W1PRE] = {
         S('6') = W16PRE,
@@ -177,14 +180,17 @@ static const unsigned char state_machine[END]['z'-'0'+1] = {
     [W16PRE] = {
         S('d') = INT16, S('i') = INT16, S('o') = UINT16, S('u') = UINT16,
         S('x') = UINT16, S('X') = UINT16, S('b') = UINT16, S('B') = UINT16,
+        S('n') = PINT16,
     },
     [W32PRE] = {
         S('d') = INT32, S('i') = INT32, S('o') = UINT32, S('u') = UINT32,
         S('x') = UINT32, S('X') = UINT32, S('b') = UINT32, S('B') = UINT32,
+        S('n') = PINT32,
     },
     [W64PRE] = {
         S('d') = INT64, S('i') = INT64, S('o') = UINT64, S('u') = UINT64,
         S('x') = UINT64, S('X') = UINT64, S('b') = UINT64, S('B') = UINT64,
+        S('n') = PINT64,
     },
 
     [WFPRE] = {
@@ -194,6 +200,7 @@ static const unsigned char state_machine[END]['z'-'0'+1] = {
         S('d') = INT_FAST8, S('i') = INT_FAST8, S('o') = UINT_FAST8,
         S('u') = UINT_FAST8, S('x') = UINT_FAST8, S('X') = UINT_FAST8,
         S('b') = UINT_FAST8, S('B') = UINT_FAST8,
+        S('n') = PINT_FAST8,
     },
     [WF1PRE] = {
         S('6') = WF16PRE,
@@ -208,16 +215,19 @@ static const unsigned char state_machine[END]['z'-'0'+1] = {
         S('d') = INT_FAST16, S('i') = INT_FAST16, S('o') = UINT_FAST16,
         S('u') = UINT_FAST16, S('x') = UINT_FAST16, S('X') = UINT_FAST16,
         S('b') = UINT_FAST16, S('B') = UINT_FAST16,
+        S('n') = PINT_FAST16,
     },
     [WF32PRE] = {
         S('d') = INT_FAST32, S('i') = INT_FAST32, S('o') = UINT_FAST32,
         S('u') = UINT_FAST32, S('x') = UINT_FAST32, S('X') = UINT_FAST32,
         S('b') = UINT_FAST32, S('B') = UINT_FAST32,
+        S('n') = PINT_FAST32,
     },
     [WF64PRE] = {
         S('d') = INT_FAST64, S('i') = INT_FAST64, S('o') = UINT_FAST64,
         S('u') = UINT_FAST64, S('x') = UINT_FAST64, S('X') = UINT_FAST64,
         S('b') = UINT_FAST64, S('B') = UINT_FAST64,
+        S('n') = PINT_FAST64,
     },
 };
 
@@ -272,6 +282,8 @@ static union arg pop_arg(va_list *ap, int type)
 
         case PSCHAR: case PSHORT: case PINT: case PLONG: case PLLONG: case PPTRDIFF: case PWCHAR: case PCHAR:
         case PVOID: case PINTMAX:
+        case PINT8: case PINT16: case PINT32: case PINT64:
+        case PINT_FAST8: case PINT_FAST16: case PINT_FAST32: case PINT_FAST64:
             rv.p = va_arg(*ap, void *); break;
     }
     return rv;
@@ -486,13 +498,21 @@ static int printf_core(FILE *restrict f, const char *restrict fmt, va_list *ap, 
 
             case 'n':
                 switch (st) {
-                    case PSCHAR:    *(signed char *)arg.p = rv; break;
-                    case PSHORT:    *(short *)arg.p = rv; break;
-                    case PINT:      *(int *)arg.p = rv; break;
-                    case PLONG:     *(long *)arg.p = rv; break;
-                    case PLLONG:    *(long long *)arg.p = rv; break;
-                    case PPTRDIFF:  *(ptrdiff_t *)arg.p = rv; break;
-                    case PINTMAX:   *(intmax_t *)arg.p = rv; break;
+                    case PSCHAR:        *(signed char *)arg.p = rv; break;
+                    case PSHORT:        *(short *)arg.p = rv; break;
+                    case PINT:          *(int *)arg.p = rv; break;
+                    case PLONG:         *(long *)arg.p = rv; break;
+                    case PLLONG:        *(long long *)arg.p = rv; break;
+                    case PPTRDIFF:      *(ptrdiff_t *)arg.p = rv; break;
+                    case PINTMAX:       *(intmax_t *)arg.p = rv; break;
+                    case PINT8:         *(int8_t *)arg.p = rv; break;
+                    case PINT16:        *(int16_t *)arg.p = rv; break;
+                    case PINT32:        *(int32_t *)arg.p = rv; break;
+                    case PINT64:        *(int64_t *)arg.p = rv; break;
+                    case PINT_FAST8:    *(int_fast8_t *)arg.p = rv; break;
+                    case PINT_FAST16:   *(int_fast16_t *)arg.p = rv; break;
+                    case PINT_FAST32:   *(int_fast32_t *)arg.p = rv; break;
+                    case PINT_FAST64:   *(int_fast64_t *)arg.p = rv; break;
                 }
                 continue;
 
@@ -535,25 +555,24 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
     va_list ap2;
     __FLOCK(f);
     va_copy(ap2, ap);
+    unsigned char tmpbuf[80];
+    unsigned char *oldbuf;
+    if (!f->buf_size) {
+        oldbuf = f->buf;
+        f->buf = tmpbuf;
+        f->buf_size = sizeof tmpbuf;
+        f->dir = 0;
+    }
     ret = __towrite(f);
     if (!ret)
         ret = printf_core(0, fmt, &ap2, nl_type, nl_arg);
     if (ret != -1) {
-        unsigned char tmpbuf[80];
-        unsigned char *oldbuf;
-        if (!f->buf_size) {
-            oldbuf = f->buf;
-            f->buf = tmpbuf;
-            f->buf_size = sizeof tmpbuf;
-            f->dir = 0;
-            __towrite(f);
-        }
         ret = printf_core(f, fmt, &ap2, nl_type, nl_arg);
-        if (f->buf == tmpbuf) {
-            if (fflush(f)) ret = -1;
-            f->buf = oldbuf;
-            f->buf_size = 0;
-        }
+    }
+    if (f->buf == tmpbuf) {
+        if (fflush(f)) ret = -1;
+        f->buf = oldbuf;
+        f->buf_size = 0;
     }
     va_end(ap2);
     __FUNLOCK(f);
