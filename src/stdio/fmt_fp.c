@@ -266,7 +266,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
     
     int e10;
     if ((c|32) != 'f') {
-        int num_dig_in_lead = *a? countdig(*a) : 0;
+        int num_dig_in_lead = countdig(*a);
         e10 = (rp - a) * 9 + num_dig_in_lead - 1;
     }
     int trim_zeroes = 0;

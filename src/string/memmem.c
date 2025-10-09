@@ -82,8 +82,8 @@ static char *twoway_memmem(const unsigned char *h, size_t hl,
     size_t bitset[256/8/sizeof (size_t)] = {0};
     size_t shifttab[256];
     for (size_t i = 0; i < nl; i++) {
-        BITOP(bitset, |=, n[nl]);
-        shifttab[n[nl]] = nl + 1;
+        BITOP(bitset, |=, n[i]);
+        shifttab[n[i]] = i + 1;
     }
 
     struct factorization crit = maximum_suffix(n, nl, 0);

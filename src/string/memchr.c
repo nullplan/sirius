@@ -11,7 +11,7 @@ void *(memchr)(const void *s, int c, size_t n)
         size_t max = (-(uintptr_t)us) & (sizeof (size_t) - 1);
         for (size_t i = 0; i < max; i++)
             if (us[i] == c)
-                return (void *)(us - 1);
+                return (void *)(us + i);
         n -= max;
         us += max;
         const word_t *ws = (const void *)us;
