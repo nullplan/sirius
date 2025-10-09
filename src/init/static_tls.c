@@ -31,6 +31,7 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
 {
     const Phdr *ph = start;
     const Phdr *ph_tls = 0;
+    const Phdr *ph_relro = 0;
     size_t i;
     size_t base = 0;
     int found_load = 0;
@@ -41,6 +42,8 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
             if (ph->p_memsz > __default_stacksize && ph->p_memsz < MAX_DEFAULT_STACK_SIZE)
                 __default_stacksize = ph->p_memsz;
         }
+        else if (ph->p_type == PT_GNU_RELRO)
+            ph_relro = ph;
         else if (ph->p_type == PT_TLS)
             ph_tls = ph;
         else if (ph->p_type == PT_DYNAMIC && _DYNAMIC)
@@ -54,6 +57,13 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
         }
     }
 
+    if (ph_relro) {
+        char *start = (char *)(base + ph_relro->p_vaddr);
+        char *end = start + ph_relro->p_memsz;
+        start -= (uintptr_t)start & (PAGE_SIZE - 1);
+        end += (-(uintptr_t)end) & (PAGE_SIZE - 1);
+        __syscall(SYS_mprotect, start, end - start, PROT_READ);
+    }
     if (ph_tls) {
         tls_mod.image = (void *)(base + ph_tls->p_vaddr);
         tls_mod.len = ph_tls->p_filesz;
