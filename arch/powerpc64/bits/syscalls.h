@@ -232,7 +232,7 @@
 #define SYS_tgkill 250
 #define SYS_utimes 251
 #define SYS_statfs 252
-#define SYS_fstatfs 253                 /* baseline */
+#define SYS_fstatfs 253
 #define SYS_rtas 255
 #define SYS_sys_debug_setcontext 256
 #define SYS_migrate_pages 258
@@ -331,7 +331,7 @@
 #define SYS_process_vm_readv 351
 #define SYS_process_vm_writev 352
 #define SYS_finit_module 353
-#define SYS_kcmp 354
+#define SYS_kcmp 354                    /* baseline (v3.13) */
 #define SYS_sched_setattr 355
 #define SYS_sched_getattr 356
 #define SYS_renameat2 357
