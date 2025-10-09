@@ -3,13 +3,6 @@
 #include <errno.h>
 #include <assert.h>
 
-/* Turns out the year being 32 bits is the bigger limitation
- * than the calculations in __year_to_time().
- *
- * 365*86400 is a 25 bit number. tm_year is a 31 bit number.
- * Therefore we just reject all input times outside of ±2^55.
- */
-
 static int days_in_month(int m, int isleap)
 {
     /* long month mask:
@@ -22,6 +15,14 @@ static int days_in_month(int m, int isleap)
     if (m == 1) return 28 + isleap;
     return 30 + ((0xad5 >> m) & 1);
 }
+
+/* Turns out the year being 32 bits is the bigger limitation
+ * than the calculations in __year_to_time().
+ *
+ * 365*86400 is a 25 bit number. tm_year is a 31 bit number.
+ * Therefore we just reject all input times outside of ±2^55.
+ */
+
 hidden int __time_to_tm(struct tm *tm, time_t t, const struct tz *tz)
 {
     if (t + (1ull << 55) >= 1ull << 56) {
