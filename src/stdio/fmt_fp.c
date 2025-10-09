@@ -140,6 +140,14 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         int c, const char *prefix, int preflen, enum format fmt)
 {
     static const int mant_dig_per_type[3] = {FLT_MANT_DIG, DBL_MANT_DIG, LDBL_MANT_DIG};
+    /* the largest decimal expansion occurs at the type's true minimum.
+     * The true minimum is 2^(MIN_EXP - MANT_DIG), and it has -(MIN_EXP - MANT_DIG)
+     * decimal places. That resolves to MANT_DIG - MIN_EXP.
+     * I save the digits in 32-bit units, where each contains 9 decimal digits,
+     * so the array size is the above, divided by 9, rounding up.
+     * For simplicity, I also always reserve 1 slot for pre-radix digits,
+     * so 1 more must be added.
+     */
     static const int arrsz_per_type[3] = {
         (FLT_MANT_DIG - FLT_MIN_EXP + 8)/9 + 1,
         (DBL_MANT_DIG - DBL_MIN_EXP + 8)/9 + 1,
@@ -154,9 +162,17 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         x *= 0x1p29;
         e2 -= 29;
     }
-    uint32_t *a = e2 < 0? big : big + arrsz - mant_dig;
-    uint32_t *z, *rp;
-    z = rp = a;
+    /* if exponent is negative, we will shift right and need all the space right of the number we can get.
+     * If exponent is non-negative, we will shift left after mantissa expansion.
+     * So initial setting of a needs to be far enough into the array to allow for even the worst-case left shift
+     * of e2 = MAX_EXP - 29, but not so far that the mantissa expansion leaves the array.
+     * Since the number of digits in the left shift is so far smaller than for the right shift (because
+     * log10(2) < 1/3), just using the number of mantissa digits is good enough for all
+     * current types.
+     */
+    uint32_t *a = e2 < 0? big : big + arrsz - mant_dig; /* start of non-zero digits */
+    uint32_t *z = a; /* end of non-zero digits */
+    uint32_t *rp = a; /* last block in front of radix point. */
     do {
         *z = x;
         x = BILLION * (x - *z++);
@@ -192,9 +208,9 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         while (a < z - 1 && !*a) a++;
     }
 
-    int do_round = 0;
-    uint32_t *r;
-    uint32_t mod;
+    int do_round = 0; /* flag for rounding */
+    uint32_t *r; /* pointer to first insignificant digit */
+    uint32_t mod; /* 10^(number of insignificant digits in *r) */
     if (prec < 0) prec = 6;
     if ((c|32) == 'f') {
         do_round = prec < 9 * (z - rp);
