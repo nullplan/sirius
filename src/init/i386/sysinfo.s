@@ -10,10 +10,7 @@ __get_sysinfo:
     testl %eax, %eax
     jnz 2f
     call 3f
-4:  addl $1b-4b, %eax
+3:  popl %eax
+    addl $1b-3b, %eax
 2:  ret
 .size __get_sysinfo, . - __get_sysinfo
-
-3:
-    movl (%esp), %eax
-    retl
