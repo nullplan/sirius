@@ -35,7 +35,7 @@ char **__environ;
 weak_alias(environ, __environ);
 weak_alias(_environ, __environ);
 
-hidden struct __localedef __global_locale;
+hidden struct __localedef __global_locale = {{"C", "C", "C", "C", "C", "C"}, 0};
 
 hidden size_t __hwcap;
 
@@ -74,7 +74,6 @@ void __init_libc(char *pn, char **envp)
     __init_canary((void *)aux[AT_RANDOM]);
     __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT], aux[AT_HWCAP], __get_sysinfo(aux));
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
-    __global_locale = __c_locale;
     if (!pn || !*pn) pn = (void *)aux[AT_EXECFN];
     if (!pn) pn = "";
     __init_progname(pn);
