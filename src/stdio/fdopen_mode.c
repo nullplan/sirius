@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <syscall.h>
+#include <fcntl.h>
 #include "libc.h"
 
 hidden FILE *__fdopen_flg(int fd, int flg)
@@ -13,6 +14,7 @@ hidden FILE *__fdopen_flg(int fd, int flg)
     f->fd = fd;
     if ((flg & O_ACCMODE) == O_RDONLY) f->flags = F_NOWR;
     if ((flg & O_ACCMODE) == O_WRONLY) f->flags = F_NORD;
+    if (flg & O_CLOEXEC) __syscall(SYS_fcntl, fd, F_SETFD, FD_CLOEXEC);
 
     f->buf = (unsigned char *)f + sizeof (FILE) + UNGET;
     f->buf_size = BUFSIZ;
@@ -32,7 +34,6 @@ hidden FILE *__fdopen_flg(int fd, int flg)
     FILE *head = __ofl_lock();
     f->next = head;
     if (head) head->prev = f;
-    head = f;
-    __ofl_unlock(head);
+    __ofl_unlock(f);
     return f;
 }
