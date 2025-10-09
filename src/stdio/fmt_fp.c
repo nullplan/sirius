@@ -20,18 +20,16 @@ static void pad(FILE *f, int c, int width, int len, int flags)
         putc_unlocked(c, f);
 }
 
-static char *fmt_d(char *z, uintmax_t x)
+static char *fmt_d(char *z, uint32_t x)
 {
-    for (       ; x > ULONG_MAX; x /= 10) *--z = '0' + (x % 10);
-    for (unsigned long y = x; y; y /= 10) *--z = '0' + (y % 10);
+    for (       ; x; x /= 10) *--z = '0' + (x % 10);
     return z;
 }
 
-static char *fmt_x(char *z, uintmax_t x, int lcase)
+static char *fmt_x(char *z, uint32_t x, int lcase)
 {
     const char *const alpha = lcase? "0123456789abcdef" : "0123456789ABCDEF";
-    for (       ; x > ULONG_MAX; x >>= 4) *--z = alpha[x & 15];
-    for (unsigned long y = x; y; y >>= 4) *--z = alpha[y & 15];
+    for (       ; x; x >>= 4) *--z = alpha[x & 15];
     return z;
 }
 static size_t fmt_hexfloat(FILE *f, long double x, int width, int prec, int flags,
