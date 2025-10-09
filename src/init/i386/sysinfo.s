@@ -1,6 +1,8 @@
+.section ".text.oldsyscall","ax",@progbits
 1: int $0x80
     ret
 
+.section ".text.__get_sysinfo","ax",@progbits
 .global __get_sysinfo
 .type __get_sysinfo, @function
 .hidden __get_sysinfo
