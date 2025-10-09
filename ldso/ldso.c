@@ -73,8 +73,8 @@ struct ldso {
     int relocated;
     int kernel_mapped;
     int tlsid;
-    int mark;
     int initialized;
+    size_t mark;
     size_t tlsoff;
     struct ldso *const *deps;
     struct ldso *next, *prev;
@@ -853,17 +853,16 @@ static struct ldso **queue_initializers(struct ldso *start)
 
     while (sp < cnt) {
         struct ldso *p = queue[sp];
-        if (p->mark == 2) {
+        if (!p->deps[p->mark - 1]) {
             *qtail++ = p;
             sp++;
         } else {
-            p->mark = 2;
-            for (struct ldso *const *d = p->deps; *d; d++) {
-                if (!(*d)->mark) {
-                    (*d)->mark = 1;
-                    queue[--sp] = *d;
-                }
+            struct ldso *d = p->deps[p->mark - 1];
+            if (!d->mark) {
+                queue[--sp] = d;
+                d->mark = 1;
             }
+            p->mark++;
         }
     }
 
