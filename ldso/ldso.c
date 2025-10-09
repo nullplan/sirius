@@ -441,9 +441,13 @@ static void process_relocs(struct ldso *dso, const size_t *rel, size_t relsz, si
     }
 }
 
-static void process_relr(size_t base, const size_t *rel, size_t sz)
+static void process_relr(size_t base, const size_t *rel, size_t sz, const char *name)
 {
-    size_t *rel_addr = 0;
+    size_t *rel_addr;
+    if (sz && (*rel & 1)) {
+        print_error("Error relocating `%s': RELR table starts with bit field", name);
+        return;
+    }
     for (; sz; sz -= sizeof (size_t), rel++)
     {
         size_t w = *rel;
@@ -471,7 +475,7 @@ static void relocate(struct ldso *dso)
     process_relocs(dso, (void *)(dso->base + dyn[DT_JMPREL]), dyn[DT_PLTRELSZ], dyn[DT_PLTREL] == DT_REL? 2 : 3);
     /* relr table is all relative, so we skip it for libc, since it has already been processed. */
     if (dso != &libc)
-        process_relr((size_t)dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ]);
+        process_relr((size_t)dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ], dso->name);
     dso->relocated = 1;
     if (dso->relro_start != dso->relro_end
             && mprotect(dso->base + dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
