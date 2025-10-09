@@ -1,0 +1,54 @@
+Linux kernel baseline requirements
+==================================
+
+At the minimum, a Linux kernel with working SYS_futex system call is needed. The
+first public release with that syscall was 2.6.0, which makes that version the
+baseline for all architectures. However, further features may be required per
+architecture:
+
+1. The 2038 problem
+-------------------
+
+On 32-bit architectures, the kernel historically set time_t to be a signed
+32-bit type. In January 2038, 2^31 seconds will have passed since 1970, making
+the time stamp overflow from 2038 back to 1902 if saved in a signed 32 bit
+number.
+
+Linux has recognized the peril and added system calls that deal in 64-bit time
+units even on the 32-bit archs. But they were a bit late to do so, and only
+added these in Linux 5.12.
+
+I do not want to create an environment now that will seem to work just fine and
+fall over in 13 years. Therefore, I require these 64-bit time syscalls to be
+present even today, and will not fall back to the 32-bit methods.
+
+x32 is (as usual) a special case since it has always supported 64-bit time
+syscalls through the usual methods, despite being a 32-bit arch.
+
+2. Arch/ABI support
+-------------------
+
+For the remaining architectures:
+
+x86_64 support was already present in 2.6.0.
+x32 support was added in 3.4.
+aarch64 support was added in 3.7.
+
+PPC64 support was already present, but I require the ELFv2 ABI. Supporting both
+ELFv1 and v2 would be some effort that I'm not sure is worth it. The only point
+to supporting ELFv1 at this point is compatibility with existing binaries, and
+no binaries for sirius exist. But ELFv2 requires kernel support, which was added
+in 3.13.
+
+Conclusion
+----------
+
+These are the baseline requirements per arch:
+
+
+aarch64:        3.7
+i386:           5.12
+powerpc:        5.12
+powerpc64:      3.13
+x32:            3.4
+x86_64:         2.6.0
