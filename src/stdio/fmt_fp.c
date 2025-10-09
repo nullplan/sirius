@@ -257,13 +257,13 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
             }
             if (*r == BILLION) {
                 *r = 0;
-                r[-1] = 1;
-                a = r - 1;
+                *--r = 1;
+                a = r;
             }
         }
         z = r + 1;
     }
-    
+
     int e10;
     if ((c|32) != 'f') {
         int num_dig_in_lead = countdig(*a);
