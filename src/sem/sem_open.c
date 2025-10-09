@@ -23,6 +23,8 @@ static sem_t *create_new(const char *fullname, sem_t *init, mode_t m)
 {
     char tmpname[] = "/dev/shm/.sem_XXXXXX";
     int fd = -1;
+    sem_t *rv = 0;
+
     for (int spins = 0; fd < 0 && spins < 100; spins++)
     {
         __randname(tmpname + sizeof tmpname - 7);
@@ -39,18 +41,9 @@ static sem_t *create_new(const char *fullname, sem_t *init, mode_t m)
     sem_t *p = mmap(0, sizeof (sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (p == MAP_FAILED) goto out_close;
 
-    if (link(tmpname, fullname)) goto out_unmap;
+    if (link(tmpname, fullname)) munmap(p, sizeof (sem_t));
+    else rv = p;
 
-    __syscall(SYS_close, fd);
-#ifdef SYS_unlink
-    __syscall(SYS_unlink, tmpname);
-#else
-    __syscall(SYS_unlinkat, AT_FDCWD, tmpname);
-#endif
-    return p;
-
-out_unmap:
-    __syscall(SYS_munmap, p, sizeof (sem_t));
 out_close:
     __syscall(SYS_close, fd);
 #ifdef SYS_unlink
@@ -58,7 +51,7 @@ out_close:
 #else
     __syscall(SYS_unlinkat, AT_FDCWD, tmpname);
 #endif
-    return 0;
+    return rv;
 }
 
 sem_t *sem_open(const char *name, int flg, ...)
