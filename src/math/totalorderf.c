@@ -1,3 +1,4 @@
+#define __STDC_WANT_IEC_60559_EXT__
 #include "libm.h"
 
 int    totalorderf(const float *pa, const float *pb)
