@@ -397,8 +397,6 @@ FILE *open_memstream(char **, size_t *);
 int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
 
 /* sys/resource.h */
-int getrlimit(int, struct rlimit *);
-int setrlimit(int, const struct rlimit *);
 int getrusage(int, struct rusage *);
 
 /* sys/statfs.h */
