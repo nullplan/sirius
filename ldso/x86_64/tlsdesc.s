@@ -10,16 +10,12 @@ __tlsdesc_static:
 .hidden __tlsdesc_dynamic
 .type __tlsdesc_dynamic, @function
 __tlsdesc_dynamic:
-    pushq %rcx
     pushq %rdx
-    movq 8(%rax), %rax
-    movq (%rax), %rdx
-    movq %fs:32, %rcx
-    movq (%rcx, %rdx, 8), %rdx
-    movq 8(%rax), %rax
-    addq %rdx, %rax
-    subq %fs:0, %rax
+    movq 8(%rax), %rdx                  # rdx = &{tlsmod, tlsoff}
+    movq (%rdx), %rax                   # rax = tlsmod
+    movq %fs:32(, %rax, 8), %rax        # rax = self->dtv[tlsmod]
+    subq %fs:0, %rax                    # rax = self->dtv[tlsmod] - self
+    addq 8(%rdx), %rax                  # rax = self->dtv[tlsmod] - self + tlsoff
     popq %rdx
-    popq %rcx
     retq
 .size __tlsdesc_dynamic, . - __tlsdesc_static
