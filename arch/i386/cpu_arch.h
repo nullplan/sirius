@@ -43,12 +43,12 @@ static inline int a_clz(size_t x)
     return 31 - x;
 }
 
-static inline void a_stackjmp(void *func, void *stack)
+static inline _Noreturn void a_stackjmp(void *func, void *stack)
 {
     __asm__("movl %1, %%esp; jmpl *%0" :: "r"(func), "r"(stack));
 }
 
-static inline void a_stackinvoke(void (*func)(void), void *stack)
+static inline _Noreturn void a_stackinvoke(void (*func)(void), void *stack)
 {
     stack = (void *)(((uintptr_t)stack & -16ul) - 4);
     a_stackjmp(func, stack);

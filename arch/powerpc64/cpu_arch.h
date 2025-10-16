@@ -69,13 +69,13 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
     return res;
 }
 
-static inline void a_stackjmp(void *func, void *stack)
+static inline _Noreturn void a_stackjmp(void *func, void *stack)
 {
     register long r12 __asm__("r12") = func;
     __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(r12), "r"(stack));
 }
 
-static inline void a_stackinvoke(void (*func)(void), void *stack)
+static inline _Noreturn void a_stackinvoke(void (*func)(void), void *stack)
 {
     stack = (void *)(((uintptr_t)stack & -16ul) - 32);
     a_stackjmp((void *)func, stack);

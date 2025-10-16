@@ -43,12 +43,12 @@ static inline int a_ctz(size_t x) {
 }
 #endif
 
-static inline void a_stackjmp(void *func, void *stack)
+static inline _Noreturn void a_stackjmp(void *func, void *stack)
 {
     __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(func), "r"(stack));
 }
 
-static inline void a_stackinvoke(void (*func)(void), void *stack)
+static inline _Noreturn void a_stackinvoke(void (*func)(void), void *stack)
 {
     stack = (void *)(((uintptr_t)stack & -16ul) - 16);
     a_stackjmp((void *)func, stack);
