@@ -16,12 +16,11 @@ extern hidden void __run_constructors(void);
 extern hidden void __run_destructors(void);
 extern hidden void __stdio_exit(void);
 extern hidden void __run_atexit_funcs(void);
-extern hidden void __init_from_phdrs(const void *, size_t, size_t, size_t, size_t);
+extern hidden void __init_from_phdrs(const void *, size_t, size_t);
 extern hidden size_t __next_canary(void);
 extern hidden void __init_canary(const void *);
 extern hidden struct __localedef __global_locale;
 extern hidden void __init_tsd(void);
-extern hidden struct __pthread *__init_tp(struct __pthread *, size_t, size_t);
 extern hidden size_t __get_sysinfo(const size_t *);
 
 #ifdef PAGESIZE

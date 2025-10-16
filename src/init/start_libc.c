@@ -1,16 +1,19 @@
 #define __STARTUP_CODE
 #include "libc.h"
-#include <stdlib.h>
-#include <elf.h>
 #include "vdso.h"
-#include <features.h>
-#include <poll.h>
 #include "cpu.h"
 #include "syscall.h"
-#include <fcntl.h>
+#include "futex.h"
+#include "tls.h"
+
+#include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
-#include "futex.h"
+
+#include <elf.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 static void dummy(const void *p) {}
 weak_alias(__init_vdso, dummy);
@@ -39,8 +42,26 @@ hidden struct __localedef __global_locale = {{"C", "C", "C", "C", "C", "C"}, 0};
 
 hidden size_t __hwcap;
 
-hidden struct __pthread *__init_tp(struct __pthread *tp, size_t hwcap, size_t sysinfo)
+static struct {
+    struct __pthread tp;
+    uintptr_t space[20];
+} builtin_tls;
+
+static void init_tp(size_t hwcap, size_t sysinfo)
 {
+    struct tls_data tls_data = __get_tls_data();
+    char *tlsbase;
+    size_t need = ((-(uintptr_t)&builtin_tls) & (tls_data.align - 1)) + tls_data.size;
+    if (need <= sizeof builtin_tls) {
+        tlsbase = (void *)((((uintptr_t)&builtin_tls) + tls_data.align - 1) & -tls_data.align);
+    } else {
+#ifdef SYS_mmap2
+#undef SYS_mmap
+#define SYS_mmap SYS_mmap2
+#endif
+        tlsbase = (void *)__syscall(SYS_mmap, 0, tls_data.size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    }
+    pthread_t tp = __copy_tls(tlsbase, tls_data.size);
     tp->self = tp->next = tp->prev = tp;
     tp->sysinfo = sysinfo;
     tp->canary = __next_canary();
@@ -49,7 +70,6 @@ hidden struct __pthread *__init_tp(struct __pthread *tp, size_t hwcap, size_t sy
     tp->locale = &__global_locale;
     if (__set_thread_area(__tp_adjust(tp)))
         a_crash();
-    return tp;
 }
 
 #define AUX_CNT 34
@@ -72,7 +92,8 @@ void __init_libc(char *pn, char **envp)
 
     __page_size = aux[AT_PAGESZ];
     __init_canary((void *)aux[AT_RANDOM]);
-    __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT], aux[AT_HWCAP], __get_sysinfo(aux));
+    __init_from_phdrs((void *)aux[AT_PHDR], aux[AT_PHNUM], aux[AT_PHENT]);
+    init_tp(aux[AT_HWCAP], __get_sysinfo(aux));
     __init_vdso((void *)aux[AT_SYSINFO_EHDR]);
     if (!pn || !*pn) pn = (void *)aux[AT_EXECFN];
     if (!pn) pn = "";

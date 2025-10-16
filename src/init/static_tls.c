@@ -19,15 +19,10 @@ typedef Elf64_Phdr Phdr;
 static struct tls_module tls_mod;
 
 extern weak const size_t _DYNAMIC[];
-static struct {
-    struct __pthread tp;
-    uintptr_t space[20];
-} builtin_tls;
-
 static unsigned long defstack = DEFAULT_STACK_SIZE;
 weak_alias(__default_stacksize, defstack);
 
-static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent, size_t hwcap, size_t sysinfo)
+static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent)
 {
     const Phdr *ph = start;
     const Phdr *ph_tls = 0;
@@ -71,18 +66,5 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
         tls_mod.align = ph_tls->p_align;
         __add_tls(&tls_mod);
     }
-    struct tls_data tls_data = __get_tls_data();
-    char *tlsbase;
-    size_t need = ((-(uintptr_t)&builtin_tls) & (tls_data.align - 1)) + tls_data.size;
-    if (need <= sizeof builtin_tls) {
-        tlsbase = (void *)((((uintptr_t)&builtin_tls) + tls_data.align - 1) & -tls_data.align);
-    } else {
-#ifdef SYS_mmap2
-#undef SYS_mmap
-#define SYS_mmap SYS_mmap2
-#endif
-        tlsbase = (void *)__syscall(SYS_mmap, 0, tls_data.size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    }
-    __init_tp(__copy_tls(tlsbase, tls_data.size), hwcap, sysinfo);
 }
 weak_alias(__init_from_phdrs, static_init_from_phdrs);
