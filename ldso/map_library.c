@@ -100,7 +100,7 @@ hidden void *__map_library(int fd, struct dso *dso)
         if (ph->p_type == PT_LOAD) {
             size_t this_min = PAGE_RND_DOWN(ph->p_vaddr);
             size_t this_off = PAGE_RND_DOWN(ph->p_offset);
-            size_t this_max = PAGE_RND_UP(ph->p_vaddr);
+            size_t this_max = PAGE_RND_UP(ph->p_vaddr + ph->p_memsz);
             /* reuse first segment */
             if (this_min != min_address
                     && mmap(dso->base + this_min, this_max - this_min, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_FIXED, fd, this_off) == MAP_FAILED) {
