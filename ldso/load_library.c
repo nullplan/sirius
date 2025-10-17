@@ -106,6 +106,22 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
     for (struct dso *dso = __dl_head(); dso; dso = dso->next)
         if (!dso->kernel_mapped && dso->dev == st.st_dev && dso->ino == st.st_ino)
         {
+            /* if library was previously linked in by pathname and is now referred to
+             * by shortname, then assign the shortname.
+             *
+             * And if that fails, then so be it. I can't deal with every problem.
+             *
+             * At startup time, the name provided is a DT_NEEDED entry of a library
+             * that will never be unloaded, so can be used directly. At runtime,
+             * it is provided by the caller and not guaranteed to live any longer than
+             * the call itself.
+             */
+            if (!dso->shortname && fullname != name)
+            {
+                dso->shortname = at_startup? name : strdup(name);
+                if (__is_ldd_mode() && dso->shortname)
+                    dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, (void *)dso->base);
+            }
             close(fd);
             return dso;
         }
@@ -141,7 +157,7 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
     }
     __dl_push_back(dso);
 
-    if (__is_ldd_mode()) dprintf(1, "\t%s%s%s (0x%0*p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, 2 * (int)sizeof (size_t), (void *)dso->base);
+    if (__is_ldd_mode()) dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, (void *)dso->base);
 
     /* if we are at startup, this library will not be unmapped again.
      * If an error occurs, we will exit.
