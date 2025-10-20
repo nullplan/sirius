@@ -1,4 +1,5 @@
 #include "ldso.h"
+#include "libc.h"
 #include <stdlib.h>
 
 static void reclaim_single(const struct dso *dso, size_t start, size_t end)
