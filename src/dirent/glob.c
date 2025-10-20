@@ -277,9 +277,15 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *, int),
         if (!(flags & GLOB_NOCHECK)) {
             return GLOB_NOMATCH;
         }
-        result = &noalloc;
-        noalloc.n = 1;
-        noalloc.paths = (void *)&pat;
+        result = &a1;
+        result->paths = malloc(sizeof (char*));
+        if (!result->paths) return GLOB_NOSPACE;
+        result->paths[0] = strdup(pat);
+        if (!result->paths[0]) {
+            free(result->paths);
+            return GLOB_NOSPACE;
+        }
+        result->n = result->capacity = 1;
     }
 
     if (result == &noalloc) {
