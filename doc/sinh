@@ -1,0 +1,8 @@
+Complex hyperbolic functions
+============================
+
+Just using the Wikipedia definitions.
+
+sinh x = (exp(x) - exp(-x))/2
+cosh x = (exp(x) + exp(-x))/2
+tanh x = (exp(x) - exp(-x))/(exp(x) + exp(-x))
