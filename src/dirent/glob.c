@@ -113,6 +113,9 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
             out->n++;
         }
     } else {
+        char pattern[n + 1];
+        memcpy(pattern, name, n);
+        pattern[n] = 0;
         for (size_t i = 0; i < candidates->n; i++) {
             DIR *d = opendir(candidates->paths[i][0]? candidates->paths[i] : ".");
             if (!d) {
@@ -120,11 +123,8 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
                 if (rv || (flags & GLOB_ERR)) return GLOB_ABORTED;
             } else {
                 struct dirent *de;
-                char pattern[n + 1];
                 int fnm_flags = FNM_PERIOD;
                 if (flags & GLOB_NOESCAPE) fnm_flags |= FNM_NOESCAPE;
-                memcpy(pattern, name, n);
-                pattern[n] = 0;
                 int saved_errno = errno;
                 while ((errno = 0), (de = readdir(d))) {
                     if (strcmp(de->d_name, ".") && strcmp(de->d_name, "..") && !fnmatch(pattern, de->d_name, fnm_flags)) {
