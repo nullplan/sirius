@@ -23,7 +23,7 @@ typedef struct { long long quot, rem; } lldiv_t;
 #define EXIT_FAILURE    1
 #define EXIT_SUCCESS    0
 #define RAND_MAX        0x7fffffff
-int __mb_cur_max(void);
+size_t __mb_cur_max(void);
 #define MB_CUR_MAX      (__mb_cur_max())
 
 void call_once(once_flag *, void (*)(void));
