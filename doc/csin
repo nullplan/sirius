@@ -111,3 +111,23 @@ z² = (-t² + 2it + 1)/(t² + 1)
 
 z² = -1 + (2it + 2)/(t² + 1)
 z = ±√((2it + 2)/(t² + 1) - 1)
+
+z₁ = -√((2it + 2)/(t² + 1) - 1)
+z₂ =  √((2it + 2)/(t² + 1) - 1)
+
+exp(ix₁) = -√((2it + 2)/(t² + 1) - 1)           | ln
+ix₁ = ln (-√((2it + 2)/(t² + 1) - 1))
+ix₁ = ln (-1) + ln √((2it + 2)/(t² + 1) - 1)
+ix₁ = ln (exp(iπ)) + ln √((2it + 2)/(t² + 1) - 1)
+ix₁ = iπ + ln √((2it + 2)/(t² + 1) - 1)         | * (-i)
+x₁ = π - 1/2 i ln ((2it + 2)/(t² + 1) - 1)
+x₁ = π - 1/2 i ln ((-t² + 2it + 1)/(t² + 1))
+x₁ = π - 1/2 i (ln (-t² + 2it + 1) - ln (t² + 1))
+
+exp(ix₂) =  √((2it + 2)/(t² + 1) - 1)           | ln
+ix₂ = 1/2 ln ((2it + 2)/(t² + 1) - 1)           | * (-i)
+x₂ = -1/2 i ln ((2it + 2)/(t² + 1) - 1)
+x₂ = -1/2 i (ln (-t² + 2it + 1) - ln (t² + 1))
+
+Seems pretty obvious that x₂ is the main branch and x₁ is the first side branch. Therefore,
+reject x₁, accept x₂.
