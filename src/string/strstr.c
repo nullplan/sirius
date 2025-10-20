@@ -127,8 +127,9 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 char *(strstr)(const char *h, const char *n)
 {
     if (!*n) return (char *)h;
-    h = strchr(h, *n);
-    if (!h || !n[1]) return (char *)h;
+    h += __stridx(h, *n);
+    if (!h[0]) return 0;
+    if (!n[1]) return (char *)h;
     if (!h[1]) return 0;
     if (!n[2]) return twobyte_strstr((const void *)h, (const void *)n);
     if (!h[2]) return 0;
