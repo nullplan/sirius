@@ -65,6 +65,15 @@ static int push_back_path(struct pathlist *pl, char *path)
     return 0;
 }
 
+static void freelist(struct pathlist *l)
+{
+    for (size_t i = 0; i < l->n; i++)
+        free(l->paths[i]);
+    free(l->paths);
+    l->n = l->capacity = 0;
+    l->paths = 0;
+}
+
 static int default_errfunc(const char *path, int err)
 {
     if (err == ENOENT || err == ENOTDIR) return 0;
@@ -160,15 +169,6 @@ static int process_name(struct pathlist *out, const struct pathlist *candidates,
 static int pathcmp(const void *a, const void *b)
 {
     return strcoll(*(char **)a, *(char **)b);
-}
-
-static void freelist(struct pathlist *l)
-{
-    for (size_t i = 0; i < l->n; i++)
-        free(l->paths[i]);
-    free(l->paths);
-    l->n = l->capacity = 0;
-    l->paths = 0;
 }
 
 static const char *const root = "/";
