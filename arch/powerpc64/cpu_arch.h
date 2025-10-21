@@ -71,7 +71,7 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 
 static inline _Noreturn void a_stackjmp(void *func, void *stack)
 {
-    register long r12 __asm__("r12") = func;
+    register long r12 __asm__("r12") = (long)func;
     __asm__("mr %%r1, %1; mtctr %0; bctr" :: "r"(r12), "r"(stack));
 }
 
@@ -81,6 +81,7 @@ static inline _Noreturn void a_stackinvoke(void (*func)(void), void *stack)
     a_stackjmp((void *)func, stack);
 }
 
+#ifdef _ARCH_PWR5
 #define a_popcnt_32 a_popcnt_32
 static inline int a_popcnt_32(uint32_t x)
 {
@@ -95,3 +96,4 @@ static inline int a_popcnt_64(uint64_t x)
     __asm__("popcntb %0, %1" : "=r"(x) : "r"(x));
     return (x * 0x0101010101010101) >> 56;
 }
+#endif

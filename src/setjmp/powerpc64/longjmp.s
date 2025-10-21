@@ -1,3 +1,4 @@
+.machine altivec
 .global longjmp
 .type longjmp, @function
 longjmp:

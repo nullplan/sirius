@@ -53,3 +53,13 @@ static inline _Noreturn void a_stackinvoke(void (*func)(void), void *stack)
     stack = (void *)(((uintptr_t)stack & -16ul) - 16);
     a_stackjmp((void *)func, stack);
 }
+
+#ifdef _ARCH_PWR5
+#define a_popcnt_32 a_popcnt_32
+static inline int a_popcnt_32(uint32_t x)
+{
+    uint64_t X = x;
+    __asm__("popcntb %0, %1" : "=r"(X) : "r"(X));
+    return (X * 0x01010101) >> 24;
+}
+#endif

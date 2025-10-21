@@ -1,3 +1,4 @@
+.machine altivec
 .global setjmp
 .type setjmp, @function
 .global __setjmp

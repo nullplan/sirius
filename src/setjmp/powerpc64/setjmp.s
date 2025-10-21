@@ -1,3 +1,4 @@
+.machine altivec
 .global __setjmp
 .hidden __setjmp
 __setjmp:
