@@ -363,3 +363,6 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
                 f.write(f"build {o}: {'cc' if pic_default else 'ccpic'} {i} | obj/include/alltypes.h || {d}\n")
             elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n")
             elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")
+
+        for i in ["pthread", "m", "rt", "xnet", "dl", "util"]:
+            f.write(f"build lib/lib{i}.a: ar || lib\n")
