@@ -1,11 +1,8 @@
 #include <sys/stat.h>
+#include <fcntl.h>
 #include "syscall.h"
 
 int chmod(const char *nm, mode_t m)
 {
-#ifdef SYS_chmod
-    return syscall(SYS_chmod, nm, m);
-#else
-    return syscall(SYS_fchmodat, -100, nm, m, 0);
-#endif
+    return fchmodat(AT_FDCWD, nm, m, 0);
 }
