@@ -11,5 +11,5 @@ static FILE f = {
     .close = __stdio_close,
     .lock = -1,
 };
-FILE *const stdin = &f;
 hidden FILE *const __stdin_used = &f;
+weak_alias(stdin, __stdin_used);

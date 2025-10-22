@@ -23,5 +23,5 @@ static FILE f = {
     .close = __stdio_close,
     .lock = -1,
 };
-FILE *const stdout = &f;
 hidden FILE *const __stdout_used = &f;
+weak_alias(stdout, __stdout_used);

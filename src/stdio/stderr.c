@@ -11,5 +11,5 @@ static FILE f = {
     .close = __stdio_close,
     .lock = -1,
 };
-FILE *const stderr = &f;
 hidden FILE *const __stderr_used = &f;
+weak_alias(stderr, __stderr_used);
