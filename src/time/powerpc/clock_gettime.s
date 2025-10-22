@@ -37,6 +37,7 @@
 2:
     addis %r4, %r31, .Limpl-1b@ha
     stw %r3, .Limpl-1b@l(%r4)
+    sync
     mtctr %r3
     lwz %r0, 36(%r1)
     lwz %r3, 8(%r1)

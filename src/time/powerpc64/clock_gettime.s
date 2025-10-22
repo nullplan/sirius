@@ -33,6 +33,7 @@
 1:
     addis %r4, %r2, .Limpl@toc@ha
     std %r3, .Limpl@toc@l(%r4)
+    sync
     mr %r12, %r3
     mtctr %r3
     ld %r0, 80(%r1)
