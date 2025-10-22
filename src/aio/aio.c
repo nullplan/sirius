@@ -153,8 +153,7 @@ static void cleanup(void *ctx)
 {
     struct aio_task *t = ctx;
     struct aio_queue *q = t->q;
-    if (a_swap(&t->running, 0) < 0)
-        __futex_wake(&t->running, 1, INT_MAX);
+    a_swap(&t->running, 0);
     t->cb->__res = t->result;
     if (a_swap(&t->cb->__err, t->err) != EINPROGRESS)
         __futex_wake(&t->cb->__err, 1, INT_MAX);
@@ -189,6 +188,11 @@ static void cleanup(void *ctx)
             t->cb->aio_sigevent.sigev_notify_function(t->cb->aio_sigevent.sigev_value);
             break;
     }
+}
+
+static void unlock(void *p)
+{
+    pthread_mutex_unlock(p);
 }
 
 struct args {
@@ -230,14 +234,15 @@ static void *worker_thread(void *ctx)
     seekable = q->seekable;
     append = q->append;
 
+    pthread_cleanup_push(cleanup, t);
+    pthread_cleanup_push(unlock, &q->lock);
     if (op == O_SYNC || op == O_DSYNC || (op == LIO_WRITE && q->append)) {
         while (has_write_operation(t->next))
             pthread_cond_wait(&q->task_done, &q->lock);
     }
 
-    pthread_mutex_unlock(&q->lock);
+    pthread_cleanup_pop(1);
 
-    pthread_cleanup_push(cleanup, t);
     ssize_t rv = -1;
     switch (op) {
         case LIO_READ:
@@ -358,6 +363,8 @@ int aio_cancel(int fd, struct aiocb *cb)
     sigset_t maskset, oldset;
     sigfillset(&maskset);
     pthread_sigmask(SIG_BLOCK, &maskset, &oldset);
+    int cs;
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
     /* In this implementation everything can be canceled, but it is unknown
      * if the kernel honors the request. If it does, the task is canceled.
      * If not, it completes. Either way, I don't get a "could not cancel"
@@ -376,15 +383,16 @@ int aio_cancel(int fd, struct aiocb *cb)
 
     for (struct aio_task *t = q->head; t; t = t->next)
         if (!cb || cb == t->cb) {
-            if (a_cas(&t->running, 1, -1)) {
+            if (a_cas(&t->running, 1, -1) == 1) {
                 pthread_cancel(t->worker);
                 while (t->running)
-                    __futex_wait(&t->running, 1, -1);
+                    pthread_cond_wait(&q->task_done, &q->lock);
                 if (t->err == ECANCELED) rv = AIO_CANCELED;
             }
         }
     pthread_mutex_unlock(&q->lock);
 out_unmask:
+    pthread_setcancelstate(cs, 0);
     pthread_sigmask(SIG_SETMASK, &oldset, 0);
     return rv;
 }
