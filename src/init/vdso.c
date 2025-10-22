@@ -42,6 +42,7 @@ static size_t count_ghashtab(const uint32_t *gh)
         count++;
     return count + 1;
 }
+
 hidden void __init_vdso(const void *p)
 {
     if (!p) return;

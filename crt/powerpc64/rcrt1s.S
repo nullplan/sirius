@@ -74,7 +74,7 @@ _start:
     bl do_relr
 
     li %r0, 0
-    stdu %r0, %r1, (AUX_NUM+DYN_NUM)*8-32
+    stdu %r0, (AUX_NUM+DYN_NUM)*8-32(%r1)
     mtlr %r0
     mr %r3, %r31
     mr %r4, %r30

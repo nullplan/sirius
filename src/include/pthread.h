@@ -23,7 +23,6 @@ struct __pthread
     #endif
 
     /* non-ABI free-for-all */
-    int errno_val;
     int tid;
     struct lock killlock;
     int detachstate;
@@ -45,6 +44,8 @@ struct __pthread
     char *dlerr_alloc;
     size_t dlerr_alloc_size;
 
+    int errno_val;              /* internal PowerPC ABI: errno_val is the fourth-to-last word. */
+    /* this also means I require the last non-ABI element to be word sized, not int! */
     #ifndef TLS_VARIANT_2
     size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
