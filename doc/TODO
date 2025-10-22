@@ -1,16 +1,3 @@
-/* complex.h */
-complex double casinh(complex double);
-complex double cacosh(complex double);
-complex double catanh(complex double);
-
-complex float casinhf(complex float);
-complex float cacoshf(complex float);
-complex float catanhf(complex float);
-
-complex long double casinhl(complex long double);
-complex long double cacoshl(complex long double);
-complex long double catanhl(complex long double);
-
 /* dlfcn.h */
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
 int dlclose(void *);

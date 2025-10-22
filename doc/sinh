@@ -6,3 +6,67 @@ Just using the Wikipedia definitions.
 sinh x = (exp(x) - exp(-x))/2
 cosh x = (exp(x) + exp(-x))/2
 tanh x = (exp(x) - exp(-x))/(exp(x) + exp(-x))
+
+Area sine
+---------
+
+y = (exp(x) - exp(-x))/2        | * 2
+2y = exp(x) - exp(-x)           | let t = exp(x)
+2y = t - t⁻¹                    | * t
+2yt = t² - 1                    | - 2yt
+0 = t² - 2yt - 1
+
+t = y ± √(y² + 1)
+t₁ = y - √(y² + 1)
+t₂ = y + √(y² + 1)
+
+exp(x₁) = y - √(y² + 1)         | ln
+x₁ = ln (y - √(y² + 1))
+By analogy:
+x₂ = ln (y + √(y² + 1))
+
+Thing is, x₁ is never real if y is real. Therefore, x₁ is rejected and x₂ is accepted.
+
+Area cosine
+-----------
+
+y = (exp(x) + exp(-x))/2        | * 2
+2y = exp(x) + exp(-x)           | let t = exp(x)
+2y = t + t⁻¹                    | * t
+2yt = t² + 1                    | - 2yt
+0 = t² - 2yt + 1
+
+t = y ± √(y² - 1)
+t₁ = y - √(y² - 1)
+t₂ = y + √(y² - 1)
+
+exp(x₁) = y - √(y² - 1)         | ln
+x₁ = ln (y - √(y² - 1))
+By analogy:
+x₂ = ln (y + √(y² - 1))
+
+The negative branch is now only real for y>1, but is negative there.
+So I must use the positive branch.
+
+
+Area tangent
+------------
+y = (exp(x) - exp(-x))/(exp(x) + exp(-x))       | let t = exp(x)
+y = (t - t⁻¹)/(t + t⁻¹)                         | * (t + t⁻¹)
+yt + yt⁻¹ = t - t⁻¹                             | * t
+yt² + y = t² - 1                                | + 1 | - yt²
+y + 1 = (1 - y)t²                               | : (1 - y)
+(1 + y)/(1 - y) = t²
+t = ±√((1 + y)/(1 - y))
+t₁ = -√((1 + y)/(1 - y))
+t₂ = √((1 + y)/(1 - y))
+
+exp(x₁) = -√((1 + y)/(1 - y))                   | ln
+x₁ = ln (-√((1 + y)/(1 - y)))
+    = ln (-1) + 1/2 (ln (1 + y) - ln (1 - y))
+By analogy:
+x₂ = ln (√((1 + y)/(1 - y)))
+    = 1/2 (ln (1 + y) - ln (1 - y))
+
+x₁ is just a complex offset on top of x₂, and is therefore not the basic branch.
+
