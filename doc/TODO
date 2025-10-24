@@ -5,9 +5,6 @@ char *dlerror(void);
 void *dlopen(const char *, int);
 void *dlsym(void *__restrict, const char *__restrict);
 
-/* fmtmsg.h */
-int fmtmsg(long, const char *, int, const char *, const char *, const char *);
-
 /* grp.h */
 struct group *getgrgid(gid_t);
 struct group *getgrnam(const char *);
