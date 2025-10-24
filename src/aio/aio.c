@@ -31,7 +31,6 @@ struct aio_task {
     int op;
     int err;
     ssize_t result;
-    volatile int running;
     struct aiocb *cb;
     pthread_t worker;
     struct aio_task *next, *prev;
@@ -65,7 +64,9 @@ static struct aio_queue *get_queue(int fd, int alloc)
     struct aio_queue *rv = 0;
 
     pthread_rwlock_rdlock(&map_lock);
-    if ((!map || !map[a] || !map[a][b] || !map[a][b][c] || !(rv = map[a][b][c][d])) && alloc) {
+    if (map && map[a] && map[a][b] && map[a][b][c])
+        rv = map[a][b][c][d];
+    if (alloc && !rv) {
         pthread_rwlock_unlock(&map_lock);
         pthread_rwlock_wrlock(&map_lock);
         if (!map) map = __libc_calloc(128, sizeof *map);
@@ -149,11 +150,15 @@ static void unref_queue(struct aio_queue *q, int fd)
     pthread_rwlock_unlock(&map_lock);
 }
 
+static void lock(void *mut)
+{
+    pthread_mutex_lock(mut);
+}
+
 static void cleanup(void *ctx)
 {
     struct aio_task *t = ctx;
     struct aio_queue *q = t->q;
-    a_swap(&t->running, 0);
     t->cb->__res = t->result;
     if (a_swap(&t->cb->__err, t->err) != EINPROGRESS)
         __futex_wake(&t->cb->__err, 1, INT_MAX);
@@ -165,7 +170,6 @@ static void cleanup(void *ctx)
     if (val < 0)
         __futex_wake(&__aio_notify, 1, INT_MAX);
 
-    pthread_mutex_lock(&q->lock);
     if (t->next) t->next->prev = t->prev;
     if (t->prev) t->prev->next = t->next;
     else q->head = t->next;
@@ -188,11 +192,6 @@ static void cleanup(void *ctx)
             t->cb->aio_sigevent.sigev_notify_function(t->cb->aio_sigevent.sigev_value);
             break;
     }
-}
-
-static void unlock(void *p)
-{
-    pthread_mutex_unlock(p);
 }
 
 struct args {
@@ -218,7 +217,6 @@ static void *worker_thread(void *ctx)
     t->op = op;
     t->err = ECANCELED;
     t->result = -1;
-    t->running = 1;
     t->cb = cb;
     t->worker = __pthread_self();
     t->next = q->head;
@@ -235,13 +233,13 @@ static void *worker_thread(void *ctx)
     append = q->append;
 
     pthread_cleanup_push(cleanup, t);
-    pthread_cleanup_push(unlock, &q->lock);
     if (op == O_SYNC || op == O_DSYNC || (op == LIO_WRITE && q->append)) {
         while (has_write_operation(t->next))
             pthread_cond_wait(&q->task_done, &q->lock);
     }
 
-    pthread_cleanup_pop(1);
+    pthread_mutex_unlock(&q->lock);
+    pthread_cleanup_push(lock, &q->lock);
 
     ssize_t rv = -1;
     switch (op) {
@@ -261,6 +259,7 @@ static void *worker_thread(void *ctx)
 
     t->result = rv;
     t->err = rv >= 0? 0 : errno;
+    pthread_cleanup_pop(1);
     pthread_cleanup_pop(1);
     return 0;
 }
@@ -352,6 +351,14 @@ ssize_t aio_return(struct aiocb *cb)
     return cb->__res;
 }
 
+static int cancel_task(struct aio_queue *q, struct aio_task *t)
+{
+    struct aiocb *cb = t->cb;
+    pthread_cancel(t->worker);
+    while ((cb->__err & INT_MAX) == EINPROGRESS)
+        pthread_cond_wait(&q->task_done, &q->lock);
+    return (cb->__err == ECANCELED);
+}
 int aio_cancel(int fd, struct aiocb *cb)
 {
     if (cb && fd != cb->aio_fildes)
@@ -381,16 +388,20 @@ int aio_cancel(int fd, struct aiocb *cb)
         goto out_unmask;
     }
 
-    for (struct aio_task *t = q->head; t; t = t->next)
-        if (!cb || cb == t->cb) {
-            if (a_cas(&t->running, 1, -1) == 1) {
-                pthread_cancel(t->worker);
-                while (t->running)
-                    pthread_cond_wait(&q->task_done, &q->lock);
-                if (t->err == ECANCELED) rv = AIO_CANCELED;
-            }
+    q->count++;
+
+    if (cb) {
+        struct aio_task *t;
+        for (t = q->head; t && t->cb != cb; t = t->next);
+        if (t && cancel_task(q, t))
+            rv = AIO_CANCELED;
+    } else {
+        while (q->head) {
+            if (cancel_task(q, q->head))
+                rv = AIO_CANCELED;
         }
-    pthread_mutex_unlock(&q->lock);
+    }
+    unref_queue(q, fd);
 out_unmask:
     pthread_setcancelstate(cs, 0);
     pthread_sigmask(SIG_SETMASK, &oldset, 0);
