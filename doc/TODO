@@ -416,7 +416,3 @@ float wcstof(const wchar_t *__restrict, wchar_t **__restrict);
 long double wcstold(const wchar_t *__restrict, wchar_t **__restrict);
 size_t wcsftime(wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict);
 FILE *open_wmemstream(wchar_t **, size_t *);
-
-/* wordexp.h */
-int wordexp(const char *__restrict, wordexp_t *__restrict, int);
-void wordfree(wordexp_t *);
