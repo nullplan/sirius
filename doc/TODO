@@ -375,6 +375,9 @@ int statvfs(const char *__restrict, struct statvfs *__restrict);
 /* utime.h */
 int utimes(const char *, const struct timeval [2]);
 
+/* sched.h */
+int clone(int (*)(void *), void *, int, void *, ...);
+
 /* sys/times.h */
 clock_t times(struct tms *);
 
