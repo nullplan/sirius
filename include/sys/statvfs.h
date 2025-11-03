@@ -17,15 +17,15 @@ struct statvfs {
     fsblkcnt_t f_bfree;
     fsblkcnt_t f_bavail;
     fsfilcnt_t f_files;
-    fsfilcnt_t f_free;
+    fsfilcnt_t f_ffree;
     unsigned long f_fsid;
 #ifndef __SIXTY_FOUR
     unsigned long __pad0;
 #endif
     unsigned long f_namemax;
     unsigned long __pad1;
-    unsigned long f_flags;
-    unsigned long __spare[2];
+    unsigned long f_flag;
+    unsigned long __spare[4];
     fsfilcnt_t  f_favail;
 };
 
