@@ -1,14 +1,15 @@
 mmap2 takes the offset as some unit of bytes. But what unit?
 
-arc: pagesize
+arc: pagesize (variable)
 arm: 4kB
 csky: 4kB
-hexagon: pagesize
-m86k: pagesize
+hexagon: pagesize (variable)
+i386: pagesize (fixed to 4kB)
+m68k: pagesize (variable)
 microblaze: 4kB
 mips: 4kB
-nios2: pagesize
-openrisc: pagesize
+nios2: pagesize (fixed to 4kB)
+openrisc: pagesize (fixed to 8kB)
 parisc: 4kB
 powerpc: 4kB
 riscv: 4kB
