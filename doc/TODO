@@ -365,9 +365,6 @@ void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, cons
 FILE *fmemopen(void *restrict, size_t, const char *restrict);
 FILE *open_memstream(char **, size_t *);
 
-/* stdlib.h */
-int getsubopt(char **__restrict, char *const *__restrict, char **__restrict);
-
 /* utime.h */
 int utimes(const char *, const struct timeval [2]);
 
