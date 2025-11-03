@@ -1,8 +1,8 @@
 /* glibc rules: the first one that matches wins:
  *      - U+00AD has width 1
  *      - U+115F has width 2
- *      - All Hangul syllables with the second column being V or T have with 0
- *      - All non-spacing and enclsing marks (categories Mn and Me from UnicodeData.txt) have with 0
+ *      - All Hangul syllables with the second column being V or T have width 0
+ *      - All non-spacing and enclosing marks (categories Mn and Me from UnicodeData.txt) have width 0
  *      - All Default_Ignorable_Code_Points have width 0
  *      - All double-width characters from EastAsianWidth.txt (type W or F) have width 2
  *      - All others have width 1.
