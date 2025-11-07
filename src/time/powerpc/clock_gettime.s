@@ -29,6 +29,7 @@
     addi %r3, %r3, .Lcgt_name-1b@l
     addis %r4, %r31, .Lcgt_ver@ha
     addi %r4, %r4, .Lcgt_ver@l
+.hidden __vdsosym
     bl __vdsosym
     cmplwi %r3, 0
     bne 2f
