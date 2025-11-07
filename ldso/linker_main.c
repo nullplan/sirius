@@ -144,7 +144,7 @@ hidden _Noreturn void __stage_post_reloc(long *sp, const size_t *dynv)
     const size_t *auxv = (void *)envp;
     while (*auxv++);
     size_t aux[AUX_CNT] = {0};
-    char *env_preload = 0; /* forgive me Father for I have sinned. */
+    char *env_preload = 0; /* mutable pointer to be able to replace ':' with null bytes. Not nice but rare. */
     void *entry_point;
 
     __decode_vec(aux, auxv, AUX_CNT);

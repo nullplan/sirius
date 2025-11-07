@@ -14,7 +14,7 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
     for (; relsz; relsz -= stride * sizeof (size_t), rel += stride)
     {
         int type = R_TYPE(rel[1]);
-        if (!type) continue;    /* why do NONE relocations even exist? */
+        if (!type) continue; /* type == 0 is the NONE relocation on all archs I have seen so far. */
         if (skip_rels && type == REL_RELATIVE)
             continue;
 
