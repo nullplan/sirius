@@ -156,11 +156,11 @@ static inline struct uint128 a_mul128(uint64_t a, uint64_t b)
 {
     /* portable version:
      * Split both inputs into two 32-bit numbers.
-     * (a_hi * 2^32 + a_lo) (b_hi * 2^32 + b_lo)
-     * = a_hi b_hi * 2^64 + (a_hi b_lo + a_lo b_hi) * 2^32 + a_lo b_lo
+     * (a_hi * 2³² + a_lo) (b_hi * 2³² + b_lo)
+     * = a_hi b_hi * 2⁶⁴ + (a_hi b_lo + a_lo b_hi) * 2³² + a_lo b_lo
      *
-     * (2^32-1)² = (2^64 - 2^33 + 1)
-     * 2(2^32-1)² = 2^65 - 2^34 + 2 > 2^64
+     * (2³²-1)² = 2⁶⁴ - 2³³ + 1
+     * 2(2³²-1)² = 2⁶⁵ - 2³⁴ + 2 > 2⁶⁴
      * i.e. the mid calculation can overflow
      */
     uint64_t a_hi = a >> 32;
