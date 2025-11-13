@@ -55,10 +55,12 @@ __clock_gettime:
     mflr %r0
     std %r0, 16(%r1)
     stdu %r1, -32(%r1)
-    addis %r11, %r2, .Limpl@toc@ha
-    ld %r12, .Limpl@toc@l(%r11)
+    addis %r12, %r2, .Limpl@toc@ha
+    ld %r12, .Limpl@toc@l(%r12)
     mtctr %r12
+    std %r2, 24(%r1)
     bctrl
+    ld %r2, 24(%r1)
     bns 1f
     stw %r3, -0x7020(%r13)
     li %r3, -1
