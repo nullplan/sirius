@@ -27,8 +27,8 @@
     mflr %r31
     addis %r3, %r31, .Lcgt_name-1b@ha
     addi %r3, %r3, .Lcgt_name-1b@l
-    addis %r4, %r31, .Lcgt_ver@ha
-    addi %r4, %r4, .Lcgt_ver@l
+    addis %r4, %r31, .Lcgt_ver-1b@ha
+    addi %r4, %r4, .Lcgt_ver-1b@l
 .hidden __vdsosym
     bl __vdsosym
     cmplwi %r3, 0

@@ -190,6 +190,9 @@ if __name__ == "__main__":
     tryldflag("-Wl,-z,now", ldflags)
     tryldflag("-Wl,-z,relro", ldflags)
 
+    # I also really really really don't want textrels
+    tryldflag("-Wl,-z,text", ldflags)
+
     # sirius is written in C11
     tryccflag("-std=c11", cflags)
     # get rid of system includes
