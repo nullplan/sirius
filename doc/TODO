@@ -19,10 +19,6 @@ size_t iconv(iconv_t, char **__restrict, size_t *__restrict, char *__restrict, s
 int iconv_close(iconv_t);
 iconv_t iconv_open(const char *, const char *);
 
-/* langinfo.h */
-char *nl_langinfo(nl_item);
-char *nl_langinfo_l(nl_item, locale_t);
-
 /* libgen.h */
 char *basename(char *);
 char *dirname(char *);
