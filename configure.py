@@ -210,7 +210,8 @@ if __name__ == "__main__":
     tryccflag("-fno-strict-aliasing", cflags)
     # Rather than clutter all the asm files with stack annotation sections, we
     # can just add a command line option that has the same effect
-    tryccflag("-Wa,--noexecstack", cflags)
+    cflags_asm = []
+    tryccflag("-Wa,--noexecstack", cflags_asm)
     # I would very much like to use -pipe always.
     tryccflag("-pipe", cflags)
     # Unwinding through C code is not defined. Rather than waste processing
@@ -344,9 +345,9 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
             f.write(f"build lib/Scrt1.o: ldr {crt1pic} obj/crt1s.o || lib\n")
             f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)} || lib\n")
         if os.path.exists(f"{srcdir}/crt/{arch}/crt1s.S"):
-            f.write(f"build obj/crt1s.o: cc {srcdir}/crt/{arch}/crt1s.S || obj\n")
+            f.write(f"build obj/crt1s.o: cc {srcdir}/crt/{arch}/crt1s.S || obj\n  cflags = {' '.join(cflags_asm)}\n")
         else:
-            f.write(f"build obj/crt1s.o: as {srcdir}/crt/{arch}/crt1s.s || obj\n")
+            f.write(f"build obj/crt1s.o: as {srcdir}/crt/{arch}/crt1s.s || obj\n  cflags = {' '.join(cflags_asm)}\n")
 
         for i in dirs: f.write(f"build {i}: md\n")
         for i in src:
@@ -356,16 +357,16 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
                 f.write(f"build {o}: cc {i} | obj/include/alltypes.h || {d}\n")
                 if do_shared and not pic_default:
                     f.write(f"build {o[:-2]}.lo: ccpic {i} | obj/include/alltypes.h || {d}\n")
-            elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n")
-            elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")
+            elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n  cflags = {' '.join(cflags_asm)}\n")
+            elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n  cflags = {' '.join(cflags_asm)}\n")
 
         for i in libsrc:
             o = map_obj_file(i) if pic_default else map_lib_obj_file(i)
             d = os.path.dirname(o)
             if i.endswith(".c"):
                 f.write(f"build {o}: {'cc' if pic_default else 'ccpic'} {i} | obj/include/alltypes.h || {d}\n")
-            elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n")
-            elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n")
+            elif i.endswith(".S"): f.write(f"build {o}: cc {i} || {d}\n  cflags = {' '.join(cflags_asm)}\n")
+            elif i.endswith(".s"): f.write(f"build {o}: as {i} || {d}\n  cflags = {' '.join(cflags_asm)}\n")
 
         for i in ["pthread", "m", "rt", "xnet", "dl", "util"]:
             f.write(f"build lib/lib{i}.a: ar || lib\n")
