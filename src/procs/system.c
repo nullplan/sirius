@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <pthread.h>
 #include "libc.h"
 
 int system(const char *cmd)
@@ -12,6 +13,9 @@ int system(const char *cmd)
     struct sigaction ign = {.sa_handler = SIG_IGN};
     struct sigaction oldint, oldquit;
     sigset_t ss, restore, reset;
+    int cs;
+
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
     sigaction(SIGINT, &ign, &oldint);
     sigaction(SIGQUIT, &ign, &oldquit);
@@ -37,5 +41,6 @@ int system(const char *cmd)
     pthread_sigmask(SIG_SETMASK, &restore, 0);
     sigaction(SIGQUIT, &oldquit, 0);
     sigaction(SIGINT, &oldint, 0);
+    pthread_setcancelstate(cs, 0);
     return stat;
 }
