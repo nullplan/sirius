@@ -1,5 +1,5 @@
 typedef long long syscall_arg_t;
-#define __scc(x) (sizeof ((x) + 0ULL) < 8? (unsigned long)(x) : (long long)(x))
+#define __scc(x) (sizeof (1? (x) : 0ULL) < 8? (unsigned long)(x) : (long long)(x))
 
 static inline long __syscall0(long long nr)
 {
