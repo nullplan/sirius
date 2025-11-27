@@ -74,7 +74,7 @@ size_t wcstombs(char *__restrict, const wchar_t *__restrict, size_t);
 size_t memalignment(const void *);
 
 #if __STDC_VERSION__ >= 202000L
-#define bsearch(k, b, n, sz, c) ((typeof(1? (b) : (void *)0))(bsearch((k), (b), (n), (sz), (c))))
+#define bsearch(k, b, n, sz, c) ((typeof(1? (b) : (void *)""))bsearch(k, b, n, sz, c))
 #endif
 
 #ifdef _POSIX_C_SOURCE
