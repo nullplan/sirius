@@ -134,24 +134,13 @@ static void enumerate_phdr(struct dso *start)
  * what we must, since it will all be done again once the entry point is called.
  */
 
-#define AUX_CNT (AT_SYSINFO + 1)
-hidden _Noreturn void __stage_post_reloc(long *sp, const size_t *dynv)
+hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **argv, char **env, size_t *aux)
 {
     pthread_t self = __pthread_self();
-    int argc = *sp;
-    char **argv = (void *)(sp + 1);
-    char **envp = (void *)(argv + argc + 1);
-    const size_t *auxv = (void *)envp;
-    while (*auxv++);
-    size_t aux[AUX_CNT] = {0};
     char *env_preload = 0; /* mutable pointer to be able to replace ':' with null bytes. Not nice but rare. */
     void *entry_point;
 
-    __decode_vec(aux, auxv, AUX_CNT);
-    self->hwcap = aux[AT_HWCAP];
-    self->sysinfo = __get_sysinfo(aux);
     self->locale = &__global_locale;
-    __environ = envp;
     __page_size = aux[AT_PAGESZ];
     const size_t mask = 1ul << AT_UID | 1ul << AT_EUID | 1ul << AT_GID | 1ul << AT_EGID;
     __elevated = aux[AT_SECURE] || (aux[0] & mask) != mask || aux[AT_UID] != aux[AT_EUID] || aux[AT_GID] != aux[AT_EGID];

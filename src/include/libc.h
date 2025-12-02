@@ -12,6 +12,7 @@ extern hidden unsigned long __default_stacksize;
 extern hidden size_t __page_size;
 extern hidden int __threaded;
 extern hidden int __eintr_valid;
+extern hidden const size_t *__auxv;
 extern hidden void __run_constructors(void);
 extern hidden void __run_destructors(void);
 extern hidden void __stdio_exit(void);

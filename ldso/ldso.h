@@ -43,6 +43,7 @@ typedef Elf64_Phdr Phdr;
 #define ST_BIND ELF64_ST_BIND
 #endif
 
+#define AUX_CNT (AT_SYSINFO + 1)
 
 struct dso {
     char *base;
@@ -83,7 +84,7 @@ hidden _Noreturn void __die_early_multi(const char **, size_t);
 hidden _Noreturn void __die_early(const char *);
 hidden size_t __libc_addend(size_t);
 hidden struct dso *__libc_object(void);
-hidden _Noreturn void __stage_post_reloc(long *, const size_t *);
+hidden _Noreturn void __stage_post_reloc(const size_t *, int, char **, char **, size_t *);
 hidden void __reclaim_gaps(const struct dso *);
 hidden void __reloc_all(struct dso *);
 hidden void __relocate(struct dso *);

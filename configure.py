@@ -116,6 +116,7 @@ if __name__ == "__main__":
         elif fnmatch.fnmatch(machine, "powerpc64*") or fnmatch.fnmatch(machine, "ppc64*"): arch = "powerpc64"
         elif fnmatch.fnmatch(machine, "powerpc*") or fnmatch.fnmatch(machine, "ppc*"): arch = "powerpc"
         elif fnmatch.fnmatch(machine, "arm64*") or fnmatch.fnmatch(machine, "aarch64*"): arch = "aarch64"
+        elif fnmatch.fnmatch(machine, "arm*"): arch = "arm"
         else:
             print("Unknown machine type: %s" % machine, file=sys.stderr)
             sys.exit(1)
@@ -231,6 +232,7 @@ if __name__ == "__main__":
         if not any(flg.startswith("-mtune=") for flg in cc + cflags):
             tryldflag("-mtune=generic", cflags)
 
+    if arch == "arm": tryccflag("-fno-common", cflags)
     # warning options:
     # on clang, some warnings are enabled by default, but -w rids me of them
     # on GCC, -w disables all warnings forever.
@@ -307,7 +309,7 @@ rule as
     command = $cc $cflags -c $in -o $out
 
 rule ldr
-    command = $cc -r -o $out $in
+    command = $cc -nostdlib -r -o $out $in
 
 rule lds
     command = $cc $cflags -nostdlib -shared {' '.join(ldflags)} -o $out $in {' '.join(libgcc)}

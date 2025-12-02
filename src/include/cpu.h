@@ -135,6 +135,52 @@ static inline int a_ctz(size_t x) {
 #endif
 #endif
 
+#ifndef a_clz
+static inline int a_ilogb_32(uint32_t x) {
+    int rv = 0;
+    if (x > 0xffff) {
+        rv += 16;
+        x >>= 16;
+    }
+    if (x > 0xff) {
+        rv += 8;
+        x >>= 8;
+    }
+    if (x > 0xf) {
+        rv += 4;
+        x >>= 4;
+    }
+    if (x > 3) {
+        x += 2;
+        x >>= 2;
+    }
+    if (x > 1) {
+        x += 1;
+    }
+    return x;
+}
+
+#define a_clz_32 a_clz_32
+static inline int a_clz_32(uint32_t x) {
+    return 31 - a_ilogb_32(x);
+}
+
+#define a_clz_64 a_clz_64
+static inline int a_ilogb_64(uint64_t x) {
+    if (x > 0xffffffff) return 32 + a_ilogb_32(x >> 32);
+    return a_ilogb_32(x);
+}
+
+static inline int a_clz_64(uint64_t x) {
+    return 63 - a_ilogb_64(x);
+}
+
+static inline int a_clz(size_t x) {
+    if (sizeof(size_t) == 8) return a_clz_64(x);
+    return a_clz_32(x);
+}
+#endif
+
 #ifndef a_ctz_64
 static inline int a_ctz_64(uint64_t x) {
     if (sizeof (size_t) == 8) return a_ctz(x);
