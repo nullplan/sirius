@@ -1,6 +1,4 @@
 #include <stddef.h>
-extern hidden size_t __a_barrier_ptr;
-extern hidden size_t __a_cas_ptr;
 
 #if __ARM_ARCH < 5
 #define BLX "mov lr,pc; bx "
@@ -11,9 +9,35 @@ extern hidden size_t __a_cas_ptr;
 #define a_barrier a_barrier
 static inline void a_barrier(void)
 {
+    #if __ARM_ARCH >= 7
+    __asm__("dmb ish" ::: "memory");
+    #else
+    extern hidden size_t __a_barrier_ptr;
     __asm__(BLX "%0" :: "r"(__a_barrier_ptr) : "memory", "lr");
+    #endif
 }
 
+/* LL and SC opcodes are usable on ARMv6 if not compiling for thumb, or compiling for ARMv6T2, or compiling for ARMv7 or higher */
+/* on ARMv6 without T2, they are only available in ARM mode, and thus we need an interworking branch to atomics.s */
+#if (__ARM_ARCH == 6 && (!defined __thumb__ || defined __ARM_ARCH_6T2__)) || __ARM_ARCH >= 7
+#define a_pre_llsc a_barrier
+#define a_post_llsc a_barrier
+#define a_ll a_ll
+static inline int a_ll(volatile int *ptr)
+{
+    int rv;
+    __asm__ volatile("ldrex %0, %1" : "=r"(rv) : "m"(*ptr));
+    return rv;
+}
+
+#define a_sc a_sc
+static inline int a_sc(volatile int *ptr, int val)
+{
+    int rv;
+    __asm__("strex %0, %2, %1" : "=r"(rv), "=m"(*ptr) : "r"(val));
+    return rv;
+}
+#else
 #define a_cas a_cas
 static inline int a_cas(volatile int *ptr, int ex, int ne)
 {
@@ -21,6 +45,7 @@ static inline int a_cas(volatile int *ptr, int ex, int ne)
     for (;;)
     {
         /* 1st attempt CAS */
+        extern hidden size_t __a_cas_ptr;
         register int r0 __asm__("r0") = ex;
         register int r1 __asm__("r1") = ne;
         register volatile int *r2 __asm__("r2") = ptr;
@@ -76,6 +101,7 @@ static inline void a_or_l(volatile unsigned long *ptr, unsigned long m)
     do old = *ptr;
     while (a_cas((volatile int *)ptr, old, old | m) != old);
 }
+#endif
 
 static inline _Noreturn void a_crash(void)
 {

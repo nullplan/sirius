@@ -3,6 +3,9 @@
 #include "cpu.h"
 #include <sys/auxv.h>
 
+extern hidden size_t __a_barrier_ptr;
+extern hidden size_t __a_cas_ptr;
+extern hidden size_t __a_gettp_ptr;
 extern hidden char __a_barrier_old[];
 extern hidden char __a_barrier_v6[];
 extern hidden char __a_barrier_v7[];
@@ -12,6 +15,7 @@ extern hidden char __a_gettp_v6[];
 
 int __set_thread_area(uintptr_t x)
 {
+    #if __ARM_ARCH < 7
     size_t hwcap = __getauxval(AT_HWCAP);
     if (hwcap & 0x8000) {
         const char *platform = (const char *)__getauxval(AT_PLATFORM);
@@ -35,5 +39,6 @@ int __set_thread_area(uintptr_t x)
         if (ver < 3) __a_barrier_ptr = (size_t)__a_barrier_old;
         else __a_barrier_ptr = 0xffff0fa0;
     }
+    #endif
     return __syscall(0xf0005, x);
 }

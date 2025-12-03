@@ -1,3 +1,10 @@
+/* none of this is needed for armv7 */
+#if __ARM_ARCH < 7
+/* without Thumb2, everything following must be assembled in ARM mode */
+/* otherwise I leave it up to settings */
+#ifndef __ARM_ARCH_6T2__
+.arm
+#endif
 @ set compiler to newest machine, but mark file as supporting the oldest
 .arch armv7-a
 .eabi_attribute Tag_CPU_arch, 2
@@ -117,3 +124,4 @@ __a_gettp_v6:
     mrc p15, 0, r0, c13, c0, 3
     bx lr
 .size __a_gettp_v6, . - __a_gettp_v6
+#endif
