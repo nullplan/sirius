@@ -19,7 +19,8 @@
 .type _start, %function
 _start:
     mov r4, sp
-    and sp, r4, -8
+    and r0, r4, -8
+    mov sp, r0
     sub sp, (AUX_CNT + DYN_CNT) * 4
     ldr r5, 1b
     add r5, pc, r5

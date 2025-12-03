@@ -1,3 +1,4 @@
+.syntax unified
 .global __sigrestore
 .hidden __sigrestore
 __sigrestore:
