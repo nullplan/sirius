@@ -232,7 +232,9 @@ if __name__ == "__main__":
         if not any(flg.startswith("-mtune=") for flg in cc + cflags):
             tryldflag("-mtune=generic", cflags)
 
-    if arch == "arm": tryccflag("-fno-common", cflags)
+    # I am often declaring uninitialized variables as hidden, or giving them weak aliases
+    # So compiling with -fcommon doesn't work. And some compilers have -fcommon by default.
+    tryccflag("-fno-common", cflags)
     # warning options:
     # on clang, some warnings are enabled by default, but -w rids me of them
     # on GCC, -w disables all warnings forever.
