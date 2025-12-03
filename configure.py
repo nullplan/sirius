@@ -213,6 +213,9 @@ if __name__ == "__main__":
     # can just add a command line option that has the same effect
     cflags_asm = []
     tryccflag("-Wa,--noexecstack", cflags_asm)
+    if arch == "arm" and trycpp("if thumb2 is in use", "__thumb2__"):
+        tryccflag("-Wa,-mthumb", cflags_asm)
+        tryccflag("-Wa,-mimplicit-it=always", cflags_asm)
     # I would very much like to use -pipe always.
     tryccflag("-pipe", cflags)
     # Unwinding through C code is not defined. Rather than waste processing
@@ -332,6 +335,7 @@ build lib/crti.o: as {srcdir}/crt/crti.s
 build lib/crtn.o: as {srcdir}/crt/crtn.s
 build obj/include/alltypes.h: mkalltypes {srcdir}/arch/{arch}/alltypes.h.in {srcdir}/include/alltypes.h.in || obj/include
 build obj/rcrt1s.o: cc {srcdir}/crt/{arch}/rcrt1s.S || obj
+  cflags = {' '.join(cflags_asm)}
 ''')
         if do_static:
             f.write(f'''
