@@ -14,8 +14,8 @@
 #ifdef __thumb__
 #define __SC_NR_REG "r6"
 #define __SC_NR_CLOB ,"=r"(r7)
-#define __SC_CC_CLOB ,"cc" /* eor changes the condition codes */
-#define __SC_INSTR "eor r7, r6; eor r6, r7; eor r7, r6; svc #0; mov r7, r6"
+#define __SC_CC_CLOB ,"cc" /* eors changes the condition codes */
+#define __SC_INSTR "eors r7, r6; eors r6, r7; eors r7, r6; svc #0; mov r7, r6"
 #else
 #define __SC_NR_REG "r7"
 #define __SC_NR_CLOB
