@@ -2,7 +2,7 @@
 #if __ARM_ARCH < 7
 /* without Thumb2, everything following must be assembled in ARM mode */
 /* otherwise I leave it up to settings */
-#ifndef __ARM_ARCH_6T2__
+#ifndef __thumb2__
 .arm
 #endif
 @ set compiler to newest machine, but mark file as supporting the oldest
