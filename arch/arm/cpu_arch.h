@@ -139,7 +139,7 @@ static inline _Noreturn void a_stackinvoke(void (*func)(void), void *stack)
     a_stackjmp(func, stack);
 }
 
-#if __ARM_ARCH > 5
+#if __ARM_ARCH > 6
 #define a_pause a_pause
 static inline void a_pause(void) {
     __asm__("yield" ::: "memory");
