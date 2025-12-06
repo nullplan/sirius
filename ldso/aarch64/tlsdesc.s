@@ -19,6 +19,6 @@ __tlsdesc_dynamic:
     ldr x1, [x1, -8]    // x1 = dtv
     ldr x1, [x1, x0, lsl 3] // x1 = dtv[tlsmod]
     add x0, x1, x2          // x0 = dtv[tlsmod] + tlsoff - tp
-    ldp x2, x1, [sp], 16
+    ldp x1, x2, [sp], 16
     ret
 .size __tlsdesc_dynamic, . - __tlsdesc_static
