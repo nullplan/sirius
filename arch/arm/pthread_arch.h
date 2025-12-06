@@ -8,10 +8,12 @@ static inline uintptr_t __get_tp(void)
 }
 #else
 
-#if __ARM_ARCH < 5
-#define BLX "mov lr,pc; bx "
-#else
+#if __ARM_ARCH >= 5
 #define BLX "blx "
+#elif defined __thumb__
+#define BLX "bl __thumb_bx_"
+#else
+#define BLX "mov lr,pc; bx "
 #endif
 
 static inline uintptr_t __get_tp(void)

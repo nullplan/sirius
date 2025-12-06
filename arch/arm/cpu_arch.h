@@ -1,7 +1,9 @@
 #include <stddef.h>
 
-#if __ARM_ARCH < 5
+#if __ARM_ARCH < 5 && !defined __thumb__
 #define BLX "mov lr,pc; bx "
+#elif __ARM_ARCH < 5
+#define BLX "bl __thumb_bx_"
 #else
 #define BLX "blx "
 #endif
