@@ -1,6 +1,6 @@
 #include <wchar.h>
 
-extern hidden unsigned __read_uleb128(const unsigned char **pp)
+hidden unsigned __read_uleb128(const unsigned char **pp)
 {
     const unsigned char *p = *pp;
     unsigned rv = 0;

@@ -1,0 +1,11 @@
+#define REL_COPY        R_ARM_COPY
+#define REL_GOT         R_ARM_GLOB_DAT
+#define REL_PLT         R_ARM_JUMP_SLOT
+#define REL_RELATIVE    R_ARM_RELATIVE
+#define REL_DTPMOD      R_ARM_TLS_DTPMOD32
+#define REL_DTPOFF      R_ARM_TLS_DTPOFF32
+#define REL_TPOFF       R_ARM_TLS_TPOFF32
+#define REL_TLSDESC     R_ARM_TLS_DESC
+
+#define ELFMACH EM_ARM
+#define TLSDESC_BACKWARDS 1

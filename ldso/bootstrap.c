@@ -1,7 +1,9 @@
 #define __STARTUP_CODE
 #include "ldso.h"
+#include "libc.h"
 #include <string.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 static size_t *libc_original_addends;
 static struct dso libc;
@@ -158,14 +160,27 @@ static _Noreturn void setup_tmp_threadptr(long *sp, const size_t *dynv)
 {
     /* set up a temporary thread pointer to house the TID, errno, hwcap, and sysinfo. */
     /* TLL doesn't get set up at this point, but is also not necessary. */
-    /* I will initialize hwcap and sysinfo first thing in the next stage, to not repeat code that doesn't need repeating. */
+    /* __auxv must be set here because ARM __set_thread_area depends on it.
+     * __environ is set up because it is on the way
+     */
     struct __pthread tp;
     tp.self = tp.next = tp.prev = &tp;
+    int argc = *sp;
+    char **argv = (void *)(sp + 1);
+    char **envp = (void *)(argv + argc + 1);
+    const size_t *auxv = (void *)envp;
+    while (*auxv++);
+    size_t aux[AUX_CNT] = {0};
+    __environ = envp;
+    __auxv = auxv;
+    __decode_vec(aux, auxv, AUX_CNT);
+    tp.hwcap = aux[AT_HWCAP];
+    tp.sysinfo = __get_sysinfo(aux);
     if (__set_thread_area(__tp_adjust(&tp)))
         __die_early("Could not initialize thread pointer.\n");
 
-    void (*next_stage)(long *, const size_t *) = __stage_post_reloc;
+    void (*next_stage)(const size_t *, int, char **, char **, size_t *) = __stage_post_reloc;
     __asm__ volatile("": "+r"(next_stage) :: "memory");
-    next_stage(sp, dynv);
+    next_stage(dynv, argc, argv, envp, aux);
     __builtin_unreachable();
 }

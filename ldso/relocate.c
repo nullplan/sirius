@@ -3,6 +3,11 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+
+#ifndef TLSDESC_BACKWARDS
+#define TLSDESC_BACKWARDS 0
+#endif
+
 extern hidden const char __tlsdesc_dynamic[], __tlsdesc_static[];
 static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, size_t stride)
 {
@@ -14,7 +19,7 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
     for (; relsz; relsz -= stride * sizeof (size_t), rel += stride)
     {
         int type = R_TYPE(rel[1]);
-        if (!type) continue;    /* why do NONE relocations even exist? */
+        if (!type) continue; /* type == 0 is the NONE relocation on all archs I have seen so far. */
         if (skip_rels && type == REL_RELATIVE)
             continue;
 
@@ -94,24 +99,24 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
 
             case REL_TLSDESC:
                 if (stride < 3)
-                    addend = rel_addr[1];
+                    addend = rel_addr[!TLSDESC_BACKWARDS];
 
                 if (def.dso->tlsid > __dl_static_tls_cnt()) {
                     size_t *desc = __libc_malloc(2 * sizeof (size_t));
                     if (!desc)
                         __dl_print_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname);
                     else {
-                        rel_addr[0] = (size_t)__tlsdesc_dynamic;
-                        rel_addr[1] = (size_t)desc;
+                        rel_addr[TLSDESC_BACKWARDS] = (size_t)__tlsdesc_dynamic;
+                        rel_addr[!TLSDESC_BACKWARDS] = (size_t)desc;
                         desc[0] = def.dso->tlsid;
                         desc[1] = tlsval + addend - DTV_OFFSET;
                     }
                 } else {
-                    rel_addr[0] = (size_t)__tlsdesc_static;
+                    rel_addr[TLSDESC_BACKWARDS] = (size_t)__tlsdesc_static;
 #ifdef TLS_VARIANT_2
-                    rel_addr[1] = tlsval - def.dso->tlsoff + addend;
+                    rel_addr[!TLSDESC_BACKWARDS] = tlsval - def.dso->tlsoff + addend;
 #else
-                    rel_addr[1] = tlsval + def.dso->tlsoff - sizeof (struct __pthread) - TP_OFFSET + addend;
+                    rel_addr[!TLSDESC_BACKWARDS] = tlsval + def.dso->tlsoff - sizeof (struct __pthread) - TP_OFFSET + addend;
 #endif
                 }
                 break;

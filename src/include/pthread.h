@@ -47,7 +47,7 @@ struct __pthread
     int errno_val;              /* internal PowerPC ABI: errno_val is the fourth-to-last word. */
     /* this also means I require the last non-ABI element to be word sized, not int! */
     #ifndef TLS_VARIANT_2
-    size_t hwcap;               /* internal PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
+    size_t hwcap;               /* internal ARM, PowerPC, PowerPC64 ABI: hwcap is third word before the end. */
     size_t canary;              /* PowerPC, PowerPC64 ABI: canary is the penultimate word. */
     size_t *dtv;                /* Aarch64 internal ABI: dtv is last word of thread descriptor. */
     #endif

@@ -16,7 +16,7 @@ static char *twobyte_strstr(const unsigned char *hs, const unsigned char *ns)
 
 static char *threebyte_strstr(const unsigned char *hs, const unsigned char *ns)
 {
-    uint32_t n = ns[0] << 24 | ns[1] << 16 | ns[2] << 8;
+    uint32_t n = (ns[0] + 0ul) << 24 | ns[1] << 16 | ns[2] << 8;
     uint32_t h = hs[0] << 16 | hs[1] << 8;
     hs += 2;
     while (*hs) {
@@ -29,8 +29,8 @@ static char *threebyte_strstr(const unsigned char *hs, const unsigned char *ns)
 
 static char *fourbyte_strstr(const unsigned char *hs, const unsigned char *ns)
 {
-    uint32_t n = ns[0] << 24 | ns[1] << 16 | ns[2] << 8 | ns[3];
-    uint32_t h = hs[0] << 16 | hs[1] << 8  | hs[2];
+    uint32_t n = (ns[0] + 0ul) << 24 | ns[1] << 16 | ns[2] << 8 | ns[3];
+    uint32_t h = hs[0] << 16 | hs[1] << 8 | hs[2];
     hs += 3;
     while (*hs) {
         h = h << 8 | *hs++;

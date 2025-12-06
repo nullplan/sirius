@@ -14,7 +14,7 @@ hidden void __init_tsd(void)
 
 static pthread_rwlock_t dtors_lock = PTHREAD_RWLOCK_INITIALIZER;
 static void (*dtors[PTHREAD_KEYS_MAX])(void *);
-static void sentinel(void *) {}
+static void sentinel(void *_) {}
 
 hidden void __pthread_tsd_destroy(void)
 {

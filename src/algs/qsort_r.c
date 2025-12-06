@@ -67,64 +67,73 @@ static void heapify(char *head, size_t order, const size_t *leo, int (*cmp)(cons
     cycle(a, n, leo[0]);
 }
 
-static int only_one_left(const size_t p[static 2])
+struct shape {
+    size_t p[2];
+    size_t order;
+};
+
+static int only_one_left(const struct shape *s)
 {
-    size_t x = p[0];
-    if (!x) x = p[1];
+    size_t x = s->p[0];
+    if (!x) x = s->p[1];
     return (x & (x - 1)) == 0;
 }
 
-static int ctz(const size_t p[static 2])
+static int ctz(const struct shape *s)
 {
-    if (!p[0]) return 8 * sizeof (size_t) + a_ctz(p[1]);
-    return a_ctz(p[0]);
+    if (!s->p[0]) return 8 * sizeof (size_t) + a_ctz(s->p[1]);
+    return a_ctz(s->p[0]);
 }
 
-static int test(const size_t p[static 2], size_t x)
+static int test(const struct shape *s, size_t x)
 {
-    return (p[x / (8 * sizeof (size_t))] >> (x % (8 * sizeof (size_t)))) & 1;
+    return (s->p[x / (8 * sizeof (size_t))] >> (x % (8 * sizeof (size_t)))) & 1;
 }
 
-static void set(size_t p[static 2], size_t x)
+static void set(struct shape *s, size_t x)
 {
-    p[x / (8 * sizeof (size_t))] |= (1ul << (x % (8 * sizeof (size_t))));
+    s->p[x / (8 * sizeof (size_t))] |= (1ul << (x % (8 * sizeof (size_t))));
 }
 
-static void clear(size_t p[static 2], size_t x)
+static void clear(struct shape *s, size_t x)
 {
-    p[x / (8 * sizeof (size_t))] &= ~(1ul << (x % (8 * sizeof (size_t))));
+    s->p[x / (8 * sizeof (size_t))] &= ~(1ul << (x % (8 * sizeof (size_t))));
 }
 
-static void order_roots(char *head, const size_t p[static 2], size_t order, const size_t *leo, int (*cmp)(const void *, const void *, void *), void *ctx, int known_heap)
+static void order_roots(char *head, struct shape s, const size_t *leo, int (*cmp)(const void *, const void *, void *), void *ctx, int known_heap)
 {
     void *a[6 * sizeof (size_t) + 1];
     size_t n = 1;
-    size_t l[2] = {p[0], p[1]};
     a[0] = head;
-    while (!only_one_left(l)) {
-        char *next = head - leo[order];
+    while (!only_one_left(&s)) {
+        char *next = head - leo[s.order];
         if (cmp(next, a[0], ctx) <= 0) break;
-        if (order > 1 && !known_heap) {
+        if (s.order > 1 && !known_heap) {
             char *right = head - leo[0];
-            char *left = right - leo[order - 2];
+            char *left = right - leo[s.order - 2];
             if (cmp(next, right, ctx) <= 0 || cmp(next, left, ctx) <= 0) break;
         }
         known_heap = 0;
         a[n++] = head = next;
-        clear(l, order);
-        order = ctz(l);
+        clear(&s, s.order);
+        s.order = ctz(&s);
     }
+    /* Also, if we started with a known heap, and we still
+     * haven't modified it, then heapify() would just be a waste of time.
+     */
     if (!known_heap) {
         cycle(a, n, leo[0]);
-        heapify(head, order, leo, cmp, ctx);
+        heapify(head, s.order, leo, cmp, ctx);
     }
 }
 
 hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, const void *, void *), void *ctx)
 {
     if (n <= 1) return;
-    size_t p[2] = {3, 0};
-    size_t order = 0;
+    struct shape s = {
+        .p = {3, 0},
+        .order = 0,
+    };
     char *head = (char *)base + sz;
 
     size_t leo[12 * sizeof(size_t)];
@@ -144,38 +153,43 @@ hidden void __qsort_r(void *base, size_t n, size_t sz, int (*cmp)(const void *, 
          * child and more data is left to add than needed to fill up the
          * right child tree.
          */
-        if (test(p, order + 1)) {
-            heapify(head, order, leo, cmp, ctx);
-            clear(p, order);
-            clear(p, order + 1);
-            set(p, order + 2);
-            order += 2;
+        if (test(&s, s.order + 1)) {
+            heapify(head, s.order, leo, cmp, ctx);
+            clear(&s, s.order);
+            clear(&s, s.order + 1);
+            set(&s, s.order + 2);
+            s.order += 2;
         } else {
-            if (end - head - sz > leo[order - 1])
-                heapify(head, order, leo, cmp, ctx);
+            if (end - head - sz > leo[s.order - 1])
+                heapify(head, s.order, leo, cmp, ctx);
             else
-                order_roots(head, p, order, leo, cmp, ctx, 0);
-            if (order == 1) order = 0;
-            else order = 1;
-            set(p, order);
+                order_roots(head, s, leo, cmp, ctx, 0);
+            if (s.order == 1) s.order = 0;
+            else s.order = 1;
+            set(&s, s.order);
         }
         head += sz;
     }
-    order_roots(head, p, order, leo, cmp, ctx, 0);
+    order_roots(head, s, leo, cmp, ctx, 0);
 
     while (head > (char *)base + sz) {
         head -= sz;
-        clear(p, order);
-        if (order == 0)
-            order = 1;
-        else if (order == 1)
-            order = ctz(p);
+        clear(&s, s.order);
+        if (s.order == 0)
+            s.order = 1;
+        else if (s.order == 1)
+            s.order = ctz(&s);
         else {
-            set(p, order - 1);
-            order_roots(head - leo[order - 2], p, order - 1, leo, cmp, ctx, 1);
-            set(p, order - 2);
-            order_roots(head, p, order - 2, leo, cmp, ctx, 1);
-            order -= 2;
+            s.order--;
+            set(&s, s.order);
+            /* 2nd optimization: When dequeuing elements, we know the heaps
+             * already have the heap property, and therefore order_roots()
+             * can initially skip checking the children of the root.
+             */
+            order_roots(head - leo[s.order - 1], s, leo, cmp, ctx, 1);
+            s.order--;
+            set(&s, s.order);
+            order_roots(head, s, leo, cmp, ctx, 1);
         }
     }
 }

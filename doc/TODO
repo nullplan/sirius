@@ -361,12 +361,11 @@ void *lsearch(const void *, void *, size_t *, size_t, int (*)(const void *, cons
 FILE *fmemopen(void *restrict, size_t, const char *restrict);
 FILE *open_memstream(char **, size_t *);
 
-/* sys/statfs.h */
-int fstatvfs(int, struct statvfs *);
-int statvfs(const char *__restrict, struct statvfs *__restrict);
-
 /* utime.h */
 int utimes(const char *, const struct timeval [2]);
+
+/* sched.h */
+int clone(int (*)(void *), void *, int, void *, ...);
 
 /* sys/times.h */
 clock_t times(struct tms *);

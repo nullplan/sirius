@@ -307,8 +307,8 @@ hidden void __donate_malloc_memory(void *p, size_t len)
 {
     if (len >= 2 * ALLOC_ALIGN)
     {
-        size_t *start = (void *)(((uintptr_t)p + OVERHEAD + ALLOC_ALIGN - 1) & -ALLOC_ALIGN);
-        size_t *end = (void *)(((uintptr_t)p + len) & -ALLOC_ALIGN);
+        char *start = (void *)(((uintptr_t)p + OVERHEAD + ALLOC_ALIGN - 1) & -ALLOC_ALIGN);
+        char *end = (void *)(((uintptr_t)p + len) & -ALLOC_ALIGN);
         if (start < end) {
             struct chunk *c = chunk_from_mem(start);
             struct chunk *n = chunk_from_mem(end);

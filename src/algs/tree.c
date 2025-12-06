@@ -55,11 +55,13 @@ static struct node *aa_insert(struct node *n, const void *data, int (*cmp)(const
         return n;
     }
     int c = cmp(data, n->data);
-    if (!c) return n;
+    if (!c) {
+        *ret = n;
+        return n;
+    }
     if (c < 0) n->left = aa_insert(n->left, data, cmp, ret);
     else n->right = aa_insert(n->right, data, cmp, ret);
-    if (*ret)
-        n = aa_split(aa_skew(n));
+    n = aa_split(aa_skew(n));
     return n;
 }
 

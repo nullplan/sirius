@@ -38,6 +38,8 @@ char **__environ;
 weak_alias(environ, __environ);
 weak_alias(_environ, __environ);
 
+hidden const size_t *__auxv;
+
 hidden struct __localedef __global_locale = {{"C", "C", "C", "C", "C", "C"}, 0};
 
 hidden size_t __hwcap;
@@ -82,6 +84,7 @@ void __init_libc(char *pn, char **envp)
     __environ = envp;
     size_t *auxv = (void *)envp;
     while (*auxv++);
+    __auxv = auxv;
     size_t aux[AUX_CNT] = {0};
     for (; *auxv; auxv += 2) {
         if (auxv[0] < 8 * sizeof (size_t))

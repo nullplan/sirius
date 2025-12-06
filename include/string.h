@@ -43,11 +43,12 @@ size_t strlen(const char *);
 char *strstr(const char *, const char *);
 
 #if __STDC_VERSION__ >= 202311L
-#define memchr(s, c, n) _Generic((1? (s) : (void *)0), const void *: (const void *)memchr((s), (c), (n)), void *: memchr((s), (c), (n)))
-#define strchr(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strchr((s), (c)), void *: strchr((s), (c)))
-#define strpbrk(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strpbrk((s), (c)), void *: strpbrk((s), (c)))
-#define strrchr(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strrchr((s), (c)), void *: strrchr((s), (c)))
-#define strstr(s, c) _Generic((1? (s) : (void *)0), const void *: (const char *)strstr((s), (c)), void *: strstr((s), (c)))
+#define _QChar(s) typeof(_Generic(1? (s) : (void *)""), const void *: (const char *)0, void *: (char *)0)
+#define memchr(s, c, n) ((typeof(1? (s) : (void *)""))memchr(s, c, n))
+#define strchr(s, c) ((_QChar(s))strchr(s, c))
+#define strpbrk(s, c) ((_QChar(s))strpbrk(s, c))
+#define strrchr(s, c) ((_QChar(s))strrchr(s, c))
+#define strstr(s, c) ((_QChar(s))strstr(s, c))
 #endif
 
 #ifdef _POSIX_C_SOURCE

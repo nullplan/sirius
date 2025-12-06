@@ -16,9 +16,9 @@
  * For now I am implementing this similar to how musl does it:
  *
  * There is a queue of requests for each file descriptor. The queues are all
- * listed in a decimal tree of degree 256 and order 4. Each request spawns a
- * thread to handle it. Due to this, the request list nodes can be allocated on
- * each thread stack.
+ * listed in a tree of degree 256 and order 4. Each request spawns a thread to
+ * handle it. Due to this, the request list nodes can be allocated on each
+ * thread stack.
  *
  * fsync and append requests have to wait for all prior queued writes to
  * complete before beginning.

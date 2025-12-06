@@ -316,6 +316,9 @@ typedef struct {
 #define ELFOSABI_CLOUDABI 17
 #define ELFOSABI_OPENVOS 18
 
+#define ELFOSABI_ARM_AEABI      64
+#define ELFOSABI_ARM_FDPIC      65
+
 #define SHN_UNDEF       0
 #define SHN_LORESERVE   0xff00
 #define SHN_LOPROC      0xff00
@@ -388,6 +391,12 @@ typedef struct {
 #define SHT_GNU_versym              0x6fffffff
 #define SHT_X86_64_UNWIND           0x70000001
 
+#define SHT_ARM_EXIDX           0x70000001
+#define SHT_ARM_PREEMPTMAP      0x70000002
+#define SHT_ARM_ATTRIBUTES      0x70000003
+#define SHT_ARM_DEBUGOVERLAY    0x70000004
+#define SHT_ARM_OVERLAYSECTION  0x70000005
+
 #define SHF_WRITE           0x1
 #define SHF_ALLOC           0x2
 #define SHF_EXECINSTR       0x4
@@ -406,6 +415,9 @@ typedef struct {
 #define SHF_GNU_RETAIN      0x00200000
 #define SHF_ORDERED         0x40000000
 #define SHF_EXCLUDE         0x80000000U
+
+#define SHF_ARM_PURECODE    0x20000000
+
 
 typedef struct {
     Elf32_Word  ch_type;
@@ -865,6 +877,13 @@ typedef struct {
    0 for unspecified or not using any features affected by the differences.  */
 #define EF_PPC64_ABI	3
 
+/* ARM specific flags */
+#define EF_ARM_ABIMASK          0xFF000000
+#define EF_ARM_BE8              0x00800000
+#define EF_ARM_GCCMASK          0x00400FFF
+#define EF_ARM_ABI_FLOAT_HARD   0x00000400
+#define EF_ARM_ABI_FLOAT_SOFT   0x00000200
+
 /* PowerPC64 specific values for the Dyn d_tag field.  */
 #define DT_PPC64_GLINK  (DT_LOPROC + 0)
 #define DT_PPC64_OPD	(DT_LOPROC + 1)
@@ -1034,6 +1053,201 @@ typedef struct {
 
 /* AArch64 specific values for the st_other field.  */
 #define STO_AARCH64_VARIANT_PCS 0x80
+
+/* ARM relocation types */
+#define R_ARM_NONE 0
+#define R_ARM_PC24 1
+#define R_ARM_ABS32 2
+#define R_ARM_REL32 3
+#define R_ARM_LDR_PC_G0 4
+#define R_ARM_ABS16 5
+#define R_ARM_ABS12 6
+#define R_ARM_THM_ABS5 7
+#define R_ARM_ABS8 8
+#define R_ARM_SBREL32 9
+#define R_ARM_THM_CALL 10
+#define R_ARM_THM_PC8 11
+#define R_ARM_BREL_ADJ 12
+#define R_ARM_TLS_DESC 13
+#define R_ARM_THM_SWI8 14
+#define R_ARM_XPC25 15
+#define R_ARM_THM_XPC22 16
+#define R_ARM_TLS_DTPMOD32 17
+#define R_ARM_TLS_DTPOFF32 18
+#define R_ARM_TLS_TPOFF32 19
+#define R_ARM_COPY 20
+#define R_ARM_GLOB_DAT 21
+#define R_ARM_JUMP_SLOT 22
+#define R_ARM_RELATIVE 23
+#define R_ARM_GOTOFF32 24
+#define R_ARM_BASE_PREL 25
+#define R_ARM_GOT_BREL 26
+#define R_ARM_PLT32 27
+#define R_ARM_CALL 28
+#define R_ARM_JUMP24 29
+#define R_ARM_THM_JUMP24 30
+#define R_ARM_BASE_ABS 31
+#define R_ARM_ALU_PCREL_7_0 32
+#define R_ARM_ALU_PCREL_15_8 33
+#define R_ARM_ALU_PCREL_23_15 34
+#define R_ARM_LDR_SBREL_11_0_NC 35
+#define R_ARM_ALU_SBREL_19_12_NC 36
+#define R_ARM_ALU_SBREL_27_20_CK 37
+#define R_ARM_TARGET1 38
+#define R_ARM_SBREL31 39
+#define R_ARM_V4BX 40
+#define R_ARM_TARGET2 41
+#define R_ARM_PREL31 42
+#define R_ARM_MOVW_ABS_NC 43
+#define R_ARM_MOVT_ABS 44
+#define R_ARM_MOVW_PREL_NC 45
+#define R_ARM_MOVT_PREL 46
+#define R_ARM_THM_MOVW_ABS_NC 47
+#define R_ARM_THM_MOVT_ABS 48
+#define R_ARM_THM_MOVW_PREL_NC 49
+#define R_ARM_THM_MOVT_PREL 50
+#define R_ARM_THM_JUMP19 51
+#define R_ARM_THM_JUMP6 52
+#define R_ARM_THM_ALU_PREL_11_0 53
+#define R_ARM_THM_PC12 54
+#define R_ARM_ABS32_NOI 55
+#define R_ARM_REL32_NOI 56
+#define R_ARM_ALU_PC_G0_NC 57
+#define R_ARM_ALU_PC_G0 58
+#define R_ARM_ALU_PC_G1_NC 59
+#define R_ARM_ALU_PC_G1 60
+#define R_ARM_ALU_PC_G2 61
+#define R_ARM_LDR_PC_G1 62
+#define R_ARM_LDR_PC_G2 63
+#define R_ARM_LDRS_PC_G0 64
+#define R_ARM_LDRS_PC_G1 65
+#define R_ARM_LDRS_PC_G2 66
+#define R_ARM_LDC_PC_G0 67
+#define R_ARM_LDC_PC_G1 68
+#define R_ARM_LDC_PC_G2 69
+#define R_ARM_ALU_SB_G0_NC 70
+#define R_ARM_ALU_SB_G0 71
+#define R_ARM_ALU_SB_G1_NC 72
+#define R_ARM_ALU_SB_G1 73
+#define R_ARM_ALU_SB_G2 74
+#define R_ARM_LDR_SB_G0 75
+#define R_ARM_LDR_SB_G1 76
+#define R_ARM_LDR_SB_G2 77
+#define R_ARM_LDRS_SB_G0 78
+#define R_ARM_LDRS_SB_G1 79
+#define R_ARM_LDRS_SB_G2 80
+#define R_ARM_LDC_SB_G0 81
+#define R_ARM_LDC_SB_G1 82
+#define R_ARM_LDC_SB_G2 83
+#define R_ARM_MOVW_BREL_NC 84
+#define R_ARM_MOVT_BREL 85
+#define R_ARM_MOVW_BREL 86
+#define R_ARM_THM_MOVW_BREL_NC 87
+#define R_ARM_THM_MOVT_BREL 88
+#define R_ARM_THM_MOVW_BREL 89
+#define R_ARM_TLS_GOTDESC 90
+#define R_ARM_TLS_CALL 91
+#define R_ARM_TLS_DESCSEQ 92
+#define R_ARM_THM_TLS_CALL 93
+#define R_ARM_PLT32_ABS 94
+#define R_ARM_GOT_ABS 95
+#define R_ARM_GOT_PREL 96
+#define R_ARM_GOT_BREL12 97
+#define R_ARM_GOTOFF12 98
+#define R_ARM_GOTRELAX 99
+#define R_ARM_GNU_VTENTRY 100
+#define R_ARM_GNU_VTINHERIT 101
+#define R_ARM_THM_JUMP11 102
+#define R_ARM_THM_JUMP8 103
+#define R_ARM_TLS_GD32 104
+#define R_ARM_TLS_LDM32 105
+#define R_ARM_TLS_LDO32 106
+#define R_ARM_TLS_IE32 107
+#define R_ARM_TLS_LE32 108
+#define R_ARM_TLS_LDO12 109
+#define R_ARM_TLS_LE12 110
+#define R_ARM_TLS_IE12GP 111
+#define R_ARM_PRIVATE_0 112
+#define R_ARM_PRIVATE_1 113
+#define R_ARM_PRIVATE_2 114
+#define R_ARM_PRIVATE_3 115
+#define R_ARM_PRIVATE_4 116
+#define R_ARM_PRIVATE_5 117
+#define R_ARM_PRIVATE_6 118
+#define R_ARM_PRIVATE_7 119
+#define R_ARM_PRIVATE_8 120
+#define R_ARM_PRIVATE_9 121
+#define R_ARM_PRIVATE_10 122
+#define R_ARM_PRIVATE_11 123
+#define R_ARM_PRIVATE_12 124
+#define R_ARM_PRIVATE_13 125
+#define R_ARM_PRIVATE_14 126
+#define R_ARM_PRIVATE_15 127
+#define R_ARM_ME_TOO 128
+#define R_ARM_THM_TLS_DESCSEQ16 129
+#define R_ARM_THM_TLS_DESCSEQ32 130
+#define R_ARM_THM_GOT_BREL12 131
+#define R_ARM_THM_ALU_ABS_G0_NC 132
+#define R_ARM_THM_ALU_ABS_G1_NC 133
+#define R_ARM_THM_ALU_ABS_G2_NC 134
+#define R_ARM_THM_ALU_ABS_G3 135
+#define R_ARM_THM_BF16 136
+#define R_ARM_THM_BF12 137
+#define R_ARM_THM_BF18 138
+#define R_ARM_IRELATIVE 160
+#define R_ARM_PRIVATE_16 161
+#define R_ARM_PRIVATE_17 162
+#define R_ARM_PRIVATE_18 163
+#define R_ARM_PRIVATE_19 164
+#define R_ARM_PRIVATE_20 165
+#define R_ARM_PRIVATE_21 166
+#define R_ARM_PRIVATE_22 167
+#define R_ARM_PRIVATE_23 168
+#define R_ARM_PRIVATE_24 169
+#define R_ARM_PRIVATE_25 170
+#define R_ARM_PRIVATE_26 171
+#define R_ARM_PRIVATE_27 172
+#define R_ARM_PRIVATE_28 173
+#define R_ARM_PRIVATE_29 174
+#define R_ARM_PRIVATE_30 175
+#define R_ARM_PRIVATE_31 176
+
+#define PT_ARM_ARCHEXT  0x70000000
+#define PT_ARM_EXIDX    0x70000001
+#define PT_ARM_UNWIND   0x70000002
+
+#define PT_ARM_ARCHEXT_FMTMSK   0xff000000
+#define PT_ARM_ARCHEXT_PROFMSK  0x00ff0000
+#define PT_ARM_ARCHEXT_ARCHMSK  0x000000ff
+
+#define PT_ARM_ARCHEXT_FMT_OS   0x00000000
+#define PT_ARM_ARCHEXT_FMT_ABI  0x01000000
+
+#define PT_ARM_ARCHEXT_PROF_NONE        0x00000000
+#define PT_ARM_ARCHEXT_PROF_ARM         0x00410000
+#define PT_ARM_ARCHEXT_PROF_RT          0x00510000
+#define PT_ARM_ARCHEXT_PROF_MC          0x004D0000
+#define PT_ARM_ARCHEXT_PROF_CLASSIC     0x00530000
+
+#define PT_ARM_ARCHEXT_ARCH_UNKN        0x00
+#define PT_ARM_ARCHEXT_ARCHv4           0x01
+#define PT_ARM_ARCHEXT_ARCHv4T          0x02
+#define PT_ARM_ARCHEXT_ARCHv5T          0x03
+#define PT_ARM_ARCHEXT_ARCHv5TE         0x04
+#define PT_ARM_ARCHEXT_ARCHv5TEJ        0x05
+#define PT_ARM_ARCHEXT_ARCHv6           0x06
+#define PT_ARM_ARCHEXT_ARCHv6KZ         0x07
+#define PT_ARM_ARCHEXT_ARCHv6T2         0x08
+#define PT_ARM_ARCHEXT_ARCHv6K          0x09
+#define PT_ARM_ARCHEXT_ARCHv7           0x0a
+#define PT_ARM_ARCHEXT_ARCHv6M          0x0b
+#define PT_ARM_ARCHEXT_ARCHv6SM         0x0c
+#define PT_ARM_ARCHEXT_ARCHv7EM         0x0d
+
+#define DT_ARM_RESERVED1        0x70000000
+#define DT_ARM_SYMTABSZ         0x70000001
+#define DT_ARM_PREEMPTMAP       0x70000002
+#define DT_ARM_RESERVED2        0x70000003
 
 typedef struct {
     Elf32_Word  p_type;

@@ -32,8 +32,7 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
     int found_load = 0;
     for (i = 0; i < phnum; i++, ph = (const void *)((const char *)ph + phent))
     {
-        if (ph->p_type == PT_GNU_STACK)
-        {
+        if (ph->p_type == PT_GNU_STACK) {
             if (ph->p_memsz > __default_stacksize && ph->p_memsz < MAX_DEFAULT_STACK_SIZE)
                 __default_stacksize = ph->p_memsz;
         }
@@ -45,8 +44,7 @@ static void static_init_from_phdrs(const void *start, size_t phnum, size_t phent
             base = (uintptr_t)_DYNAMIC - ph->p_vaddr;
         else if (ph->p_type == PT_PHDR)
             base = (uintptr_t)start - ph->p_vaddr;
-        else if (ph->p_type == PT_LOAD && !found_load)
-        {
+        else if (ph->p_type == PT_LOAD && !found_load) {
             found_load = 1;
             base = ((uintptr_t)start & -PAGE_SIZE) - ph->p_vaddr;
         }

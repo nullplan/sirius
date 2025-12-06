@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include "libc.h"
+#pragma STDC FENV_ACCESS on
 
 static int addo(int *x, size_t a)
 {
@@ -213,7 +214,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
     uint32_t mod; /* 10^(number of insignificant digits in *r) */
     if (prec < 0) prec = 6;
     if ((c|32) == 'f') {
-        do_round = prec < 9 * (z - rp);
+        do_round = prec < 9 * (z - rp - 1);
         if (do_round) {
             r = rp + 1 + prec / 9;
             mod = pow10(9 - (prec % 9));
@@ -287,7 +288,7 @@ static size_t fmt_decfloat(FILE *f, long double x, int width, int prec, int flag
         if (a > rp) a = rp;
         if (z <= rp) z = rp + 1;
         if (trim_zeroes) {
-            if (prec > (z - rp) * 9) prec = (z - rp) * 9;
+            if (prec > (z - rp - 1) * 9) prec = (z - rp - 1) * 9;
             while (prec > 0 && (rp[1 + prec/9] / pow10(9 - prec % 9) % 10) == 0)
                 prec--;
         }
