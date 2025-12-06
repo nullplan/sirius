@@ -1,4 +1,7 @@
 .syntax unified
+#ifdef __thumb__
+.thumb
+#endif
 .global memmove
 .type memmove, %function
 memmove:
