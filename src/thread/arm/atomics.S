@@ -90,8 +90,8 @@ __a_cas_v6:
     mcr p15, 0, r0, c7, c10, 5
     mov ip, r0
 1:
-    ldrex r3, [r2]
-    subs r0, r3
+    ldrex r0, [r2]
+    subs r0, ip
     strexeq r0, r1, [r2]
     teqeq r0, 1
     beq 1b
@@ -107,8 +107,8 @@ __a_cas_v7:
     dmb ish
     mov ip, r0
 1:
-    ldrex r3, [r2]
-    subs r0, r3
+    ldrex r0, [r2]
+    subs r0, ip
     strexeq r0, r1, [r2]
     teqeq r0, 1
     beq 1b
