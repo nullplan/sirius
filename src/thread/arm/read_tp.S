@@ -7,6 +7,7 @@
 __aeabi_read_tp:
 #if __ARM_ARCH >= 6
     mrc p15, 0, r0, c13, c0, 3
+    bx lr
 #else
     ldr r0, 1f
     add r0, pc, r0
