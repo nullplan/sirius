@@ -26,7 +26,7 @@ static inline void a_barrier(void)
 static inline int a_ll(volatile int *ptr)
 {
     int rv;
-    __asm__ volatile("ldrex %0, %1" : "=r"(rv) : "m"(*ptr));
+    __asm__ volatile("ldrex %0, %1" : "=r"(rv) : "Q"(*ptr));
     return rv;
 }
 
@@ -34,7 +34,7 @@ static inline int a_ll(volatile int *ptr)
 static inline int a_sc(volatile int *ptr, int val)
 {
     int rv;
-    __asm__("strex %0, %2, %1" : "=r"(rv), "=m"(*ptr) : "r"(val));
+    __asm__("strex %0, %2, %1" : "=&r"(rv), "=Q"(*ptr) : "r"(val));
     return rv;
 }
 #else
@@ -109,7 +109,7 @@ static inline _Noreturn void a_crash(void)
 }
 
 /* CLZ: supported for ARMv6 and higher in thumb mode, or ARMv5 in ARM mode */
-#if __ARM_ARCH > 5 || (__ARM_ARCH == 5 && !defined __thumb__)
+#if defined __thumb2__ || (__ARM_ARCH >= 5 && !defined __thumb__)
 #define a_clz a_clz
 static inline int a_clz(size_t x) {
     __asm__("clz %0, %1" : "=r"(x) : "r"(x));
@@ -117,8 +117,8 @@ static inline int a_clz(size_t x) {
 }
 #endif
 
-/* RBIT: supported on ARMv6 and higher */
-#if __ARM_ARCH > 5
+/* RBIT: supported on ARMv6T2 and higher */
+#if __ARM_ARCH > 6 || defined __ARM_ARCH_6T2__
 #define a_ctz a_ctz
 static inline int a_ctz(size_t x) {
     __asm__("rbit %0, %1; clz %0, %0" : "=r"(x) : "r"(x));
