@@ -2,7 +2,9 @@
 .fpu vfp
 .eabi_attribute 10, 0       @ pretend we don't use FPU here!
 .eabi_attribute 27, 0       @ and we pass args the way implied from this
-
+#ifndef __thumb2__
+.arm
+#endif
 .global longjmp
 .type longjmp, %function
 longjmp:
