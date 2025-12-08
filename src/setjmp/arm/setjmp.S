@@ -5,9 +5,14 @@
 .global setjmp
 .type setjmp, %function
 setjmp:
+#if __ARM_ARCH < 6
     push {r0, lr}
     bl __aeabi_read_tp
     pop {r1, lr}
+#else
+    mov r1, r0
+    mrc p15, 0, r0, c13, c0, 3
+#endif
     ldr r0, [r0, -12]   @ hwcap
     stmia r1!, {r4-r11}
     mov r2, sp

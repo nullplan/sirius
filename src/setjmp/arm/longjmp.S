@@ -6,7 +6,11 @@
 .type longjmp, %function
 longjmp:
     mov r2, r0
+#if __ARM_ARCH < 6
     bl __aeabi_read_tp
+#else
+    mrc p15, 0, r0, c13, c0, 3
+#endif
     ldr r0, [r0, -12]   @ hwcap
     ldmia r2!, {r4-r11}
     ldmia r2!, {r3, lr}
