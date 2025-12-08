@@ -2,9 +2,6 @@
 #if __ARM_ARCH < 7
 /* without Thumb2, everything following must be assembled in ARM mode */
 /* otherwise I leave it up to settings */
-#ifndef __thumb2__
-.arm
-#endif
 @ set compiler to newest machine, but mark file as supporting the oldest
 .arch armv7-a
 .eabi_attribute Tag_CPU_arch, 2

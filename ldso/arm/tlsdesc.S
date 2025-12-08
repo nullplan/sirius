@@ -8,9 +8,6 @@ __tlsdesc_static:
     bx lr
 .size __tlsdesc_static, . - __tlsdesc_static
 
-#ifndef __thumb2__
-.arm
-#endif
 .global __tlsdesc_dynamic
 .hidden __tlsdesc_dynamic
 .type __tlsdesc_dynamic, %function

@@ -1,6 +1,6 @@
 .syntax unified
-#if __ARM_ARCH >= 6 && !defined __thumb2__
-.arm
+#if defined __thumb__ && __ARM_ARCH < 6
+.thumb
 #endif
 .global __aeabi_read_tp
 .type __aeabi_read_tp, %function
@@ -10,7 +10,7 @@ __aeabi_read_tp:
     bx lr
 #else
     ldr r0, 1f
-    add r0, pc, r0
+    add r0, pc
     ldr r0, [r0]
 2:  bx r0
 .balign 4

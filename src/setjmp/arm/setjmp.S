@@ -4,9 +4,6 @@
 .eabi_attribute 27, 0       @ and we pass args the way implied from this
 .global setjmp
 .type setjmp, %function
-#ifndef __thumb2__
-.arm
-#endif
 setjmp:
     push {r0, lr}
     bl __aeabi_read_tp
