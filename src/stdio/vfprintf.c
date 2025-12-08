@@ -11,6 +11,7 @@ static void out(FILE *f, const void *p, size_t l)
 {
     if (f && l) __fwritex(p, l, f);
 }
+
 static int set_errno(int e)
 {
     errno = e;

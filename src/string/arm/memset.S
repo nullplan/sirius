@@ -10,7 +10,6 @@ memset:
     eors r2, r1
     eors r1, r2
 #if __ARM_ARCH < 5
-    mov lr, pc
     bl __aeabi_memset
     pop {r0, r1}
     bx r1
