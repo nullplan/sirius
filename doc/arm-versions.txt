@@ -1,0 +1,58 @@
+Main architecture versions:
+---------------------------
+
+The following ARM architecture versions are supported:
+
+ARMv4: Baseline (oldest EABI compatible version)
+ARMv4T: +Thumb (BX is the only interworking branch)
+ARMv5T: +BLX
+ARMv6: +LDREX, +STREX, +CP15 (which apparently was pervasive in ARMv5 already, but became standardized in ARMv6), -SWP/SWB
+ARMv6T: +Thumb2
+ARMv7: +DMB, -CP15 barriers
+
+From ARMv7 onward, the architecture remains the same. Linux doesn't even report ARMv9 as v9, but as v8 in 32-bit mode.
+
+Apparently, main difference for ARMv8 is that VFP is mandatory, and that older coprocessors are no longer supported.
+
+From this and the AAPCS follows my strategy for dealing with ARM:
+
+1st: NEVER do unaligned memory access (then the differences can't bite me).
+2nd: Always keep in mind that runtime arch >= compile time arch.
+3rd: When compiling for ARMv4, branch to named functions with BL (linker will
+        insert a veneer as necessary), branch to function pointers and returns
+        with BX (linker will replace BX with "mov pc" for ARMv4)
+4th: When compiling for ARMv5 onwards, just call everything with BLX.
+5th: When compiling for ARMv4 or ARMv5, implement synchronization with the
+        kuser helpers. Those can contain the correct code for the runtime platform.
+6th: When compiling for ARMv6, avoid kuser helpers. Keep CAS out-of-line to select the right instruction set as needed.
+7th: When compiling for ARMv7, inline all instructions! There is only one choice for each of them, and they are all available in all instruction sets that could be used.
+
+Runtime code selection: On ARMv4 and ARMv5, use the kuser helpers (selected by lacking HWCAP_TLS in kernel-provided hwcaps).
+On ARMv6, use LDREX/STREX based CAS programs. On ARMv6T2, the whole thing can be Thumb2.
+When compiling for ARMv6, the barrier instruction must be selected at run time, so that on ARMv7, DMB can be used.
+
+Thread pointer: My model is that the main thread calls __set_thread_area(x), and then afterwards if a thread is created with __clone(CLONE_SETTLS), it gets its TLS initialized by the kernel.
+On ARMv6 and above, the kernel uses TPIDRURO as the TLS register. It gets set with the "set_tls" syscall. That syscall otherwise sets a global read by a "get_tls" kuser helper.
+
+Therefore, the thread pointer will be set with the "set_tls" syscall and read:
+    - when compiling for ARMv6 and above directly from TPIDRURO
+    - when compiling for ARMv5 and below but running on ARMv6, with a runtime selected TPIDRURO read
+    - when compiling and running on old ARM with the kuser helper
+
+
+Instruction sets:
+-----------------
+
+ARM: The original instruction set. 32 bits per instruction, almost every one can be conditional. All 16 registers are normally accessible.
+Thumb(1): Available from ARMv4T. 16 bits per instruction (except BL is 32 bits), but most instructions can only access r0-r7. And it has no conditional execution.
+Thumb2: Available from ARMv6T2. 16 or 32 bits per instruction. Feature parity with ARM, in some cases even a slight extension over it. Of course, remaining in Thumb1 offers size advantages.
+
+
+
+Architecture options:
+---------------------
+
+Implemented options at the moment are FPA, VFP, and IWMMXT.
+FPA and IWMMXT are only supported in setjmp() and longjmp(), tho. For the maths library, only VFP is supported.
+
+(Actually, that's a lie, at the moment the maths library has no extended support. But that will change in future.)
