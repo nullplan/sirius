@@ -1,36 +1,26 @@
 /* none of this is needed for armv7 */
 #if __ARM_ARCH < 7
-/* without Thumb2, everything following must be assembled in ARM mode */
-/* otherwise I leave it up to settings */
-@ set compiler to newest machine, but mark file as supporting the oldest
-.arch armv7-a
-.eabi_attribute Tag_CPU_arch, 2
-.eabi_attribute Tag_FP_arch, 0 @ GCC otherwise puts a VFPv4 requirement into this file. I don't know why.
 .syntax unified
 
-.section ".data","aw",%progbits
+.section ".bss","aw",%nobits
 .balign 4
 .global __a_barrier_ptr
 .hidden __a_barrier_ptr
 .type __a_cas_ptr, %object
-__a_barrier_ptr: .long barrier_dummy
+__a_barrier_ptr: .skip 4
 .size __a_barrier_ptr, . - __a_barrier_ptr
 .global __a_cas_ptr
 .hidden __a_cas_ptr
 .type __a_cas_ptr, %object
-__a_cas_ptr: .long cas_dummy
+__a_cas_ptr: .skip 4
 .size __a_cas_ptr, . -__a_cas_ptr
 .global __a_gettp_ptr
 .hidden __a_gettp_ptr
 .type __a_gettp_ptr, %object
-__a_gettp_ptr: .long 0
+__a_gettp_ptr: .skip 4
 .size __a_gettp_ptr, . - __a_gettp_ptr
 
 .section ".text","ax",%progbits
-.type barrier_dummy, %function
-barrier_dummy:
-    bx lr
-
 @ barrier instruction for old kuser versions that don't have it yet in the helpers
 @ must not modify any regs
 .global __a_barrier_old
@@ -52,6 +42,11 @@ __a_barrier_old:
     bx lr
 .size __a_barrier_old, . - __a_barrier_old
 
+@ set compiler to newest machine, but mark file as supporting the oldest
+@ and do this here so that __a_barrier_old is compiled with the older arch as necessary.
+.arch armv7-a
+.eabi_attribute Tag_CPU_arch, 2
+.eabi_attribute Tag_FP_arch, 0 @ GCC otherwise puts a VFPv4 requirement into this file. I don't know why.
 .global __a_barrier_v6
 .hidden __a_barrier_v6
 .type __a_barrier_v6, %function
@@ -73,13 +68,6 @@ __a_barrier_v7:
 @ input: r0 = oldval, r1 = newval, r2 = ptr
 @ output: r0 = 0 iff successful
 @ clobbered: r3, ip, CC
-cas_dummy:
-.type cas_dummy, %function
-    ldr r3, [r2]
-    subs r0, r3
-    streq r1, [r2]
-    bx lr
-
 .global __a_cas_v6
 .hidden __a_cas_v6
 .type __a_cas_v6, %function
