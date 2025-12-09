@@ -1,9 +1,14 @@
 #include <stddef.h>
-#if ((__ARM_ARCH == 6 && (!defined __thumb__ || defined __ARM_ARCH_6T2__)) || __ARM_ARCH > 6)
+#if __ARM_ARCH >= 6
 static inline uintptr_t __get_tp(void)
 {
     uintptr_t rv;
+    #if (!defined __thumb__ || defined __thumb2__)
     __asm__("mrc p15, 0, %0, cr13, cr0, 3" : "=r"(rv));
+    #else
+    extern uintptr_t __aeabi_read_tp(void);
+    rv = __aeabi_read_tp();
+    #endif
     return rv;
 }
 #else
