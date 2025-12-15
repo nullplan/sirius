@@ -17,10 +17,8 @@ __aeabi_memclr4:
 __aeabi_memset8:
 __aeabi_memset4:
     and r2, 0xff
-    lsl r3, r2, 8
-    orr r2, r3
-    lsl r3, r2, 16
-    orr r2, r3
+    orr r2, r2, r2, lsl 8
+    orr r2, r2, r2, lsl 16
 1:
     tst r1, 3
     bne __aeabi_memset
@@ -119,10 +117,9 @@ __aeabi_memclr:
 .type __aeabi_memset, %function
 __aeabi_memset:
     and r2, 0xff
-    lsl r3, r2, 8
-    orr r2, r3
-    lsl r3, r2, 16
-    orr r2, r3
+    orr r2, r2, r2, lsl 8
+    orr r2, r2, r2, lsl 16
+1:
     add r3, r0, r1
     cmp r1, 121
     bhi 2f
