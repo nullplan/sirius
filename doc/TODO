@@ -44,8 +44,6 @@ char *textdomain(const char *);
 const char *getlocalename_l(int, locale_t);
 
 /* math.h */
-double jn(int, double);
-double yn(int, double);
 extern int signgam;
 int         ilogb(double);
 long        lrint(double);
