@@ -70,4 +70,9 @@ extern hidden double __kernel_cos(double, double);
 extern hidden double __kernel_tan(double, double, int);
 
 extern hidden const uint8_t __sqrt_data[96];
+
+extern hidden double __pzero(double);
+extern hidden double __qzero(double);
+extern hidden double __pone(double);
+extern hidden double __qone(double);
 #endif
