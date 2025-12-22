@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     pic_default = trycpp("if PIC is default", "__PIC__")
 
-# first: add options to trial flags to error for unknown flags
+    # first: add options to trial flags to error for unknown flags
     tryccflag("-Werror=unknown-warning-option", cflags_try)
     tryccflag("-Werror=unused-command-line-argument", cflags_try)
     tryccflag("-Werror=ignored-optimization-argument", cflags_try)
@@ -331,8 +331,8 @@ rule mkalltypes
 build lib: md
 build obj: md
 build obj/include: md
-build lib/crti.o: as {srcdir}/crt/crti.s
-build lib/crtn.o: as {srcdir}/crt/crtn.s
+build lib/crti.o: as {srcdir}/crt/crti.s || lib
+build lib/crtn.o: as {srcdir}/crt/crtn.s || lib
 build obj/include/alltypes.h: mkalltypes {srcdir}/arch/{arch}/alltypes.h.in {srcdir}/include/alltypes.h.in || obj/include
 build obj/rcrt1s.o: cc {srcdir}/crt/{arch}/rcrt1s.S || obj
   cflags = {' '.join(cflags_asm)}
