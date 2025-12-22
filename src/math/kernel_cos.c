@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 static const double C2 = +1.0/24.0;
 static const double C3 = -1.0/720.0;

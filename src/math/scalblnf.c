@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 float scalblnf(float x, long n)
 {

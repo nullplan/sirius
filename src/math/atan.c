@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 /* For the most part, I just use the Taylor series up to degree 23 here.
  *

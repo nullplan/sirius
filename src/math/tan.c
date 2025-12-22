@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 #ifdef __GNUC__
 #define fabs(x) __builtin_fabs(x)

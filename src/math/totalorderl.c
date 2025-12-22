@@ -2,6 +2,7 @@
 #include "libm.h"
 #include <string.h>
 #include <stdbit.h>
+#pragma STDC FENV_ACCESS ON
 
 #ifdef __GNUC__
 #define memcpy __builtin_memcpy

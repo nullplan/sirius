@@ -1,5 +1,6 @@
 #include "libm.h"
 #include "cpu.h"
+#pragma STDC FENV_ACCESS ON
 
 /* Using fixed-point Goldschmidt's algorithm.
  * On a high level: 1st weed out special arguments.

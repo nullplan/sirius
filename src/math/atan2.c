@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 /* atan2(y,x) = atan(y/x), except with more attention paid to corner cases,
  * and some reflection applied for the final calculation */

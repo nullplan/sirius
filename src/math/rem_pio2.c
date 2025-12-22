@@ -5,6 +5,7 @@
  * Shewchuk, "Arbitrary Precision Floating-Point Arithmetic", Carnegie Mellon University, Pittsburgh, 1997
  */
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 static const double halfpi = 0x1.921fb54442d18p0;
 
 struct pair {

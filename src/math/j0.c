@@ -56,6 +56,7 @@
  */
 
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 static const double
 huge 	= 1e300,

@@ -1,5 +1,6 @@
 #define __STDC_WANT_IEC_60559_EXT__
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 int totalordermag(const double *pa, const double *pb)
 {

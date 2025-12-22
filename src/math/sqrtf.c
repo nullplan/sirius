@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 static uint32_t mul32(uint32_t a, uint32_t b)
 {

@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 static const double othresh = 0x1.62e42fefa39efP9,      /* 1024 ln 2 */
              uthresh = -0x1.74385446d71c3P9,            /* -1074 ln 2 */

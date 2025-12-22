@@ -1,4 +1,5 @@
 #include "libm.h"
+#pragma STDC FENV_ACCESS ON
 
 #if LDBL_MANT_DIG==53
 long double atan2l(long double y, long double x)
