@@ -1,44 +1,22 @@
-/* @(#)s_floor.c 1.3 95/01/18 */
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunSoft, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
-
-/*
- * floor(x)
- * Return x rounded toward -inf to integral value
- * Method:
- *	Bit twiddling.
- * Exception:
- *	Inexact flag raised if x not equal to floor(x).
- */
-
 #include "libm.h"
-
-static const double huge = 1.0e300;
+#pragma STDC FENV_ACCESS ON
 
 double floor(double x)
 {
-    int64_t ix = __double_bits(x);
-    int j0;
-    j0 = (ix << 1ULL >> 53) - 0x3ff;
-    if (j0 >= 52) return x; /* no bits of x are fractional. */
-    if (j0 < 0) {  /* ALL bits of x are fractional */
-        FORCE_EVAL(huge+x);
-        if (ix >= 0) return 0;
-        return -1.0;
+    uint64_t ix = __double_bits(x);
+    int exp = ((ix >> 52) & 0x7ff) - 0x3ff;
+    /* trivial case: all bits fractional (also catches subnormals and zero) */
+    if (exp < 0) {
+        FORCE_EVAL(1e300 + x); /* raise inexact if x != 0 */
+        if (!(ix << 1)) return x;
+        return ix >> 63? -1 : 0;
     }
-    /* some bits of x are fractional */
-    int64_t mask = ((1ull << 52) - 1) >> j0;
-    if (!(ix & mask)) return x; /* x was integral to begin with */
-    FORCE_EVAL(huge+x);
-    if (ix < 0) ix += mask;
-    ix &= ~mask;
-    return __double_from_bits(ix);
+    /* trivial case: no bits fractional */
+    if (exp >= 52) return x;
+    /* some fractional bits? */
+    uint64_t fractmask = ((1ull << 52) - 1) >> exp;
+    if (ix >> 63) ix += fractmask;
+    double y = __double_from_bits(ix & ~fractmask);
+    FORCE_EVAL(1e300 + (x - y)); /* raise inexact if x != y. Note that |x-y| < 1 */
+    return y;
 }
