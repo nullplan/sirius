@@ -68,6 +68,7 @@ extern hidden struct rempio2 __rem_pio2(double);
 extern hidden double __kernel_sin(double, double, int);
 extern hidden double __kernel_cos(double, double);
 extern hidden double __kernel_tan(double, double, int);
+extern hidden int __kernel_rem_pio2(double *, double *, int, int, int, const int *);
 
 extern hidden const uint8_t __sqrt_data[96];
 
