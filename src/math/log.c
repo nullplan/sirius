@@ -16,9 +16,13 @@ static const double C[7] = {
     2.0/15.0,
 };
 
+#ifdef __GNUC__
+#define fabs(x) __builtin_fabs(x)
+#endif
+
 double log(double x)
 {
-    if (x == 0) return -DBL_MAX * DBL_MAX;
+    if (x == 0) return -1/fabs(x);
     if (signbit(x)) return (x-x)/(x-x);
     if (!isfinite(x)) return x;
 
