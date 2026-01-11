@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifdef __GNUC__
+#define memcpy __builtin_memcpy
+#endif
 static uint64_t seed;
 unsigned long __stack_chk_guard;
 
