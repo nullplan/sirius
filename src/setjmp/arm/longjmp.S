@@ -18,7 +18,7 @@ longjmp:
 #if __ARM_ARCH < 8
     tst r0, 0x20        @ FPA
     beq 1f
-    ldc p2, cr4, [r1], 48
+    ldc p2, cr4, [r2], 48
 #endif
 1:  tst r0, 0x40        @ VFP
     beq 1f
