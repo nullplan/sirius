@@ -31,7 +31,7 @@ static inline void a_dec(volatile int *p)
     __asm__("lock; decl %0" : "+m"(*p) :: "cc");
 }
 
-static inline void a_crash(void) {
+static inline _Noreturn void a_crash(void) {
     __asm__("ud2" ::: "memory");
 }
 

@@ -25,7 +25,7 @@ static inline int a_sc(volatile int *p, int v)
     return cr & 0x20000000;
 }
 
-static inline void a_crash(void) {
+static inline _Noreturn void a_crash(void) {
     __asm__(".long 0" ::: "memory");
 }
 
