@@ -19,13 +19,17 @@
 .type _start, %function
 _start:
     mov r4, sp
-    and r0, r4, -8
-    mov sp, r0
-    sub sp, (AUX_CNT + DYN_CNT) * 4
+    and sp, r4, -8
+    mov r0, AUX_CNT + DYN_CNT
+    mov r1, 0
+2:
+    str r1, [sp, -4]!
+    subs r0, 1
+    bne 2b
     ldr r5, 1b
     add r5, pc, r5
     ldr r0, [r4]
-2:  add r0, r4, r0
+2:  add r0, r4, r0, lsl 2
     add r0, r0, 4
 1:  ldr r3, [r0], 4
     cmp r3, 0
@@ -131,7 +135,7 @@ do_rela:
 1:
     add r3, 12
     subs r1, 12
-    bne do_rel
+    bne do_rela
     mov pc, lr
 
 do_relr:
