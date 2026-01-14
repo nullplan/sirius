@@ -44,7 +44,6 @@ char *textdomain(const char *);
 const char *getlocalename_l(int, locale_t);
 
 /* math.h */
-double       acos(double);
 double       sinh(double);
 double       cosh(double);
 double       tanh(double);
