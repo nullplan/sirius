@@ -44,14 +44,10 @@ char *textdomain(const char *);
 const char *getlocalename_l(int, locale_t);
 
 /* math.h */
-double       sinh(double);
-double       cosh(double);
-double       tanh(double);
 double      asinh(double);
 double      acosh(double);
 double      atanh(double);
 double       exp2(double);
-double      expm1(double);
 double      log10(double);
 double      log1p(double);
 double       log2(double);
