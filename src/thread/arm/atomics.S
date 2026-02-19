@@ -2,25 +2,48 @@
 #if __ARM_ARCH < 7
 .syntax unified
 
-.section ".bss","aw",%nobits
+.section ".data.a_barrier_ptr","aw",%progbits
 .balign 4
 .global __a_barrier_ptr
 .hidden __a_barrier_ptr
-.type __a_cas_ptr, %object
-__a_barrier_ptr: .skip 4
+.type __a_barrier_ptr, %object
+__a_barrier_ptr: .word __a_barrier_dummy
 .size __a_barrier_ptr, . - __a_barrier_ptr
+
+.section ".data.a_cas_ptr","aw",%progbits
+.balign 4
 .global __a_cas_ptr
 .hidden __a_cas_ptr
 .type __a_cas_ptr, %object
-__a_cas_ptr: .skip 4
+__a_cas_ptr: .word __a_cas_dummy
 .size __a_cas_ptr, . -__a_cas_ptr
+
+
+.section ".bss.a_gettp_ptr","aw",%nobits
+.balign 4
 .global __a_gettp_ptr
 .hidden __a_gettp_ptr
 .type __a_gettp_ptr, %object
 __a_gettp_ptr: .skip 4
 .size __a_gettp_ptr, . - __a_gettp_ptr
 
-.section ".text","ax",%progbits
+.section ".text.a_barrier_dummy","ax",%progbits
+.type __a_barrier_dummy, %function
+__a_barrier_dummy:
+    bx lr
+.size __a_barrier_dummy, . - __a_barrier_dummy
+
+.section ".text.a_cas_dummy","ax",%progbits
+.type __a_cas_dummy, %function
+__a_cas_dummy:
+@ single-thread version of CAS
+    ldr r3, [r2]
+    subs r0, r3
+    streq r1, [r2]
+    bx lr
+.size __a_cas_dummy, . - __a_cas_dummy
+
+.section ".text.a_barrier_old","ax",%progbits
 @ barrier instruction for old kuser versions that don't have it yet in the helpers
 @ must not modify any regs
 .global __a_barrier_old
@@ -47,6 +70,7 @@ __a_barrier_old:
 .arch armv7-a
 .eabi_attribute Tag_CPU_arch, 2
 .eabi_attribute Tag_FP_arch, 0 @ GCC otherwise puts a VFPv4 requirement into this file. I don't know why.
+.section ".text.a_barrier_v6","ax",%progbits
 .global __a_barrier_v6
 .hidden __a_barrier_v6
 .type __a_barrier_v6, %function
@@ -55,6 +79,7 @@ __a_barrier_v6:
     bx lr
 .size __a_barrier_v6, . - __a_barrier_v6
 
+.section ".text.a_barrier_v7","ax",%progbits
 .global __a_barrier_v7
 .hidden __a_barrier_v7
 .type __a_barrier_v7, %function
@@ -68,6 +93,7 @@ __a_barrier_v7:
 @ input: r0 = oldval, r1 = newval, r2 = ptr
 @ output: r0 = 0 iff successful
 @ clobbered: r3, ip, CC
+.section ".text.a_cas_v6","ax",%progbits
 .global __a_cas_v6
 .hidden __a_cas_v6
 .type __a_cas_v6, %function
@@ -85,6 +111,7 @@ __a_cas_v6:
     bx lr
 .size __a_cas_v6, . - __a_cas_v6
 
+.section ".text.a_cas_v7","ax",%progbits
 .global __a_cas_v7
 .hidden __a_cas_v7
 .type __a_cas_v7, %function
@@ -102,6 +129,7 @@ __a_cas_v7:
     bx lr
 .size __a_cas_v7, . - __a_cas_v7
 
+.section ".text.a_gettp_v6","ax",%progbits
 .global __a_gettp_v6
 .hidden __a_gettp_v6
 .type __a_gettp_v6, %function
