@@ -24,7 +24,7 @@ __aeabi_memmove8:
     bx lr
 3:
 .hidden __memcpy_fwd4
-    bl __memcpy_fwd4
+    b __memcpy_fwd4
 .size __aeabi_memmove4, . - __aeabi_memmove4
 .size __aeabi_memmove8, . - __aeabi_memmove8
 
@@ -46,5 +46,5 @@ __aeabi_memmove:
     bx lr
 3:
 .hidden __memcpy_fwd
-    bl __memcpy_fwd
+    b __memcpy_fwd
 .size __aeabi_memmove, . - __aeabi_memmove
