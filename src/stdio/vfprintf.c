@@ -20,7 +20,7 @@ static int set_errno(int e)
 
 static int addo(int *x, size_t a)
 {
-    if (a > INT_MAX || *x > INT_MAX - a) return 1;
+    if (a > INT_MAX - *x) return 1;
     *x += a;
     return 0;
 }
