@@ -14,7 +14,6 @@
 #define AUX_CNT (AT_BASE + 1)
 #define DYN_CNT (DT_RELR + 1)
 .syntax unified
-1: .word _DYNAMIC-2f
 .global _start
 .type _start, %function
 _start:
@@ -27,10 +26,11 @@ _start:
     str r1, [sp, -4]!
     subs r0, 1
     bne 2b
-    ldr r5, 1b
+    ldr r5, .Loff_dyn
     add r5, pc, r5
     ldr r0, [r4]
-2:  add r0, r4, r0, lsl 2
+.Lbase_dyn:
+    add r0, r4, r0, lsl 2
     add r0, r0, 4
 1:  ldr r3, [r0], 4
     cmp r3, 0
@@ -80,6 +80,9 @@ _start:
     mov r2, r6
     mov fp, 0
     bl _start_c
+    udf 0
+.balign 4
+.Loff_dyn: .word _DYNAMIC - .Lbase_dyn
 
 decode_vec:
     ldr r3, [r0]
