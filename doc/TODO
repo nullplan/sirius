@@ -44,8 +44,6 @@ char *textdomain(const char *);
 const char *getlocalename_l(int, locale_t);
 
 /* math.h */
-double      acosh(double);
-double      atanh(double);
 double       exp2(double);
 double      log10(double);
 double       log2(double);
