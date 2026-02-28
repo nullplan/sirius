@@ -45,12 +45,7 @@ const char *getlocalename_l(int, locale_t);
 
 /* math.h */
 double       exp2(double);
-double      log10(double);
 double       log2(double);
-double       logb(double);
-double       cbrt(double);
-double        erf(double);
-double       erfc(double);
 double     tgamma(double);
 double nexttoward(double, long double);
 double       modf(double, double *);
