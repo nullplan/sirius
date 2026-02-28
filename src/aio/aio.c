@@ -249,7 +249,7 @@ static void *worker_thread(void *ctx)
                 read(fd, (void *)cb->aio_buf, cb->aio_nbytes);
             break;
         case LIO_WRITE:
-            rv = !append?
+            rv = seekable && !append?
                 pwrite(fd, (void *)cb->aio_buf, cb->aio_nbytes, cb->aio_offset) :
                 write(fd, (void *)cb->aio_buf, cb->aio_nbytes);
             break;
