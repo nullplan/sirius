@@ -83,7 +83,7 @@ hidden int __pthread_mutex_clocklock(pthread_mutex_t *restrict m, clockid_t clk,
 
     int mask = m->__flg & PTHREAD_MUTEX_ROBUST? FUTEX_TID_MASK : FUTEX_NR_TID_MASK;
     int priv = !(m->__flg & PTHREAD_PROCESS_SHARED);
-    while ((rv = pthread_mutex_trylock(m)) == EBUSY) {
+    while ((rv = __pthread_mutex_trylock(m)) == EBUSY) {
         int v = m->__lock;
         if (!(v & mask)) continue; /* leave the complicated stuff to trylock */
         if (!(v & FUTEX_WAITERS)) {
