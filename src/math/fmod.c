@@ -38,7 +38,8 @@ double fmod(double x, double y)
     }
     if (ix >= iy)
         ix -= iy;
+    x = ix;
     if (s)
-        ix = -ix;
-    return scalbln((int64_t)ix, ey - 0x3ff - 52);
+        x = -x;
+    return scalbln(x, ey - 0x3ff - 52);
 }
