@@ -1,8 +1,10 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
 hidden int __reallocenv(size_t new)
 {
+    assert(new > 0);
     static char **allocenv;
     char **p;
     if (__environ && __environ == allocenv)
