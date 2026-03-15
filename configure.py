@@ -340,7 +340,7 @@ build lib/rcrt1.o: ldr {crt1pic} obj/rcrt1s.o
     command = $cc $cflags -MD -MF $out.d -c -fPIC $in -o $out
     depfile = $out.d
 
-build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c || obj\n''')
+build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c\n''')
         if do_static or pic_default: f.write(f"build obj/crt1c.o: cc {srcdir}/crt/crt1c.c\n")
         if do_shared:
             f.write(f"build lib/Scrt1.o: ldr {crt1pic} obj/crt1s.o\n")
