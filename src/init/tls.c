@@ -18,7 +18,8 @@ static size_t end_off = sizeof (struct __pthread) + GAP_ABOVE_TP;
 #endif
 
 _Static_assert(alignof(struct __pthread) >= alignof (size_t), "");
-hidden struct tls_data __get_tls_data(void) {
+hidden struct tls_data __get_tls_data(void)
+{
     struct tls_data rv = tls_data;
     if (tls_cnt)
         rv.size += (tls_cnt + 1) * sizeof (size_t);

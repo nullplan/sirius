@@ -359,6 +359,7 @@ static int cancel_task(struct aio_queue *q, struct aio_task *t)
         pthread_cond_wait(&q->task_done, &q->lock);
     return (cb->__err == ECANCELED);
 }
+
 int aio_cancel(int fd, struct aiocb *cb)
 {
     if (cb && fd != cb->aio_fildes)
