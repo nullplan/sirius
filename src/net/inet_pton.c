@@ -68,6 +68,7 @@ int inet_pton(int af, const char *restrict str, void *restrict dst)
                 if (brk != -1) return 0;
                 brk = i;
                 str++;
+                if (!*str) break;
             }
             nd = gethexhalf(str);
             if (nd.err) return 0;
