@@ -186,7 +186,7 @@ static int name_from_dns(const char *name, int family, struct address addr[stati
     struct resolvconf conf;
     __get_resolvconf(&conf);
     size_t namelen = strlen(name);
-    if (count_dots(name) >= conf.ndots && name[namelen - 1] != '.') {
+    if (count_dots(name) <= conf.ndots && name[namelen - 1] != '.') {
         memcpy(cname, name, namelen);
         cname[namelen] = '.';
         const char *a = conf.search;
