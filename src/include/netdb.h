@@ -50,6 +50,8 @@ extern hidden int __dns_create_query(const char *, int, unsigned char *, size_t)
 extern hidden int __dns_transact(unsigned char *const *, const size_t *, int, const struct resolvconf *, unsigned char *const *, size_t *);
 extern hidden void __dns_process(const unsigned char *, size_t, int (*)(const unsigned char *, size_t, const unsigned char *, size_t, int, void *), void *);
 extern hidden int __dn_expand(const unsigned char *, const unsigned char *, size_t, char *, size_t);
+extern hidden void __sort_addresses(struct address *addr, int cnt);
+extern hidden const unsigned char __v4mapped_prefix[12];
 
 
 #endif

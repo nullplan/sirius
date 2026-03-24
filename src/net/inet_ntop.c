@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <netdb.h>
 
 const char *inet_ntop(int af, const void *restrict src, char *restrict dst, socklen_t dstlen)
 {
@@ -12,7 +13,7 @@ const char *inet_ntop(int af, const void *restrict src, char *restrict dst, sock
     if (af == AF_INET) {
         len = snprintf(buf, sizeof buf, "%d.%d.%d.%d", s[0], s[1], s[2], s[3]);
     } else if (af == AF_INET6) {
-        if (!memcmp(s, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12))
+        if (!memcmp(s, __v4mapped_prefix, 12))
             len = snprintf(buf, sizeof buf, "::ffff:%d.%d.%d.%d", s[12], s[13], s[14], s[15]);
         else {
             len = snprintf(buf, sizeof buf, "%x:%x:%x:%x:%x:%x:%x:%x",
