@@ -4,14 +4,9 @@
 #include <errno.h>
 #include "syscall_arch.h"
 #include <bits/syscalls.h>
-static inline long __syscall_ret(long rv)
-{
-    if (rv > -4096UL) {
-        errno = -rv;
-        rv = -1;
-    }
-    return rv;
-}
+hidden long __syscall_ret(long);
+hidden long __set_errno(long);
+
 #define __SYSCALL_NARGS2(nr, a, b, c, d, e, f, n, ...) n
 #define __SYSCALL_NARGS(...) __SYSCALL_NARGS2(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0, )
 #define __SYSCALL_CONCAT2(a, b) a##b

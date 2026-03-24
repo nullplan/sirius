@@ -68,8 +68,8 @@ clock_gettime:
     mtctr %r12
     bctrl
     bns 1f
-    stw %r3, -0x7010(%r2)
-    li %r3, -1
+    .hidden __set_errno
+    b __set_errno
 1:
     lwz %r0, 20(%r1)
     addi %r1, %r1, 16
