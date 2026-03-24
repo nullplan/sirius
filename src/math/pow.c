@@ -293,8 +293,6 @@ double pow(double x, double y)
     t1 = z - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5))));
     r = (z * t1) / (t1 - two) - (w + z * w);
     z = one - (r - z);
-    j = __double_bits(z) >> 32;
-    j += (n << 20);
     z = scalbln(z,n);
     return s * z;
 }
