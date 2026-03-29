@@ -196,11 +196,11 @@ enum {
 #define IN6_IS_ADDR_SITELOCAL(x)    0
 #define IN6_IS_ADDR_V4MAPPED(x)     __EQ12((x)->s6_addr, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff)
 #define IN6_IS_ADDR_V4COMPAT(x)     0
-#define IN6_IS_ADDR_MC_NODELOCAL(x) ((x)->s6_addr[0] == 0xff && ((x)->s6_addr & 0x0f) == 1)
-#define IN6_IS_ADDR_MC_LINKLOCAL(x) ((x)->s6_addr[0] == 0xff && ((x)->s6_addr & 0x0f) == 2)
-#define IN6_IS_ADDR_MC_SITELOCAL(x) ((x)->s6_addr[0] == 0xff && ((x)->s6_addr & 0x0f) == 5)
-#define IN6_IS_ADDR_MC_ORGLOCAL(x)  ((x)->s6_addr[0] == 0xff && ((x)->s6_addr & 0x0f) == 8)
-#define IN6_IS_ADDR_MC_GLOBAL(x)    ((x)->s6_addr[0] == 0xff && ((x)->s6_addr & 0x0f) == 14)
+#define IN6_IS_ADDR_MC_NODELOCAL(x) ((x)->s6_addr[0] == 0xff && ((x)->s6_addr[1] & 0x0f) == 1)
+#define IN6_IS_ADDR_MC_LINKLOCAL(x) ((x)->s6_addr[0] == 0xff && ((x)->s6_addr[1] & 0x0f) == 2)
+#define IN6_IS_ADDR_MC_SITELOCAL(x) ((x)->s6_addr[0] == 0xff && ((x)->s6_addr[1] & 0x0f) == 5)
+#define IN6_IS_ADDR_MC_ORGLOCAL(x)  ((x)->s6_addr[0] == 0xff && ((x)->s6_addr[1] & 0x0f) == 8)
+#define IN6_IS_ADDR_MC_GLOBAL(x)    ((x)->s6_addr[0] == 0xff && ((x)->s6_addr[1] & 0x0f) == 14)
 
 #ifdef __cplusplus
 }
