@@ -157,12 +157,11 @@ static int name_from_fqdn(const char *name, int family, struct address addr[stat
 
 static int is_dns_name(const char *name)
 {
-    if (*name == '.') return 0;
-    size_t lastdot = 0;
+    size_t lastdot = -1;
     size_t nl = 0;
     for (; nl < 256 && name[nl]; nl++) {
         if (name[nl] == '.') {
-            if (nl - lastdot - 1 >= 63ul) return 0;
+            if (nl - lastdot - 2 >= 62ul) return 0;
             lastdot = nl;
         }
     }

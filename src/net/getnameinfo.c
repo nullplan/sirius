@@ -74,7 +74,7 @@ static int reverse_node_from_hosts(int af, const unsigned char *a, int scope,
     if (!f) return 0;
     int rv = 0;
     while (fgets(linebuf, sizeof linebuf, f)) {
-        char *p = strchr(p, '#');
+        char *p = strchr(linebuf, '#');
         if (p) {
             *p++ = ' ';
             *p = 0;

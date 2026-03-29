@@ -15,6 +15,7 @@ hidden int __dn_expand(const unsigned char *p, const unsigned char *packet, size
             memcpy(buf, p + 1, *p);
             buf += *p;
             p += *p + 1;
+            first = 0;
         } 
         else if (*p >= 192 && p < end - 1) {
             size_t off = (*p & 0x3f) << 8 | p[1];
