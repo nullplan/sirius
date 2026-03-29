@@ -33,5 +33,5 @@ hidden int __dns_create_query(const char *name, int qtype, unsigned char *buf, s
     out[1] = qtype;
     out[2] = 0;
     out[3] = 1;
-    return namelen + 17;
+    return out + 4 - buf;
 }

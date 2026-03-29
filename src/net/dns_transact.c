@@ -99,6 +99,7 @@ hidden int __dns_transact(unsigned char *const *query, const size_t *querylen, i
             num_ipv6++;
 
     int af = AF_INET6;
+    pfd[0].fd = -1;
     if (num_ipv6)
     {
         pfd[0].fd = socket(AF_INET6, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_UDP);
@@ -192,7 +193,7 @@ hidden int __dns_transact(unsigned char *const *query, const size_t *querylen, i
                 if (!resultlen[bufnum])
                     break;
             /* we have to find a result buffer; the case of everything found was excluded already */
-            slen = af == AF_INET? sizeof (struct sockaddr) : sizeof (struct sockaddr_in);
+            slen = af == AF_INET? sizeof (struct sockaddr_in) : sizeof (struct sockaddr_in6);
             ssize_t rcv = recvfrom(pfd[0].fd, result[bufnum], 512, 0, (struct sockaddr *)&uaddr, &slen);
             /* ignore too-small results and errors on UDP */
             if (rcv < 12) continue;

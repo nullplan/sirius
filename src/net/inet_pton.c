@@ -20,7 +20,7 @@ static struct numdata getdecbyte(const char *str)
     while (isdigit(str[i]) && rv < 255) {
         rv = 10 * rv + (str[i++]) - '0';
     }
-    if (rv >= 256 || isdigit(*str)) return (struct numdata){0, 1, 0};
+    if (rv >= 256 || isdigit(str[i])) return (struct numdata){0, 1, 0};
     return (struct numdata){i, 0, rv};
 }
 
@@ -32,6 +32,7 @@ static struct numdata gethexhalf(const char *str)
     while (isxdigit(str[i]) && rv < 65535) {
         int d = isdigit(str[i])? str[i] - '0' : (str[i]|32) - 'a' + 10;
         rv = (rv << 4) | d;
+        i++;
     }
     if (rv >= 65536 || isxdigit(str[i])) return (struct numdata){0, 1, 0};
     return (struct numdata){i, 0, rv};
