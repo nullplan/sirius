@@ -278,9 +278,6 @@ int setpayloadsigl(      long double *, long double);
 ssize_t strfmon(char *__restrict, size_t, const char *__restrict, ...);
 ssize_t strfmon_l(char *__restrict, size_t, locale_t, const char *__restrict, ...);
 
-/* netdb.h */
-int getnameinfo(const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
-
 /* nl_types.h */
 int catclose(nl_catd);
 char *catgets(nl_catd, int, int, const char *);
