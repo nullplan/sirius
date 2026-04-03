@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "cpu.h"
 /* Implementing RFC 6724 destination address selection by assigning a 31-bit sortkey to each element, then running qsort. */
 #define DAS_USABLE          0x40000000  /* Rule 1: Prefer usable addresses. */
 #define DAS_MATCHSCOPE      0x20000000  /* Rule 2: Prefer matching scope. */
@@ -59,7 +60,7 @@ static int matchprefix(const unsigned char *a, const unsigned char *b)
     for (i = 0; i < 16 && a[i] == b[i]; i++);
     if (i < 16) {
         unsigned char diff = a[i] ^ b[i];
-        for (; j < 7 && !(diff & (1 << (7-j))); j++);
+        j = a_clz(diff) - 8 * (sizeof (size_t) - 1);
     }
     return i * 8 + j;
 }
