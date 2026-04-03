@@ -46,6 +46,8 @@ static uintmax_t wcstoint(const wchar_t *restrict ws, wchar_t **restrict endp, i
     f.flags = 0;
     f.read = wstr_read;
     f.lock = -1;
+    f.cookie = (void *)ws;
+    shlim(&f, 0);
     uintmax_t rv = __intscan(&f, base, limit);
     if (endp)
         *endp = (void *)(ws + shcnt(&f));

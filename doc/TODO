@@ -353,8 +353,5 @@ int wscanf(const wchar_t *__restrict, ...);
 int vfwscanf(FILE *__restrict, const wchar_t *__restrict, va_list);
 int vswscanf(const wchar_t *__restrict, size_t, const wchar_t *__restrict, va_list);
 int vwscanf(const wchar_t *__restrict, va_list);
-double wcstod(const wchar_t *__restrict, wchar_t **__restrict);
-float wcstof(const wchar_t *__restrict, wchar_t **__restrict);
-long double wcstold(const wchar_t *__restrict, wchar_t **__restrict);
 size_t wcsftime(wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict);
 FILE *open_wmemstream(wchar_t **, size_t *);
