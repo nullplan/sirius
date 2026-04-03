@@ -21,13 +21,13 @@ struct rule {
     unsigned char len, mask, prec, label;
 };
 static const struct rule rules[] = {
-    {{[15] = 1}, 15, 0xff, 50, 0},
-    {{[10] = 0xff, 0xff}, 11, 0xff, 35, 4},
-    {{0x20, 0x01}, 3, 0xff, 5, 5},
-    {{0x20, 0x02}, 1, 0xff, 30, 2},
-    {{0xfe, 0xc0}, 1, 0xc0, 1, 11},
-    {{0xfc}, 0, 0xfe, 3, 13},
-    {{0}, 0, 0, 40, 1},
+    {{[15] = 1},            15, 0xff, 50,  0}, /* IPv6 loopback address */
+    {{[10] = 0xff, 0xff},   11, 0xff, 35,  4}, /* IPv4 mapped addresses */
+    {{0x20, 0x01},           3, 0xff,  5,  5}, /* IETF protocol assignments */
+    {{0x20, 0x02},           1, 0xff, 30,  2}, /* TEREDO */
+    {{0xfe, 0xc0},           1, 0xc0,  1, 11}, /* site-local addresses (now deprecated) */
+    {{0xfc},                 0, 0xfe,  3, 13}, /* unique local unicast */
+    {{0}, 0, 0, 40, 1},                        /* catch-all */
 };
 
 static const struct rule *ruleof(const unsigned char *a)
