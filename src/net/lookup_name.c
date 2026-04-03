@@ -271,8 +271,10 @@ hidden int __lookup_name(const char *name, int flags, int family, struct address
 
     if (flags & AI_V4MAPPED) {
         if ((flags & AI_ALL) || !has_ipv6_addresses(addr, cnt)) {
-            for (int i = 0; i < cnt; i++)
+            for (int i = 0; i < cnt; i++) {
                 addr[i].af = AF_INET6;
+                addr[i].scope_id = 0;
+            }
         } else {
             int dst = 0;
             for (int i = 0; i < cnt; i++)

@@ -91,6 +91,7 @@ hidden void __sort_addresses(struct address *addr, int cnt)
                 slen = sizeof sin;
             } else {
                 sin6.sin6_port = 65535;
+                sin6.sin6_scope_id = addr[i].scope_id;
                 memcpy(&sin6.sin6_addr, addr[i].addr, 16);
                 p = (struct sockaddr *)&sin6;
                 slen = sizeof sin6;
