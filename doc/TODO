@@ -314,9 +314,6 @@ FILE *open_memstream(char **, size_t *);
 /* utime.h */
 int utimes(const char *, const struct timeval [2]);
 
-/* sched.h */
-int clone(int (*)(void *), void *, int, void *, ...);
-
 /* time.h */
 size_t strftime(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
 size_t strftime_l(char *__restrict, size_t, const char *__restrict, const struct tm *__restrict, locale_t);
