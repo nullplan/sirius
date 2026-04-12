@@ -6,6 +6,20 @@
 #include <unistd.h>
 #include "cpu.h"
 /* Implementing RFC 6724 destination address selection by assigning a 31-bit sortkey to each element, then running qsort. */
+/* the sortkey:
+ *  3         2         1
+ * 10987654321098765432109876543210
+ * 0USL000000ppppppssssPPPPPPPPiiii
+ *
+ * Where:
+ *  U - usable bit
+ *  S - matching scope bit
+ *  L - matching label bit
+ *  p - precedence
+ *  s - inverted scope
+ *  P - matching prefix bits
+ *  i - inverted original index
+ */
 #define DAS_USABLE          0x40000000  /* Rule 1: Prefer usable addresses. */
 #define DAS_MATCHSCOPE      0x20000000  /* Rule 2: Prefer matching scope. */
 /* Rules 3 and 4 are infeasible to implement. */
