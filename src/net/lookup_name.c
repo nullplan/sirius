@@ -210,10 +210,10 @@ static int name_from_dns(const char *name, int family, struct address addr[stati
  */
 static int is_af_usable(int af)
 {
-    int sk = socket(af, SOCK_DGRAM, 0);
+    int sk = socket(af, SOCK_DGRAM | SOCK_CLOEXEC, 0);
     if (sk == -1) return 0;
     static const struct sockaddr_in sin = {.sin_family = AF_INET, .sin_port = 65535,
-        .sin_addr.s_addr = 
+        .sin_addr.s_addr =
 #ifdef __LITTLE_ENDIAN
             0x0100007f
 #else

@@ -93,7 +93,7 @@ hidden void __sort_addresses(struct address *addr, int cnt)
         int k = 0;
         const struct rule *dstrule = ruleof(addr[i].addr);
         int dstscope = scopeof(addr[i].addr);
-        int sk = socket(addr[i].af, SOCK_DGRAM, 0);
+        int sk = socket(addr[i].af, SOCK_DGRAM | SOCK_CLOEXEC, 0);
         if (sk != -1)
         {
             unsigned char sa[16];
