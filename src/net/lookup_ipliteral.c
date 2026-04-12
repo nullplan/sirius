@@ -23,6 +23,7 @@ hidden int __lookup_ipliteral(const char *name, int fam, struct address *addr)
     {
         memcpy(addr->addr, __v4mapped_prefix, 12);
         addr->af = AF_INET;
+        addr->scope_id = 0;
         return 1;
     }
 

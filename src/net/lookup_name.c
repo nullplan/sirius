@@ -15,6 +15,7 @@ static int name_from_null(const char *name, int flags, int family, struct addres
     if (flags & AI_PASSIVE) {
         if (family != AF_INET6) {
             addr[cnt].af = AF_INET;
+            addr[cnt].scope_id = 0;
             memcpy(addr[cnt].addr, __v4mapped_prefix, 12);
             memset(addr[cnt].addr + 12, 0, 4);
             cnt++;
@@ -28,6 +29,7 @@ static int name_from_null(const char *name, int flags, int family, struct addres
     } else {
         if (family != AF_INET6) {
             addr[cnt].af = AF_INET;
+            addr[cnt].scope_id = 0;
             memcpy(addr[cnt].addr, __v4mapped_prefix, 12);
             memcpy(addr[cnt].addr + 12, "\x7f\0\0\1", 4);
             cnt++;
@@ -98,6 +100,7 @@ static int process_cb(const unsigned char *data, size_t datalen, const unsigned 
         c->cname = 0;
     }
     if (rrtype != c->reqtype || !c->naddr) return 0;
+    c->addr->scope_id = 0;
     if (rrtype == DNS_RR_A) {
         if (datalen != 4) return -1;
         c->addr->af = AF_INET;
@@ -106,7 +109,6 @@ static int process_cb(const unsigned char *data, size_t datalen, const unsigned 
     } else {
         if (datalen != 16) return -1;
         c->addr->af = AF_INET6;
-        c->addr->scope_id = 0;
         memcpy(c->addr->addr, data, 16);
     }
     c->addr++;
@@ -266,14 +268,13 @@ hidden int __lookup_name(const char *name, int flags, int family, struct address
         cnt = name_from_hosts(name, family, addr, cname);
         if (!cnt) cnt = name_from_dns(name, family, addr, cname);
     }
-    
+
     if (cnt <= 0) return cnt? cnt : EAI_NONAME;
 
     if (flags & AI_V4MAPPED) {
         if ((flags & AI_ALL) || !has_ipv6_addresses(addr, cnt)) {
             for (int i = 0; i < cnt; i++) {
                 addr[i].af = AF_INET6;
-                addr[i].scope_id = 0;
             }
         } else {
             int dst = 0;
