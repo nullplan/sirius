@@ -10,8 +10,8 @@ hidden int __dns_create_query(const char *name, int qtype, unsigned char *buf, s
     int id = now.tv_sec ^ now.tv_nsec;
     /* size of query: header (12 bytes) + 1 question (strlen(name) + 5) */
     size_t namelen = strlen(name);
-    assert(namelen - 1u < 255u);
-    if (len < namelen + 17)
+    assert(namelen - 1u < DNS_MAXNAME);
+    if (len < namelen + 18)
         return -1;
 
     memset(buf + 3, 0, 9); /* clear header */
@@ -33,5 +33,5 @@ hidden int __dns_create_query(const char *name, int qtype, unsigned char *buf, s
     out[1] = qtype;
     out[2] = 0;
     out[3] = 1;
-    return out + 4 - buf;
+    return namelen + 18;
 }

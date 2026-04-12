@@ -161,7 +161,7 @@ static int is_dns_name(const char *name)
 {
     size_t lastdot = -1;
     size_t nl = 0;
-    for (; nl < 256 && name[nl]; nl++) {
+    for (; nl < DNS_MAXNAME - 1 && name[nl]; nl++) {
         if (name[nl] == '.') {
             if (nl - lastdot - 2 >= 62ul) return 0;
             lastdot = nl;
