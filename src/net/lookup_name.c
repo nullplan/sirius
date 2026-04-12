@@ -232,8 +232,8 @@ static int is_af_usable(int af)
 
 static int has_ipv6_addresses(const struct address *addr, size_t n)
 {
-    for (size_t i = 0; i < n; i++)
-        if (addr[i].af == AF_INET6)
+    for (const struct address *p = addr; p < addr + n; p++)
+        if (p->af == AF_INET6)
             return 1;
     return 0;
 }
