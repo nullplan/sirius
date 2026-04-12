@@ -21,7 +21,7 @@ hidden int __lookup_ipliteral(const char *name, int fam, struct address *addr)
 
     if (fam != AF_INET6 && inet_pton(AF_INET, name, addr->addr + 12) == 1)
     {
-        memcpy(addr->addr, "\0\0\0\0\0\0\0\0\0\0\377\377", 12);
+        memcpy(addr->addr, __v4mapped_prefix, 12);
         addr->af = AF_INET;
         return 1;
     }
