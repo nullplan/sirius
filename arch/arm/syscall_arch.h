@@ -10,7 +10,7 @@
  */
 #ifdef __thumb__
 #define __ASM____R7__
-#define __do_syscall(...) __asm__ volatile("mov %1, r7; mov r7, %r2; svc 0; mov r7, %1" : "=r"(r0), "=&r"((int){0}) : __VA_ARGS__ : "memory")
+#define __do_syscall(...) __asm__ volatile("mov %1, r7; mov r7, %2; svc 0; mov r7, %1" : "=r"(r0), "=&r"((int){0}) : __VA_ARGS__ : "memory")
 #else
 #define __ASM____R7__ __asm__("r7")
 #define __do_syscall(...) __asm__ volatile("svc 0" : "=r"(r0) : __VA_ARGS__ : "memory")
