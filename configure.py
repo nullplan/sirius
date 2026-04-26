@@ -274,6 +274,31 @@ if __name__ == "__main__":
     tryccflag("-Wimplicit-fallthrough", cflags)
 
     cflags += ["-D_XOPEN_SOURCE", "-isystem", f"{srcdir}/include", "-isystem", f"{srcdir}/arch/{arch}", "-isystem", "obj/include", "-I", f"{srcdir}/src/include"]
+    if pic_default: cflags += [ "-fPIC" ]
+    cflags_nossp = cflags.copy()
+
+    # stack protector is good, but I cannot use it in the files needed to set up the stack protector
+    tryccflag("-fno-stack-protector", cflags_nossp)
+
+    # I need to list all source files that contain functions that may be executed before __init_ssp
+    src_nossp = [
+            "ldso/bootstrap.c",
+            "ldso/decode_vec.c",
+            "ldso/early_error.c",
+            "ldso/find_sym.c",
+            "ldso/init_fini.c",
+            "ldso/init_from_phdrs.c",
+            "ldso/linker_main.c",
+            "ldso/load_library.c",
+            "ldso/map_library.c",
+            "ldso/reclaim_gaps.c",
+            "ldso/relocate.c",
+            "src/init/start_libc.c",
+            "src/init/init_ssp.c",
+            "src/init/static_tls.c",
+            "src/init/tls.c",
+            "crt/crt1c.c",
+            ]
 
     src = find_src(srcdir + "/src/*", arch)
     obj = [map_obj_file(i) for i in src]
@@ -286,7 +311,6 @@ if __name__ == "__main__":
 
     if pic_default:
         crt1pic = "obj/crt1c.o"
-        cflags += [ "-fPIC" ]
     else:
         crt1pic = "obj/crt1c.lo"
 
@@ -340,8 +364,13 @@ build lib/rcrt1.o: ldr {crt1pic} obj/rcrt1s.o
     command = $cc $cflags -MD -MF $out.d -c -fPIC $in -o $out
     depfile = $out.d
 
-build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c\n''')
-        if do_static or pic_default: f.write(f"build obj/crt1c.o: cc {srcdir}/crt/crt1c.c\n")
+build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c
+  cflags = {' '.join(cflags_nossp)}\n''')
+
+        if do_static or pic_default:
+            f.write(f"build obj/crt1c.o: cc {srcdir}/crt/crt1c.c\n")
+            f.write(f"  cflags = {' '.join(cflags_nossp)}\n")
+
         if do_shared:
             f.write(f"build lib/Scrt1.o: ldr {crt1pic} obj/crt1s.o\n")
             f.write(f"build lib/libc.so: lds obj/rcrt1s.o {' '.join(libobj)}\n")
@@ -354,8 +383,12 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c\n''')
             o = map_obj_file(i)
             if i.endswith(".c"):
                 f.write(f"build {o}: cc {i} | obj/include/alltypes.h\n")
+                if any(i.endswith(file) for file in src_nossp):
+                    f.write(f"  cflags = {' '.join(cflags_nossp)}\n")
                 if do_shared and not pic_default:
                     f.write(f"build {o[:-2]}.lo: ccpic {i} | obj/include/alltypes.h\n")
+                    if any(i.endswith(file) for file in src_nossp):
+                        f.write(f"  cflags = {' '.join(cflags_nossp)}\n")
             elif i.endswith(".S"): f.write(f"build {o}: cc {i}\n  cflags = {' '.join(cflags_asm)}\n")
             elif i.endswith(".s"): f.write(f"build {o}: as {i}\n  cflags = {' '.join(cflags_asm)}\n")
 
@@ -364,6 +397,8 @@ build obj/crt1c.lo: ccpic {srcdir}/crt/crt1c.c\n''')
             d = os.path.dirname(o)
             if i.endswith(".c"):
                 f.write(f"build {o}: {'cc' if pic_default else 'ccpic'} {i} | obj/include/alltypes.h\n")
+                if any(i.endswith(file) for file in src_nossp):
+                    f.write(f"  cflags = {' '.join(cflags_nossp)}\n")
             elif i.endswith(".S"): f.write(f"build {o}: cc {i}\n  cflags = {' '.join(cflags_asm)}\n")
             elif i.endswith(".s"): f.write(f"build {o}: as {i}\n  cflags = {' '.join(cflags_asm)}\n")
 
