@@ -97,7 +97,7 @@ struct sigevent {
     } _u;
 };
 
-#define sigev_notify_thread_id  _u._s._tid
+#define sigev_notify_thread_id  _u._tid
 #define sigev_notify_function   _u._s._fn
 #define sigev_notify_attributes _u._s._attr
 
