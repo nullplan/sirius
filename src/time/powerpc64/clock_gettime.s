@@ -63,7 +63,8 @@ __clock_gettime:
     ld %r2, 24(%r1)
     bns 1f
     .hidden __set_errno
-    b __set_errno
+    bl __set_errno
+    nop
 1:
     ld %r0, 48(%r1)
     addi %r1, %r1, 32

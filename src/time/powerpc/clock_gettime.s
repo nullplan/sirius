@@ -69,7 +69,7 @@ clock_gettime:
     bctrl
     bns 1f
     .hidden __set_errno
-    b __set_errno
+    bl __set_errno
 1:
     lwz %r0, 20(%r1)
     addi %r1, %r1, 16
