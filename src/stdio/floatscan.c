@@ -362,8 +362,8 @@ static long double decfloat(FILE *f, int pseudo, int bits, int emin, int sign, i
         y = BILLION * y + big[(a+i)&MASK];
     long double small;
     if (z == ((a + n_thresh) & MASK)) small = 0;
-    else if (big[(a+n_thresh)&MASK] < (1ul << 31)) small = 0.25;
-    else if (big[(a+n_thresh)&MASK] == (1ul << 31) && z == ((a + n_thresh + 1) & MASK)) small = 0.5;
+    else if (big[(a+n_thresh)&MASK] < BILLION/2) small = 0.25;
+    else if (big[(a+n_thresh)&MASK] == BILLION/2 && z == ((a + n_thresh + 1) & MASK)) small = 0.5;
     else small = 0.75;
     if (sign < 0) {
         y = -y;
