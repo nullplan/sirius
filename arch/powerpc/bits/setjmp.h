@@ -1,5 +1,5 @@
-/* need to save R1, R2, R13-R31, LR, F14-F31, VRSAVE, V20-V31.
- * Makes 23 32-bit regs, 18 64-bit FP regs, and 12 128-bit vector regs.
+/* need to save R1, R2, R13-R31, LR, CR, F14-F31, VRSAVE, V20-V31.
+ * Makes 24 32-bit regs, 18 64-bit FP regs, and 12 128-bit vector regs.
  * I can theoretically save the storage for the FP regs in soft-float builds.
  * Maybe later.
  */
