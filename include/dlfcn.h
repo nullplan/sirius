@@ -18,6 +18,9 @@ typedef struct {
 #define RTLD_GLOBAL 0
 #define RTLD_LOCAL  2
 
+#define RTLD_DEFAULT ((void *)0)
+#define RTLD_NEXT    ((void *)1)
+
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
 int dlclose(void *);
 char *dlerror(void);

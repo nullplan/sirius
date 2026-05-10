@@ -19,12 +19,27 @@ static struct dso main;
 static struct dso *head; /* head of the list of linked libraries */
 static struct dso *tail; /* tail of that same list for easy appending. */
 static int static_tls_cnt; /* number of TLS modules in initial load set. */
-static int tls_cnt;
 static int early_error;
+
+hidden const char *__dl_libpath(void)
+{
+    return env_libpath;
+}
 
 hidden struct dso *__dl_head(void)
 {
     return head;
+}
+
+hidden struct dso *__dl_tail(void)
+{
+    return tail;
+}
+
+hidden void __dl_restore_tail(struct dso *t)
+{
+    tail = t;
+    t->next = 0;
 }
 
 hidden void __dl_push_back(struct dso *dso)
@@ -34,17 +49,12 @@ hidden void __dl_push_back(struct dso *dso)
     tail = dso;
 }
 
-hidden const char *__dl_libpath(void)
-{
-    return env_libpath;
-}
-
 hidden int __dl_static_tls_cnt(void)
 {
     return static_tls_cnt;
 }
 
-hidden void __dl_print_error(const char *fmt, ...)
+static int print_error(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -52,6 +62,7 @@ hidden void __dl_print_error(const char *fmt, ...)
     write(2, "\n", 1);
     early_error = 1;
     va_end(ap);
+    return 0;
 }
 
 static void die(const char *msg)
@@ -84,7 +95,7 @@ static const Phdr *find_phdr_typed(const struct dso *p, int t)
     return 0;
 }
 
-static void enumerate_phdr(struct dso *start)
+hidden int __dl_enumerate_phdr(struct dso *start, int (*err)(const char *, ...))
 {
     int cnt = 0;
     for (struct dso *p = start; p; p = p->next)
@@ -98,26 +109,27 @@ static void enumerate_phdr(struct dso *start)
                 __default_stacksize = ph->p_memsz;
         }
     }
-    if (!cnt) return;
+    if (!cnt) return 0;
     struct tls_module *tls_mod = __libc_calloc(cnt, sizeof (struct tls_module));
     if (!tls_mod)
     {
-        __dl_print_error("Out of memory for tls module descriptions.");
-        return;
+        err("Out of memory for tls module descriptions.");
+        return -1;
     }
 
     for (struct dso *p = start; p; p = p->next) {
         const Phdr *ph_tls = find_phdr_typed(p, PT_TLS);
         if (!ph_tls) continue;
-        p->tlsid = ++tls_cnt;
         tls_mod->size = ph_tls->p_memsz;
         tls_mod->align = ph_tls->p_align;
         tls_mod->len = ph_tls->p_filesz;
         tls_mod->image = p->base + ph_tls->p_vaddr;
         __add_tls(tls_mod);
+        p->tlsid = __tls_cnt();
         p->tlsoff = tls_mod->off;
         tls_mod++;
     }
+    return 0;
 }
 
 /* At this point, relocations are processed and we have a thread pointer.
@@ -189,6 +201,11 @@ hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **ar
         main.dynv = (void *)(main.base + ph->p_vaddr);
         __process_dynv(&main);
         entry_point = (void *)aux[AT_ENTRY];
+        ph = find_phdr_typed(&main, PT_GNU_RELRO);
+        if (ph) {
+            main.relro_start = ph->p_vaddr & -PAGE_SIZE;
+            main.relro_end = (ph->p_vaddr + ph->p_memsz) & -PAGE_SIZE;
+        }
     } else {
         /* we were called as command, so must load the app ourselves. */
         size_t len = strlen(argv[0]);
@@ -234,7 +251,7 @@ hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **ar
         main.name = main.shortname = argv[0];
         main.dev = st.st_dev;
         main.ino = st.st_ino;
-        Ehdr *eh = __map_library(fd, &main);
+        Ehdr *eh = __map_library(fd, &main, print_error);
         if (!eh) _Exit(1);
         close(fd);
         entry_point = main.base + eh->e_entry;
@@ -244,20 +261,20 @@ hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **ar
     head = tail = &main;
 
     __reclaim_gaps(&main);
-    if (env_preload) __load_preload(env_preload, env_libpath);
-    __load_deps(head, env_libpath, 1);
+    if (env_preload) __load_preload(env_preload, env_libpath, print_error);
+    __load_deps(head, env_libpath, 1, print_error);
     /* Have to call enumerate_phdr() before reloc_all(),
      * so the TLS relocations can be processed.
      */
-    enumerate_phdr(head);
-    static_tls_cnt = tls_cnt;
+    __dl_enumerate_phdr(head, print_error);
+    static_tls_cnt = __tls_cnt();
 
     /* also, process relocations of the libs *BEFORE* the main app,
      * because the main app can contain copy rels that copy stuff
      * that itself contains relocations.
      */
-    __reloc_all(main.next);
-    __relocate(&main);
+    __reloc_all(main.next, print_error);
+    __relocate(&main, print_error);
 
     if (ldd_mode)
     {
@@ -265,10 +282,9 @@ hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **ar
             dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, (void *)dso->base);
         _Exit(0);
     }
-    __queue_main_initializers(&main);
+    __queue_main_initializers(&main, print_error);
 
     if (early_error) _Exit(1);
-    if (ldd_mode) _Exit(0);
 
     a_stackjmp(entry_point, argv - 1);
 }

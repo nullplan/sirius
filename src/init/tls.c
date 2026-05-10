@@ -27,6 +27,11 @@ hidden struct tls_data __get_tls_data(void)
     return rv;
 }
 
+hidden size_t __tls_cnt(void)
+{
+    return tls_cnt;
+}
+
 hidden void __add_tls(struct tls_module *new)
 {
     if (new->align > tls_data.align)
@@ -71,4 +76,22 @@ hidden struct __pthread *__copy_tls(void *mem, size_t sz)
     }
     tp->dtv = dtv;
     return tp;
+}
+
+hidden void __tls_save_state(struct tls_state *st)
+{
+    st->raw_size = tls_data.size;
+    st->raw_align = tls_data.align;
+    st->tls_cnt = tls_cnt;
+    st->tail = tail;
+}
+
+hidden void __tls_restore_state(const struct tls_state *st)
+{
+    tls_data.size = st->raw_size;
+    tls_data.align = st->raw_align;
+    tls_cnt = st->tls_cnt;
+    tail = st->tail;
+    if (st->tail)
+        st->tail->next = 0;
 }

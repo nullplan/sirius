@@ -9,7 +9,7 @@
 #endif
 
 extern hidden const char __tlsdesc_dynamic[], __tlsdesc_static[];
-static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, size_t stride)
+static int process_relocs(struct dso *dso, const size_t *rel, size_t relsz, size_t stride, int (*err)(const char *, ...))
 {
     int skip_rels = dso == __libc_object();
     int reuse_addends = skip_rels && stride == 2;
@@ -47,8 +47,11 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
                 symval = (size_t)(def.dso->base + def.sym->st_value);
                 tlsval = def.sym->st_value;
             }
-            if (!def.sym && (usym->st_info >> 4) != STB_WEAK)
-                __dl_print_error("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name);
+            if (!def.sym && (usym->st_info >> 4) != STB_WEAK) {
+                if (err("error relocating `%s': symbol `%s' not found", dso->shortname, dso->strtab + usym->st_name))
+                    return -1;
+                continue;
+            }
         }
         switch (type) {
             case REL_RELATIVE:
@@ -68,7 +71,10 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
 
             case REL_COPY:
                 if (usym->st_size != def.sym->st_size)
-                    __dl_print_error("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size);
+                {
+                    if (err("error relocating `%s': Copy rel size mismatch (expected %zu, got %zu)", dso->shortname, usym->st_size, def.sym->st_size))
+                        return -1;
+                }
                 else
                     memcpy(rel_addr, (void *)symval, usym->st_size);
                 break;
@@ -87,7 +93,10 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
 
             case REL_TPOFF:
                 if (def.dso->tlsid > __dl_static_tls_cnt())
-                    __dl_print_error("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name);
+                {
+                    if (err("error relocating `%s': static-TLS reloc against `%s' in dlopen module", dso->shortname, dso->strtab + usym->st_name))
+                        return -1;
+                }
                 else {
 #ifdef TLS_VARIANT_2
                     *rel_addr = tlsval - def.dso->tlsoff + addend;
@@ -104,7 +113,10 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
                 if (def.dso->tlsid > __dl_static_tls_cnt()) {
                     size_t *desc = __libc_malloc(2 * sizeof (size_t));
                     if (!desc)
-                        __dl_print_error("error relocating `%s': Out of memory for TLS descriptor", dso->shortname);
+                    {
+                        if (err("error relocating `%s': Out of memory for TLS descriptor", dso->shortname))
+                            return -1;
+                    }
                     else {
                         rel_addr[TLSDESC_BACKWARDS] = (size_t)__tlsdesc_dynamic;
                         rel_addr[!TLSDESC_BACKWARDS] = (size_t)desc;
@@ -123,18 +135,19 @@ static void process_relocs(struct dso *dso, const size_t *rel, size_t relsz, siz
 
 
             default:
-                __dl_print_error("error relocating `%s': Unknown relocation type %d", dso->shortname, type);
+                if (err("error relocating `%s': Unknown relocation type %d", dso->shortname, type))
+                    return -1;
                 break;
         }
     }
+    return 0;
 }
 
-static void process_relr(size_t base, const size_t *rel, size_t sz, const char *name)
+static int process_relr(size_t base, const size_t *rel, size_t sz, const char *name, int (*err)(const char *, ...))
 {
     size_t *rel_addr;
     if (sz && (*rel & 1)) {
-        __dl_print_error("Error relocating `%s': RELR table starts with bit field", name);
-        return;
+        return err("Error relocating `%s': RELR table starts with bit field", name);
     }
     for (; sz; sz -= sizeof (size_t), rel++)
     {
@@ -151,30 +164,39 @@ static void process_relr(size_t base, const size_t *rel, size_t sz, const char *
             }
         }
     }
+    return 0;
 }
 
-hidden void __relocate(struct dso *dso)
+hidden int __relocate(struct dso *dso, int (*err)(const char *, ...))
 {
-    if (dso->relocated) return;
+    int rv = 0;
+    if (dso->relocated) return rv;
     size_t dyn[DT_RELR + 1] = {0};
     __decode_vec(dyn, dso->dynv, DT_RELR + 1);
-    process_relocs(dso, (void *)(dso->base + dyn[DT_REL]), dyn[DT_RELSZ], 2);
-    process_relocs(dso, (void *)(dso->base + dyn[DT_RELA]), dyn[DT_RELASZ], 3);
-    process_relocs(dso, (void *)(dso->base + dyn[DT_JMPREL]), dyn[DT_PLTRELSZ], dyn[DT_PLTREL] == DT_REL? 2 : 3);
+    rv = process_relocs(dso, (void *)(dso->base + dyn[DT_REL]), dyn[DT_RELSZ], 2, err);
+    if (!rv) rv = process_relocs(dso, (void *)(dso->base + dyn[DT_RELA]), dyn[DT_RELASZ], 3, err);
+    if (!rv) rv = process_relocs(dso, (void *)(dso->base + dyn[DT_JMPREL]), dyn[DT_PLTRELSZ], dyn[DT_PLTREL] == DT_REL? 2 : 3, err);
     /* relr table is all relative, so we skip it for libc, since it has already been processed. */
-    if (dso != __libc_object())
-        process_relr((size_t)dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ], dso->name);
-    dso->relocated = 1;
-    if (dso->relro_start != dso->relro_end
+    if (!rv && dso != __libc_object())
+        rv = process_relr((size_t)dso->base, (void *)(dso->base + dyn[DT_RELR]), dyn[DT_RELRSZ], dso->name, err);
+    if (!rv)
+        dso->relocated = 1;
+    if (!rv && dso->relro_start != dso->relro_end
             && mprotect(dso->base + dso->relro_start, dso->relro_end - dso->relro_start, PROT_READ))
     {
-        __dl_print_error("Error relocation `%s': RELRO protection failed: %m", dso->name);
+        err("Error relocation `%s': RELRO protection failed: %m", dso->name);
+        rv = -1;
     }
+    return rv;
 }
 
-hidden void __reloc_all(struct dso *dso)
+hidden int __reloc_all(struct dso *dso, int (*err)(const char *, ...))
 {
     for (; dso; dso = dso->next)
-        __relocate(dso);
+    {
+        if (__relocate(dso, err))
+            return -1;
+    }
+    return 0;
 }
 

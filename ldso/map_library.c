@@ -16,7 +16,7 @@ static int prot_from_flags(int flg)
     return rv;
 }
 
-hidden void *__map_library(int fd, struct dso *dso)
+hidden void *__map_library(int fd, struct dso *dso, int (*err)(const char *, ...))
 {
     union {
         Ehdr eh;
@@ -24,12 +24,12 @@ hidden void *__map_library(int fd, struct dso *dso)
     } buf;
     ssize_t rd = read(fd, buf.b, sizeof buf);
     if (rd < 0) {
-        __dl_print_error("`%s': Read error: %m", dso->name);
+        err("`%s': Read error: %m", dso->name);
         return 0;
     }
 
     if ((size_t)rd < sizeof (Ehdr)) {
-        __dl_print_error("`%s': File too short", dso->name);
+        err("`%s': File too short", dso->name);
         return 0;
     }
 
@@ -37,7 +37,7 @@ hidden void *__map_library(int fd, struct dso *dso)
             || buf.eh.e_ident[EI_CLASS] != ELFCLASS
             || buf.eh.e_machine != ELFMACH
             || (buf.eh.e_type != ET_DYN && buf.eh.e_type != ET_EXEC)) {
-        __dl_print_error("`%s': Bad magic", dso->name);
+        err("`%s': Bad magic", dso->name);
         return 0;
     }
 
@@ -50,7 +50,7 @@ hidden void *__map_library(int fd, struct dso *dso)
     else {
         rd = pread(fd, buf.b, dso->phent * dso->phnum, buf.eh.e_phoff);
         if (rd != dso->phent * dso->phnum) {
-            __dl_print_error("`%s: Failed to read program headers", dso->name);
+            err("`%s: Failed to read program headers", dso->name);
             return 0;
         }
         ph0 = (void *)buf.b;
@@ -81,12 +81,12 @@ hidden void *__map_library(int fd, struct dso *dso)
 
     void *map = mmap((void *)(min_address - min_offset), max_address - min_address + min_offset, prot_from_flags(minflags), MAP_PRIVATE, fd, 0);
     if (map == MAP_FAILED) {
-        __dl_print_error("Error loading `%s': %m", dso->name);
+        err("Error loading `%s': %m", dso->name);
         return 0;
     }
 
     if (elftype == ET_EXEC && map != (void *)(min_address - min_offset)) {
-        __dl_print_error("Error loading `%s': Non-relocatable object could not be loaded to preferred address", dso->name);
+        err("Error loading `%s': Non-relocatable object could not be loaded to preferred address", dso->name);
         goto out_unmap;
     }
     dso->base = (char *)map - min_address + min_offset;
@@ -104,7 +104,7 @@ hidden void *__map_library(int fd, struct dso *dso)
             /* reuse first segment */
             if (this_min != min_address
                     && mmap(dso->base + this_min, this_max - this_min, prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_FIXED, fd, this_off) == MAP_FAILED) {
-                __dl_print_error("Error loading `%s': %m", dso->name);
+                err("Error loading `%s': %m", dso->name);
                 goto out_unmap;
             }
             if (ph->p_memsz > ph->p_filesz && (ph->p_flags & PF_W)) {
@@ -113,7 +113,7 @@ hidden void *__map_library(int fd, struct dso *dso)
                 memset(eoi, 0, pagebrk - eoi);
                 if (ph->p_memsz - ph->p_filesz > pagebrk - eoi
                         && mmap(pagebrk, PAGE_RND_UP(ph->p_memsz - ph->p_filesz - (pagebrk - eoi)), prot_from_flags(ph->p_flags), MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
-                    __dl_print_error("Error loading `%s': %m", dso->name);
+                    err("Error loading `%s': %m", dso->name);
                     goto out_unmap;
                 }
             }
@@ -126,7 +126,7 @@ hidden void *__map_library(int fd, struct dso *dso)
     __process_dynv(dso);
     if (!dso->symtab || !dso->strtab || (!dso->hashtab && !dso->ghashtab))
     {
-        __dl_print_error("Error loading `%s': Library lacks vital data.", dso->name);
+        err("Error loading `%s': Library lacks vital data.", dso->name);
         goto out_unmap;
     }
     dso->map = map;

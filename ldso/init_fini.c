@@ -26,7 +26,7 @@ static struct szpair scan_vec_pair(const size_t *dynv, size_t a, size_t b)
     return pair;
 }
 
-hidden struct dso **__queue_initializers(struct dso *start)
+hidden struct dso **__queue_initializers(struct dso *start, int (*err)(const char *, ...))
 {
     size_t cnt = 1;
     /* upper bound for both queue and stack is number of indirect dependencies.
@@ -39,7 +39,7 @@ hidden struct dso **__queue_initializers(struct dso *start)
     struct dso **queue = __libc_malloc(cnt * sizeof (struct dso *));
     if (!queue)
     {
-        __dl_print_error("Out of memory for initializer queue.");
+        err("Out of memory for initializer queue.");
         return 0;
     }
 
@@ -70,10 +70,10 @@ hidden struct dso **__queue_initializers(struct dso *start)
     return queue;
 }
 
-hidden void __queue_main_initializers(struct dso *argmain)
+hidden void __queue_main_initializers(struct dso *argmain, int (*err)(const char *, ...))
 {
     main = argmain;
-    main_init_queue = __queue_initializers(main);
+    main_init_queue = __queue_initializers(main, err);
 }
 
 static void run_init_array(void (**arr)(void), size_t sz)
@@ -119,6 +119,13 @@ hidden void __run_constructors(void)
     process_init_queue(main_init_queue);
     __libc_free(main_init_queue);
     main_init_queue = 0;
+    pthread_mutex_unlock(&init_fini_lock);
+}
+
+hidden void __dl_process_init_queue(struct dso **queue)
+{
+    pthread_mutex_lock(&init_fini_lock);
+    process_init_queue(queue);
     pthread_mutex_unlock(&init_fini_lock);
 }
 

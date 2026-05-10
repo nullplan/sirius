@@ -50,7 +50,7 @@ static int path_open(const char *name, const char *search_path, char *namebuf, s
     return -1;
 }
 
-hidden struct dso *__load_library(const char *name, const char *search_path, int at_startup)
+hidden struct dso *__load_library(const char *name, const char *search_path, int at_startup, int (*err)(const char *, ...))
 {
     if (!*name) {
         errno = EINVAL;
@@ -85,12 +85,12 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
     }
 
     if (fd == -1) {
-        __dl_print_error("Error loading `%s': %m", name);
+        err("Error loading `%s': %m", name);
         return 0;
     }
     struct stat st;
     if (fstat(fd, &st)) {
-        __dl_print_error("Error stating `%s': %m", name);
+        err("Error stating `%s': %m", name);
         close(fd);
         return 0;
     }
@@ -118,7 +118,7 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
 
     struct dso temp_dso = {0};
     temp_dso.name = fullname;
-    void *map = __map_library(fd, &temp_dso);
+    void *map = __map_library(fd, &temp_dso, err);
     close(fd);
     if (!map) return 0;
 
@@ -130,7 +130,7 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
 
     struct dso *dso = __libc_malloc(sizeof (struct dso) + strlen(fullname) + 1);
     if (!dso) {
-        __dl_print_error("Error loading `%s': Out of memory", name);
+        err("Error loading `%s': Out of memory", name);
         munmap(temp_dso.map, temp_dso.map_len);
         return 0;
     }
@@ -157,7 +157,7 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
     return dso;
 }
 
-hidden void __load_preload(char *preload, const char *search_path)
+hidden void __load_preload(char *preload, const char *search_path, int (*err)(const char *, ...))
 {
     char *a, *z;
     a = preload;
@@ -166,16 +166,16 @@ hidden void __load_preload(char *preload, const char *search_path)
         z = a + __stridx(a, ':');
         int cont = *z;
         *z = 0;
-        __load_library(a, search_path, 1);
+        __load_library(a, search_path, 1, err);
         if (!cont) break;
         *z = ':';
         a = z + 1;
     }
 }
 
-static void load_direct_deps(struct dso *dso, const char *search_path, int at_startup, int is_main)
+static int load_direct_deps(struct dso *dso, const char *search_path, int at_startup, int is_main, int (*err)(const char *, ...))
 {
-    if (dso->deps) return;
+    if (dso->deps) return 0;
     size_t cnt = 0;
     /* preload libraries are pseudo-deps of the main application
      * for the purposes of initializing and stuff.
@@ -190,7 +190,7 @@ static void load_direct_deps(struct dso *dso, const char *search_path, int at_st
 
     if (!cnt) {
         dso->deps = no_deps;
-        return;
+        return 0;
     }
 
     struct dso **deps;
@@ -199,8 +199,7 @@ static void load_direct_deps(struct dso *dso, const char *search_path, int at_st
     else {
         deps = __libc_calloc(cnt + 1, sizeof (struct dso *));
         if (!deps) {
-            __dl_print_error("Error loading `%s': Could not allocate space for dependencies.", dso->name);
-            return;
+            return err("Error loading `%s': Could not allocate space for dependencies.", dso->name);
         }
     }
 
@@ -210,12 +209,18 @@ static void load_direct_deps(struct dso *dso, const char *search_path, int at_st
             deps[cnt++] = p;
     for (const size_t *i = dso->dynv; *i; i += 2)
         if (i[0] == DT_NEEDED)
-            deps[cnt++] = __load_library(dso->strtab + i[1], search_path, at_startup);
+        {
+            deps[cnt] = __load_library(dso->strtab + i[1], search_path, at_startup, err);
+            if (!at_startup && !deps[cnt]) /* bit of a hack here, but it works for now. */
+                return -1;
+            cnt++;
+        }
     deps[cnt] = 0;
     dso->deps = deps;
+    return 0;
 }
 
-hidden void __load_deps(struct dso *dso, const char *search_path, int at_startup)
+hidden int __load_deps(struct dso *dso, const char *search_path, int at_startup, int (*err)(const char *, ...))
 {
     /* we are called on the main application exactly once at startup,
      * meaning if at_startup == 1, then dso points to the main app handle.
@@ -224,8 +229,10 @@ hidden void __load_deps(struct dso *dso, const char *search_path, int at_startup
     int is_main = at_startup;
     for (; dso; dso = dso->next)
     {
-        load_direct_deps(dso, search_path, at_startup, is_main);
+        int rv = load_direct_deps(dso, search_path, at_startup, is_main, err);
+        if (rv) return rv;
         is_main = 0;
     }
+    return 0;
 }
 

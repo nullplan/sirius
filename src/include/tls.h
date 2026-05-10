@@ -26,4 +26,15 @@ hidden struct tls_data __get_tls_data(void);
 struct __pthread;
 hidden struct __pthread *__copy_tls(void *, size_t);
 
+hidden size_t __tls_cnt(void);
+
+struct tls_state {
+    size_t raw_size;
+    size_t raw_align;
+    size_t tls_cnt;
+    struct tls_module *tail;
+};
+
+hidden void __tls_save_state(struct tls_state *);
+hidden void __tls_restore_state(const struct tls_state *);
 #endif
