@@ -18,14 +18,6 @@ static const char *const libc_alias[] = {
 static struct dso *load_libc(int variant)
 {
     struct dso *libc = __libc_object();
-    if (__is_ldd_mode()) {
-        static unsigned reported;
-        if (!(reported & (1u << variant))) {
-            reported |= 1u << variant;
-            dprintf(1, "\tlib%s.so => %s (%p)\n", libc_alias[variant], libc->name, (void *)libc->base);
-        }
-    }
-
     if (!libc->prev)
         __dl_push_back(libc);
     return libc;
@@ -119,8 +111,6 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
             if (!dso->shortname && fullname != name)
             {
                 dso->shortname = at_startup? name : strdup(name);
-                if (__is_ldd_mode() && dso->shortname)
-                    dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, (void *)dso->base);
             }
             close(fd);
             return dso;
@@ -156,8 +146,6 @@ hidden struct dso *__load_library(const char *name, const char *search_path, int
         else dso->shortname = dso->name;
     }
     __dl_push_back(dso);
-
-    if (__is_ldd_mode()) dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, (void *)dso->base);
 
     /* if we are at startup, this library will not be unmapped again.
      * If an error occurs, we will exit.

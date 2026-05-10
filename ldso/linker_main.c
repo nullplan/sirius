@@ -15,7 +15,6 @@
 #include <sys/stat.h>
 
 static const char *env_libpath; /* pointer to initial LD_LIBRARY_PATH if not elevated. Must be global to ignore future changes. */
-static int ldd_mode; /* global bool for whether LDD mode is requested. */
 static struct dso main;
 static struct dso *head; /* head of the list of linked libraries */
 static struct dso *tail; /* tail of that same list for easy appending. */
@@ -43,11 +42,6 @@ hidden const char *__dl_libpath(void)
 hidden int __dl_static_tls_cnt(void)
 {
     return static_tls_cnt;
-}
-
-hidden int __is_ldd_mode(void)
-{
-    return ldd_mode;
 }
 
 hidden void __dl_print_error(const char *fmt, ...)
@@ -139,6 +133,7 @@ hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **ar
     pthread_t self = __pthread_self();
     char *env_preload = 0; /* mutable pointer to be able to replace ':' with null bytes. Not nice but rare. */
     void *entry_point;
+    int ldd_mode = 0;
 
     self->locale = &__global_locale;
     __page_size = aux[AT_PAGESZ];
@@ -264,6 +259,12 @@ hidden _Noreturn void __stage_post_reloc(const size_t *dynv, int argc, char **ar
     __reloc_all(main.next);
     __relocate(&main);
 
+    if (ldd_mode)
+    {
+        for (struct dso *dso = head; dso; dso = dso->next)
+            dprintf(1, "\t%s%s%s (%p)\n", dso->shortname? dso->shortname : "", dso->shortname? " => " : "", dso->name, (void *)dso->base);
+        _Exit(0);
+    }
     __queue_main_initializers(&main);
 
     if (early_error) _Exit(1);
