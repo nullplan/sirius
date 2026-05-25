@@ -5,7 +5,8 @@
 
 hidden void *__dlsym(void *restrict handle, const char *restrict name, uintptr_t caller)
 {
-    struct dso *h = handle;
+    struct dso *h = 0;
+    void *rv = 0;
     __dl_rdlock();
     if (handle == RTLD_DEFAULT)
         h = __dl_head();
@@ -18,15 +19,25 @@ hidden void *__dlsym(void *restrict handle, const char *restrict name, uintptr_t
                 break;
             }
         }
+    } else {
+        for (struct dso *dso = __dl_head(); dso; dso = dso->next)
+            if (dso == handle) {
+                h = dso;
+                break;
+            }
+        if (!h) {
+            __dl_runtime_err("Invalid handle");
+            goto out_unlock;
+        }
     }
     struct symdef def = __dl_find_sym(name, h, 1);
-    void *rv = 0;
     if (!def.dso)
         __dl_runtime_err("Symbol `%s' not found", name);
     else if ((def.sym->st_info & 15) == STT_TLS)
         rv = __tls_get_addr((size_t[]){def.dso->tlsid, def.sym->st_value - DTV_OFFSET});
     else
         rv = (void *)(def.dso->base + def.sym->st_value);
+out_unlock:
     __dl_unlock();
     return rv;
 

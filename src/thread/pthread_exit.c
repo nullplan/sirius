@@ -18,6 +18,7 @@ static _Noreturn void unmapself(void)
 
 static void dummy(void) {}
 weak_alias(__pthread_tsd_destroy, dummy);
+weak_alias(__free_dlerror, dummy);
 
 static void unlock_mutex(struct __mtx *p, int tid)
 {
@@ -48,7 +49,7 @@ hidden _Noreturn void __pthread_exit(void *result)
     }
 
     __pthread_tsd_destroy();
-    __libc_free(self->dlerr_alloc);
+    __free_dlerror();
 
     sigset_t ss;
     /* here comes the two-stage signal block.

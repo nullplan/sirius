@@ -143,6 +143,7 @@ extern hidden int __pthread_join(pthread_t, void **);
 extern hidden _Noreturn void __pthread_exit(void *);
 extern hidden int __pthread_create(pthread_t *restrict, const pthread_attr_t *restrict, void *(*)(void*), void *restrict);
 extern hidden void *__tls_get_addr(const size_t *);
+extern hidden void __free_dlerror(void);
 
 #define __PTHREAD_ATTR_C11 0x80000000u
 #endif

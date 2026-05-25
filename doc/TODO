@@ -1,8 +1,6 @@
 /* dlfcn.h */
 int dladdr(const void *__restrict, Dl_info_t *__restrict);
 int dlclose(void *);
-char *dlerror(void);
-void *dlsym(void *__restrict, const char *__restrict);
 
 /* grp.h */
 struct group *getgrgid(gid_t);
