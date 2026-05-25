@@ -1,3 +1,4 @@
+.syntax unified
 .global dlsym
 .type dlsym, %function
 dlsym:
