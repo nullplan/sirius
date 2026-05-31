@@ -25,7 +25,7 @@ static const uint16_t *versym;
 static size_t base;
 static size_t numsyms;
 
-static size_t count_ghashtab(const uint32_t *gh)
+hidden size_t __count_ghashtab(const uint32_t *gh)
 {
     size_t nbuckets = gh[0];
     size_t symoffset = gh[1];
@@ -74,7 +74,7 @@ hidden void __init_vdso(const void *p)
     }
     if (!versym) verdef = 0;
     if (hashtab) numsyms = hashtab[1];
-    else if (ghashtab) numsyms = count_ghashtab(ghashtab);
+    else if (ghashtab) numsyms = __count_ghashtab(ghashtab);
 }
 
 static int match_version(uint16_t versym, const char *ver)

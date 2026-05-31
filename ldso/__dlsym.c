@@ -20,15 +20,11 @@ hidden void *__dlsym(void *restrict handle, const char *restrict name, uintptr_t
             }
         }
     } else {
-        for (struct dso *dso = __dl_head(); dso; dso = dso->next)
-            if (dso == handle) {
-                h = dso;
-                break;
-            }
-        if (!h) {
+        if (!__dl_is_handle_valid(handle)) {
             __dl_runtime_err("Invalid handle");
             goto out_unlock;
         }
+        h = handle;
     }
     struct symdef def = __dl_find_sym(name, h, 1);
     if (!def.dso)

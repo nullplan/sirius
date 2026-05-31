@@ -111,4 +111,5 @@ hidden void __dl_wrlock(void);
 hidden void __dl_rdlock(void);
 hidden void __dl_unlock(void);
 hidden void *__dlsym(void *__restrict, const char *__restrict, uintptr_t);
+hidden int __dl_is_handle_valid(void *h);
 #endif
