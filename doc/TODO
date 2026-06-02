@@ -1,7 +1,3 @@
-/* dlfcn.h */
-int dladdr(const void *__restrict, Dl_info_t *__restrict);
-int dlclose(void *);
-
 /* grp.h */
 struct group *getgrgid(gid_t);
 struct group *getgrnam(const char *);
