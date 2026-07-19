@@ -30,6 +30,7 @@ struct aio_queue;
 struct aio_task {
     int op;
     int err;
+    int *cancelstate;
     ssize_t result;
     struct aiocb *cb;
     pthread_t worker;
@@ -173,6 +174,8 @@ static void cleanup(void *ctx)
     if (t->next) t->next->prev = t->prev;
     if (t->prev) t->prev->next = t->next;
     else q->head = t->next;
+    if (t->cancelstate)
+        *t->cancelstate = t->err;
     pthread_cond_broadcast(&q->task_done);
     unref_queue(q, t->cb->aio_fildes);
     switch (t->cb->aio_sigevent.sigev_notify)
@@ -219,6 +222,7 @@ static void *worker_thread(void *ctx)
     t->result = -1;
     t->cb = cb;
     t->worker = __pthread_self();
+    t->cancelstate = 0;
     t->next = q->head;
     if (t->next) t->next->prev = t;
     t->prev = 0;
@@ -353,11 +357,12 @@ ssize_t aio_return(struct aiocb *cb)
 
 static int cancel_task(struct aio_queue *q, struct aio_task *t)
 {
-    struct aiocb *cb = t->cb;
+    int st = 0;
+    t->cancelstate = &st;
     pthread_cancel(t->worker);
-    while ((cb->__err & INT_MAX) == EINPROGRESS)
+    while (!st)
         pthread_cond_wait(&q->task_done, &q->lock);
-    return (cb->__err == ECANCELED);
+    return (st == ECANCELED);
 }
 
 int aio_cancel(int fd, struct aiocb *cb)
