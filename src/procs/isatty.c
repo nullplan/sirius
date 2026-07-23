@@ -5,5 +5,5 @@
 int isatty(int fd)
 {
     struct winsize wsz;
-    return syscall(SYS_ioctl, fd, TIOCSWINSZ, &wsz) == 0;
+    return syscall(SYS_ioctl, fd, TIOCGWINSZ, &wsz) == 0;
 }
