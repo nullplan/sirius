@@ -25,6 +25,7 @@ weak_alias(__next_canary, dummy0);
 static void dummy1(void) {}
 weak_alias(__stdio_list_init, dummy1);
 weak_alias(__init_tsd, dummy1);
+weak_alias(__init_cpuid, dummy1);
 
 static void dummy2(char *p) {}
 weak_alias(__init_progname, dummy2);
@@ -101,6 +102,7 @@ void __init_libc(char *pn, char **envp)
     if (!pn || !*pn) pn = (void *)aux[AT_EXECFN];
     if (!pn) pn = "";
     __init_progname(pn);
+    __init_cpuid();
 
     const int mask = 1<<AT_UID | 1<<AT_EUID | 1<<AT_GID | 1<<AT_EGID;
     if ((aux[0] & mask) == mask && aux[AT_UID] == aux[AT_EUID] && aux[AT_GID] == aux[AT_EGID] && !aux[AT_SECURE])
