@@ -65,6 +65,7 @@ void *dlopen(const char *name, int flags)
 {
     struct dso *new;
     __dl_wrlock();
+    __inhibit_ptc();
     struct dso *old_tail = __dl_tail();
     struct dso **initqueue = 0;
     if (!name) new = __dl_head();
@@ -96,6 +97,7 @@ void *dlopen(const char *name, int flags)
             }
         }
     }
+    __release_ptc();
     for (struct dso *dso = old_tail->next; dso; dso = dso->next)
         __reclaim_gaps(dso);
     __dl_unlock();

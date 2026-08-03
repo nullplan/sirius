@@ -70,6 +70,7 @@ static int startup_c11(void *a)
 hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restrict a, void *(*func)(void*), void *restrict arg)
 {
     const int flags = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_PARENT | CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
+    __acquire_ptc();
     struct tls_data tls_data = __get_tls_data();
     void *sp = 0;
     size_t guardsize = 0;
@@ -168,6 +169,7 @@ hidden int __pthread_create(pthread_t *restrict td, const pthread_attr_t *restri
 out_unlock:
     __tl_unlock();
     __restore_sigs(&ss);
+    __release_ptc();
     if (rv && new_td->map) __munmap(new_td->map, new_td->map_size);
     return rv;
 }
