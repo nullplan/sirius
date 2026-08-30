@@ -31,7 +31,7 @@ _start:
     ldr r0, [r4]
 .Lbase_dyn:
     add r0, r4, r0, lsl 2
-    add r0, r0, 4
+    add r0, r0, 8
 1:  ldr r3, [r0], 4
     cmp r3, 0
     bne 1b
@@ -50,6 +50,7 @@ _start:
     ldr r2, [sp, AT_PHENT*4]
     bl find_base
     mov r6, r0
+1:
 
     ldr r1, [sp, (AUX_CNT+DT_RELSZ)*4]
     cmp r1, 0
