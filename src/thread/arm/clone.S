@@ -32,8 +32,12 @@ __clone:
     ldr r0, [sp, 4]
     ldr r1, [sp]
     add sp, 8
+#if __ARM_ARCH < 5
     mov lr, pc
     bx r1
+#else
+    blx r1
+#endif
     mov r1, r0
     mov r7, 1
 1:
