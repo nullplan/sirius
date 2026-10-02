@@ -25,7 +25,7 @@ static inline uintptr_t __get_tp(void)
 {
     extern hidden size_t __a_gettp_ptr;
     register uintptr_t r0 __asm__("r0");
-    __asm__(BLX "%1" : "=r"(r0) : "r"(__a_gettp_ptr));
+    __asm__(BLX "%1" : "=r"(r0) : "r"(__a_gettp_ptr) : "lr");
     return r0;
 }
 #endif
