@@ -58,11 +58,12 @@ __a_barrier_old:
 #if __ARM_ARCH < 5
     mov lr,pc
     bx ip
-#else
-    blx ip
-#endif
     pop {r0, r1, r2, r3, ip, lr}
     bx lr
+#else
+    blx ip
+    pop {r0, r1, r2, r3, ip, pc}
+#endif
 .size __a_barrier_old, . - __a_barrier_old
 
 @ set compiler to newest machine, but mark file as supporting the oldest
