@@ -32,6 +32,10 @@ static struct factorization maximum_suffix(const wchar_t *n, size_t nl, int rev)
 
 wchar_t *(wcsstr)(const wchar_t *h, const wchar_t *n)
 {
+    if (!*n) return (void *)h;
+    h = wcschr(h, *n);
+    if (!h || !n[1]) return (void *)h;
+
     size_t nl;
     for (nl = 0; h[nl] && n[nl]; nl++);
     if (n[nl]) return 0;
