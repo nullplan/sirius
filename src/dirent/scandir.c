@@ -8,7 +8,9 @@
 static int wrap_cmp(const void *a, const void *b, void *c)
 {
     int (*cmp)(const struct dirent **, const struct dirent **) = c;
-    return cmp((void *)a, (void *)b);
+    const struct dirent *pa = *(struct dirent *const *)a;
+    const struct dirent *pb = *(struct dirent *const *)b;
+    return cmp(&pa, &pb);
 }
 
 int scandir(const char *name, struct dirent ***retbuf, int (*filter)(const struct dirent *), int (*cmp)(const struct dirent **, const struct dirent **))
